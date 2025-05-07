@@ -191,7 +191,7 @@ export function Preloader() {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6"
+      className="fixed inset-0 z-50 py-10 flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6"
     >
       {/* Main background with stadium image */}
       <div 
