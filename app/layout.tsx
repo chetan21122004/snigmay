@@ -3,6 +3,8 @@ import type { Metadata } from "next"
 import { Poppins } from "next/font/google"
 import "./globals.css"
 import Navbar from "@/components/navbar"
+import { Preloader } from "@/components/Preloader"
+
 import { ThemeProvider } from "@/components/theme-provider"
 import Footer from "@/components/footer"
 import Script from "next/script"
@@ -28,7 +30,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body className={`${poppins.variable} font-sans antialiased`} suppressHydrationWarning>
+        <Preloader />
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+          
           <Navbar />
           {children}
           <Footer />
