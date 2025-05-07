@@ -91,7 +91,7 @@ export default function Support() {
     return () => ctx.revert()
   }, [])
 
-  const handleSliderChange = (value: number[]) => {
+  const handleSliderChange = (value) => {
     setDonationAmount(value[0])
     setCustomAmount("")
   }
