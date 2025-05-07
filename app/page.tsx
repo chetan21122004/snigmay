@@ -12,10 +12,10 @@ import Contact from "@/components/contact"
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center">
+    <main className="flex min-h-screen w-screen flex-col items-center">
       <Hero />
       <About />
-      <Programs />
+       <Programs />
       <Achievements />
       <Infrastructure />
       <Impact />

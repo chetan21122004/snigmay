@@ -99,8 +99,8 @@ export default function Achievements() {
   }, [inView, achievements.length])
 
   return (
-    <section id="achievements" ref={ref} className="py-16 md:py-24 bg-white dark:bg-gray-900">
-      <div className="container mx-auto px-4">
+    <section id="achievements" ref={ref} className="py-12 bg-white dark:bg-gray-900">
+      <div className="container mx-auto px-8 sm:px-4">
         <div className="text-center mb-12">
           <h2 className="section-heading">Our Achievements</h2>
           <p className="max-w-3xl mx-auto text-lg text-muted-foreground">
@@ -108,7 +108,7 @@ export default function Achievements() {
           </p>
         </div>
 
-        <Tabs defaultValue="team" className="w-full max-w-4xl mx-auto">
+        <Tabs defaultValue="team" className="w-full mx-auto">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="team">Team Achievements</TabsTrigger>
             <TabsTrigger value="players">Player Achievements</TabsTrigger>

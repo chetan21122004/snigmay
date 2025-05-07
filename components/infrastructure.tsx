@@ -98,7 +98,7 @@ export default function Infrastructure() {
 
   return (
     <section id="infrastructure" ref={ref} className="py-16 md:py-24 bg-gray-50 dark:bg-gray-800">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-8 sm:px-4">
         <div className="text-center mb-12">
           <h2 className="section-heading">Infrastructure & Development</h2>
           <p className="max-w-3xl mx-auto text-lg text-muted-foreground">

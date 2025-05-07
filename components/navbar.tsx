@@ -21,29 +21,21 @@ const navLinks = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setScrolled(true)
-      } else {
-        setScrolled(false)
+      if (isOpen) {
+        setIsOpen(false)
       }
     }
 
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [isOpen])
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 w-full   z-40 transition-all duration-300 py-2",
-        scrolled ? "bg-[#ffbf00] dark:bg-gray-900/90 backdrop-blur-md shadow-md" : "bg-[#ffbf00] ",
-      )}
-    >
-      <div className="container mx-auto px-4 flex items-center justify-between">
+    <header className="fixed top-0 w-full bg-[#ffbf00] dark:bg-gray-900/90 z-50 shadow-md">
+      <div className="container mx-auto px-4 flex items-center justify-between py-2">
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/images/snigmaypunefc-logo.png"
@@ -67,10 +59,7 @@ export default function Navbar() {
             <Link
               key={link.name}
               href={link.href}
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
-                scrolled ? "text-foreground" : "text-black",
-              )}
+              className="text-sm font-medium text-black hover:text-primary transition-colors"
             >
               {link.name}
             </Link>
@@ -88,7 +77,7 @@ export default function Navbar() {
 
         {/* Mobile Navigation Menu */}
         {isOpen && (
-          <div className="lg:hidden fixed inset-0 top-16 bg-background z-40 p-4">
+          <div className="lg:hidden bg-white fixed inset-0 top-16 z-40 p-4">
             <nav className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <Link

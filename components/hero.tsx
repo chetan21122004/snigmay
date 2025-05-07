@@ -1,5 +1,4 @@
 "use client"
-
 import { useEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
@@ -15,16 +14,13 @@ export default function Hero() {
   const scrollIndicatorRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Register ScrollTrigger plugin
     if (typeof window !== "undefined") {
       gsap.registerPlugin(ScrollTrigger)
     }
 
     const ctx = gsap.context(() => {
-      // Hero section animation
-      gsap.fromTo(heroRef.current, { opacity: 0 }, { opacity: 1, duration: 1, ease: "power2.out" })
+      gsap.fromTo(heroRef.current, { opacity: 0 }, { opacity: 1, duration: 1 })
 
-      // Text animation with staggered effect
       gsap.fromTo(
         textRef.current?.children || [],
         { y: 50, opacity: 0 },
@@ -35,37 +31,10 @@ export default function Hero() {
           stagger: 0.2,
           ease: "back.out(1.7)",
           delay: 0.5,
-        },
+        }
       )
 
-      // Logo animation
-      gsap.fromTo(
-        logoRef.current,
-        { scale: 0.8, opacity: 0 },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 1,
-          delay: 0.8,
-          ease: "elastic.out(1, 0.75)",
-        },
-      )
 
-      // Scroll indicator animation
-      gsap.fromTo(
-        scrollIndicatorRef.current,
-        { y: -20, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1,
-          delay: 1.5,
-          ease: "power2.out",
-          yoyo: true,
-          repeat: -1,
-          repeatDelay: 1,
-        },
-      )
     })
 
     return () => ctx.revert()
@@ -82,62 +51,73 @@ export default function Hero() {
     <section
       id="home"
       ref={heroRef}
-      className="relative w-full min-h-screen flex items-center justify-center bg-gradient-to-b from-primary via-primary/70 to-primary/60 text-white pt-16"
+      className="relative my-10 sm:my-0 w-screen min-h-screen flex-col flex items-center justify-center bg-gradient-to-b from-primary via-primary/70 to-primary/60 text-white pt-16"
     >
-      {/* Background overlay with pattern */}
+      {/* Background pattern overlay */}
       <div className="absolute inset-0 bg-[url('/images/teams-collage.png?height=100&width=100')] bg-repeat opacity-10"></div>
 
       <div className="container mx-auto px-4 z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          {/* Hero Text */}
           <div ref={textRef} className="text-center lg:text-left space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">
               Building Nation Through <span className="text-secondary">Sports</span>
             </h1>
-            <p className="text-lg md:text-xl max-w-2xl mx-auto lg:mx-0">
+            <p className="text-md md:text-xl max-w-2xl mx-auto lg:mx-0">
               Snigmay Foundation is a Pune-based non-profit organization focused on nation-building through youth
               development, sports, and women empowerment.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button size="lg" className="bg-secondary text-primary hover:bg-secondary/90 font-bold">
-                <Link href="/#support">Support Our Mission</Link>
-              </Button>
-              <Button size="lg" variant="outline" className="border-white text-primary  hover:text-primary/85  font-bold	">
-                <Link href="/#about">Learn More</Link>
-              </Button>
+            <div className="flex flex-row gap-4 justify-center lg:justify-start">
+              <Link href="/#support" passHref>
+                <Button size="lg" className="bg-secondary text-primary hover:bg-secondary/90 font-bold w-full sm:w-auto">
+                  Support Our Mission
+                </Button>
+              </Link>
+              <Link href="/#about" passHref>
+                <Button size="lg" variant="outline" className="text-black  font-bold w-full hover:bg-white/80 sm:w-auto">
+                  Learn More
+                </Button>
+              </Link>
             </div>
           </div>
+
+          {/* Logo Section */}
           <div className="flex flex-col items-center justify-center gap-4">
-            <div ref={logoRef} className="flex  items-center gap-6 justify-center ">
+            <div ref={logoRef} className="flex  items-center sm:gap-6 justify-center flex-wrap">
               <Image
                 src="/images/snigmaypunefc-logo.png"
                 width={300}
-                alt="Snigmay Pune FC Logo"
                 height={300}
-              className="w-64     md:w-80 "
-              priority
-            />
-            <Image
-              src="/images/snimayfoundation-logo.png"
-              width={200}
-              alt="Snigmay Foundation Logo"
-              height={200}
-              className="w-64 md:w-48"
-              priority
+                alt="Snigmay Pune FC Logo"
+                className="w-40 md:w-80"
+                priority
+              />
+              <Image
+                src="/images/snimayfoundation-logo.png"
+                width={200}
+                height={200}
+                alt="Snigmay Foundation Logo"
+                className="w-40 md:w-48"
+                priority
               />
             </div>
-            <p className="text-xl font-semibold mt-3">INSPIRE | INTEGRATE | EMPOWER</p>
+            <p className="text-xl font-semibold mt-3 text-center">INSPIRE | INTEGRATE | EMPOWER</p>
           </div>
+
         </div>
       </div>
 
-      {/* Scroll down indicator */}
-      <div
-        ref={scrollIndicatorRef}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 cursor-pointer"
-        onClick={scrollToAbout}
-      >
-        <ChevronDown className="h-10 w-10" />
+      {/* Scroll Down Indicator */}
+      <div>
+        <div
+  ref={scrollIndicatorRef}
+  className="absolute bottom-12 sm:bottom-7 left-1/2 transform -translate-x-1/2 cursor-pointer animate-bounce"
+  onClick={scrollToAbout}
+>
+  <ChevronDown className="h-10 w-10 text-white opacity-80 transition-opacity duration-600 hover:opacity-100" />
+</div>
       </div>
+      
     </section>
   )
 }
