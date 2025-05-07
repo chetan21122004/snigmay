@@ -12,9 +12,9 @@ import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
 export default function Support() {
-  const sectionRef = useRef<HTMLElement>(null)
-  const donationFormRef = useRef<HTMLDivElement>(null)
-  const benefitsRef = useRef<HTMLDivElement>(null)
+  const sectionRef = useRef(null)
+  const donationFormRef = useRef(null)
+  const benefitsRef = useRef(null)
 
   const [donationAmount, setDonationAmount] = useState(5000)
   const [customAmount, setCustomAmount] = useState("")
