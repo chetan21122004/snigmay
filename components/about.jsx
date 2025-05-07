@@ -8,11 +8,11 @@ import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
 export default function About() {
-  const sectionRef = useRef<HTMLElement>(null)
-  const cardsRef = useRef<HTMLDivElement>(null)
-  const statsRef = useRef<HTMLDivElement>(null)
-  const imageRef = useRef<HTMLDivElement>(null)
-  const textRef = useRef<HTMLDivElement>(null)
+  const sectionRef = useRef(null)
+  const cardsRef = useRef(null)
+  const statsRef = useRef(null)
+  const imageRef = useRef(null)
+  const textRef = useRef(null)
 
   useEffect(() => {
     // Register ScrollTrigger plugin
@@ -23,7 +23,7 @@ export default function About() {
     const ctx = gsap.context(() => {
       // Animate the section title and description
       gsap.fromTo(
-        sectionRef.current?.querySelector(".section-heading"),
+        sectionRef.current.querySelector(".section-heading"),
         { y: 50, opacity: 0 },
         {
           y: 0,
@@ -37,7 +37,7 @@ export default function About() {
       )
 
       gsap.fromTo(
-        sectionRef.current?.querySelector(".section-heading + p"),
+        sectionRef.current.querySelector(".section-heading + p"),
         { y: 30, opacity: 0 },
         {
           y: 0,
