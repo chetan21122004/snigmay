@@ -1,6 +1,5 @@
 "use client"
 
-import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -97,7 +96,7 @@ export default function Support() {
     setCustomAmount("")
   }
 
-  const handleCustomAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const handleCustomAmountChange = (e) => {
     setCustomAmount(e.target.value)
     if (e.target.value) {
       setDonationAmount(Number.parseInt(e.target.value))
