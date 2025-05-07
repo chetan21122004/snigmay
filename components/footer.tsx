@@ -146,8 +146,8 @@ export default function Footer() {
             </p>
             <div className="flex gap-2">
               <Input
-                placeholder="Your email"
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                placeholder="Email ex, ex@.com"
+                className="  text-primary bg-white/90 placeholder:text-primary"
               />
               <Button className="bg-secondary text-primary hover:bg-secondary/90">Subscribe</Button>
             </div>
