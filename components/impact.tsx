@@ -62,8 +62,8 @@ export default function Impact() {
   }, [inView])
 
   return (
-    <section id="impact" ref={ref} className="py-16 md:py-24 bg-white dark:bg-gray-900">
-      <div className="container mx-auto px-4">
+    <section id="impact" ref={ref} className="py-12 bg-white dark:bg-gray-900">
+      <div className="container mx-auto  px-8 sm:px-4">
         <div className="text-center mb-12">
           <h2 className="section-heading">Our Impact</h2>
           <p className="max-w-3xl mx-auto text-lg text-muted-foreground">
@@ -72,7 +72,7 @@ export default function Impact() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4  mb-16">
           <Card className={`animate-on-scroll ${inView ? "visible" : ""}`}>
             <CardContent className="p-6 flex flex-col items-center text-center">
               <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">

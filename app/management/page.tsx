@@ -14,7 +14,7 @@ export default function Management() {
       {/* Hero Section with Parallax Effect */}
       <section className="relative h-[40vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] overflow-hidden">
         {/* Background Image with Overlay */}
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: 'url("/images/leadership-bg.jpg")',
@@ -72,7 +72,7 @@ export default function Management() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 lg:gap-12">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 lg:gap-12">
             {/* Vision */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -139,7 +139,7 @@ export default function Management() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {boardMembers.map((member, index) => (
-              <Card key={index} className="overflow-hidden h-full hover:shadow-lg transition-shadow">
+              <Card key={index} className=" overflow-hidden h-full hover:shadow-lg transition-shadow">
                 <div className="aspect-w-1 aspect-h-1 relative bg-gray-100">
                   <Image
                     src={member.image || "/placeholder.svg?height=300&width=300"}
@@ -180,7 +180,7 @@ export default function Management() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {advisoryBoard.map((member, index) => (
               <Card key={index} className="h-full hover:shadow-lg transition-shadow">
                 <CardContent className="p-3 sm:p-4 md:p-6">
@@ -211,7 +211,7 @@ export default function Management() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {executiveTeam.map((member, index) => (
               <Card key={index} className="h-full hover:shadow-lg transition-shadow">
                 <CardContent className="p-3 sm:p-4 md:p-6 flex flex-col items-center text-center">
@@ -238,71 +238,50 @@ export default function Management() {
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto px-2 sm:px-4">
-            <div className="bg-white p-3 sm:p-4 md:p-6 lg:p-8 rounded-lg shadow-sm">
-              <div className="flex flex-col items-center">
-                <div className="w-full max-w-md space-y-3 sm:space-y-4">
-                  <div className="bg-primary text-white p-2 sm:p-3 md:p-4 rounded-lg text-center text-xs sm:text-sm md:text-base">
-                    Board of Directors
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
-                    <div className="bg-primary/20 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
-                      Advisory Committee
-                    </div>
-                    <div className="bg-primary/20 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
-                      Executive Team
-                    </div>
-                    <div className="bg-primary/20 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
-                      Financial Oversight
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
-                    <div className="bg-primary/10 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
-                      Technical Staff
-                    </div>
-                    <div className="bg-primary/10 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
-                      Administrative Staff
-                    </div>
-                    <div className="bg-primary/10 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
-                      Operations Staff
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
-                    <div className="bg-primary/5 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
-                      Coaching Staff
-                    </div>
-                    <div className="bg-primary/5 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
-                      Support Staff
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+         <div className=" mx-auto px-2 sm:px-4">
+  <div className="bg-white p-3 sm:p-4 md:p-6 lg:p-8 rounded-lg shadow-sm">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center text-xs sm:text-sm md:text-base">
+      
+      <div className="col-span-2 sm:col-span-3 bg-primary text-white p-3 rounded-lg">
+        Board of Directors
+      </div>
+
+      <div className="bg-primary/20 p-3 rounded-lg">Advisory Committee</div>
+      <div className="bg-primary/20 p-3 rounded-lg">Executive Team</div>
+      <div className="bg-primary/20 p-3 rounded-lg">Financial Oversight</div>
+
+      <div className="bg-primary/10 p-3 rounded-lg">Technical Staff</div>
+      <div className="bg-primary/10 p-3 rounded-lg">Administrative Staff</div>
+      <div className="bg-primary/10 p-3 rounded-lg">Operations Staff</div>
+
+      <div className="bg-primary/5 p-3 rounded-lg">Coaching Staff</div>
+      <div className="bg-primary/5 p-3 rounded-lg">Support Staff</div>
+
+    </div>
+  </div>
+</div>
+
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-primary text-white">
-        <div className="container mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">Join Our Mission</h2>
-          <p className="text-base sm:text-lg max-w-2xl mx-auto mb-6 sm:mb-8 px-4">
-            Support our work to empower youth through sports and education. Together, we can make a difference.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-secondary text-primary hover:bg-secondary/90 font-bold w-full sm:w-auto">
-              <Link href="/#support">Donate Now</Link>
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-white text-white hover:bg-white/10 font-bold w-full sm:w-auto"
-            >
-              <Link href="/#contact">Contact Us</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+    {/* CTA */}
+<section className="py-12 w-90 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-r from-purple-500 to-indigo-600 text-white">
+  <div className="container mx-auto px-4 sm:px-6 text-center">
+    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">Join Our Mission</h2>
+    <p className="text-base sm:text-lg max-w-2xl mx-auto mb-6 sm:mb-8 px-4">
+      Be a part of transforming young lives through the power of sports and education. Your support can light the path to a brighter future for countless youth. Together, we can inspire, uplift, and make a lasting impact.
+    </p>
+    <div className="flex flex-row gap-4 justify-center">
+      <Button size="lg" className="bg-yellow-400 text-purple-800 hover:bg-yellow-300 font-bold w-full sm:w-auto">
+        <Link href="/#support">Donate Now</Link>
+      </Button>
+      <Button className="bg-white text-indigo-600 hover:bg-zinc-300/90 font-bold w-full sm:w-auto">
+        <Link href="/#contact">Contact Us</Link>
+      </Button>
+    </div>
+  </div>
+</section>
+
     </main>
   )
 }
@@ -418,7 +397,7 @@ const executiveTeam = [
 ]
 
 // Helper function to get icon based on area of expertise
-function getIcon(area: string) {
+function getIcon(area) {
   switch (area) {
     case "medical":
       return <Heart className="h-8 w-8 text-primary" />

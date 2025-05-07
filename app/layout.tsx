@@ -30,12 +30,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body className={`${poppins.variable} font-sans antialiased`} suppressHydrationWarning>
-        <Preloader />
+        {/* <Preloader /> */}
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          
+         <main className="w-screen overflow-hidden">
           <Navbar />
+           
           {children}
-          <Footer />
+          {/* <Footer /> */}
+         </main>
         </ThemeProvider>
         <Script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" strategy="beforeInteractive" />
         <Script
