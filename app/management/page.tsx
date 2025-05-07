@@ -1,54 +1,163 @@
+"use client"
+
+import { motion } from "framer-motion"
+import { FaUsers, FaLightbulb, FaHandshake } from "react-icons/fa"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Users, Award, Briefcase, GraduationCap, Heart } from "lucide-react"
 
-export default function ManagementPage() {
+export default function Management() {
   return (
-    <main className="pt-20">
-      {/* Header */}
-      <section className="bg-primary text-white py-16 md:py-24">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Our Leadership</h1>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto">
-            Meet the dedicated team of professionals who guide Snigmay Foundation's mission to empower youth through
-            sports and education.
-          </p>
+    <main className="min-h-screen pt-16 lg:pt-20">
+      {/* Hero Section with Parallax Effect */}
+      <section className="relative h-[40vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url("/images/leadership-bg.jpg")',
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/90 to-primary/70" />
+        </div>
+
+        {/* Content */}
+        <div className="relative h-full container mx-auto px-4 sm:px-6 flex flex-col justify-center items-center text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl w-full px-4 sm:px-6"
+          >
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-3 sm:mb-4 md:mb-6">
+              Visionary Leadership
+            </h1>
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-secondary/90 max-w-3xl mx-auto leading-relaxed">
+              Meet the dedicated team of professionals who guide Snigmay Foundation's mission to empower youth through
+              sports and education.
+            </p>
+          </motion.div>
+
+          {/* Decorative Elements */}
+          <div className="absolute bottom-0 left-0 right-0">
+            <svg
+              className="w-full h-12 sm:h-16 md:h-20 lg:h-24 text-white fill-current"
+              viewBox="0 0 1440 74"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M0,32L120,42.7C240,53,480,75,720,74.7C960,75,1200,53,1320,42.7L1440,32L1440,74L1320,74C1200,74,960,74,720,74C480,74,240,74,120,74L0,74Z" />
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      {/* Core Values Section */}
+      <section className="py-8 sm:py-12 md:py-16 lg:py-20 bg-white">
+        <div className="container mx-auto px-4 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-8 sm:mb-12 md:mb-16"
+          >
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4">
+              Our Core Values
+            </h2>
+            <div className="w-16 sm:w-20 md:w-24 h-1 bg-secondary mx-auto mb-4 sm:mb-6" />
+            <p className="text-gray-600 max-w-2xl mx-auto px-4 sm:px-6">
+              These principles guide our decisions and shape our approach to youth development and community impact.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 lg:gap-12">
+            {/* Vision */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="bg-white rounded-lg p-6 sm:p-8 text-center shadow-lg hover:shadow-xl transition-shadow"
+            >
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                <FaLightbulb className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Vision</h3>
+              <p className="text-gray-600 text-sm sm:text-base">
+                Empowering youth through sports excellence and educational innovation.
+              </p>
+            </motion.div>
+
+            {/* Leadership */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="bg-white rounded-lg p-6 sm:p-8 text-center shadow-lg hover:shadow-xl transition-shadow"
+            >
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                <FaUsers className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Leadership</h3>
+              <p className="text-gray-600 text-sm sm:text-base">
+                Fostering strong leadership skills and personal development in every individual.
+              </p>
+            </motion.div>
+
+            {/* Collaboration */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              className="bg-white rounded-lg p-6 sm:p-8 text-center shadow-lg hover:shadow-xl transition-shadow sm:col-span-2 lg:col-span-1 sm:max-w-md lg:max-w-none mx-auto w-full"
+            >
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                <FaHandshake className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-primary mb-3 sm:mb-4">Collaboration</h3>
+              <p className="text-gray-600 text-sm sm:text-base">
+                Building strong partnerships to create lasting impact in our communities.
+              </p>
+            </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Board Members */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="section-heading">Board of Directors</h2>
-            <p className="max-w-3xl mx-auto text-lg text-muted-foreground">
+      <section className="py-8 sm:py-12 md:py-16 lg:py-20 bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-6 sm:mb-8 md:mb-12">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4">Board of Directors</h2>
+            <p className="max-w-3xl mx-auto text-base sm:text-lg text-muted-foreground px-4">
               Our board members bring diverse expertise and a shared passion for youth development through sports.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {boardMembers.map((member, index) => (
-              <Card key={index} className="overflow-hidden h-full">
-                <div className="aspect-square relative bg-gray-100">
+              <Card key={index} className="overflow-hidden h-full hover:shadow-lg transition-shadow">
+                <div className="aspect-w-1 aspect-h-1 relative bg-gray-100">
                   <Image
                     src={member.image || "/placeholder.svg?height=300&width=300"}
                     alt={member.name}
                     fill
                     className="object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                 </div>
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold">{member.name}</h3>
-                  <p className="text-primary font-medium">{member.role}</p>
-                  <p className="mt-2 text-muted-foreground">{member.bio}</p>
-                  <div className="mt-4 flex items-center gap-2">
+                <CardContent className="p-3 sm:p-4 md:p-6">
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold">{member.name}</h3>
+                  <p className="text-primary font-medium text-xs sm:text-sm md:text-base">{member.role}</p>
+                  <p className="mt-2 text-muted-foreground text-xs sm:text-sm md:text-base">{member.bio}</p>
+                  <div className="mt-3 sm:mt-4 flex flex-wrap gap-1.5 sm:gap-2">
                     {member.expertise.map((skill, i) => (
                       <span
                         key={i}
-                        className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent 
-                        bg-secondary text-primary hover:bg-secondary/80"
+                        className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs sm:text-sm md:text-base font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-primary hover:bg-secondary/80"
                       >
                         {skill}
                       </span>
@@ -62,27 +171,27 @@ export default function ManagementPage() {
       </section>
 
       {/* Advisory Board */}
-      <section className="py-16 md:py-24 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="section-heading">Advisory Board</h2>
-            <p className="max-w-3xl mx-auto text-lg text-muted-foreground">
+      <section className="py-8 sm:py-12 md:py-16 lg:py-20 bg-white">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-6 sm:mb-8 md:mb-12">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4">Advisory Board</h2>
+            <p className="max-w-3xl mx-auto text-base sm:text-lg text-muted-foreground px-4">
               Our advisory board provides strategic guidance and specialized expertise to help us achieve our mission.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {advisoryBoard.map((member, index) => (
-              <Card key={index} className="h-full">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <Card key={index} className="h-full hover:shadow-lg transition-shadow">
+                <CardContent className="p-3 sm:p-4 md:p-6">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       {getIcon(member.area)}
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold">{member.name}</h3>
-                      <p className="text-primary font-medium">{member.role}</p>
-                      <p className="mt-2 text-muted-foreground">{member.bio}</p>
+                    <div className="text-center sm:text-left">
+                      <h3 className="text-base sm:text-lg md:text-xl font-bold">{member.name}</h3>
+                      <p className="text-primary font-medium text-xs sm:text-sm md:text-base">{member.role}</p>
+                      <p className="mt-2 text-muted-foreground text-xs sm:text-sm md:text-base">{member.bio}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -93,25 +202,25 @@ export default function ManagementPage() {
       </section>
 
       {/* Executive Team */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="section-heading">Executive Team</h2>
-            <p className="max-w-3xl mx-auto text-lg text-muted-foreground">
+      <section className="py-8 sm:py-12 md:py-16 lg:py-20 bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-6 sm:mb-8 md:mb-12">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4">Executive Team</h2>
+            <p className="max-w-3xl mx-auto text-base sm:text-lg text-muted-foreground px-4">
               Our executive team oversees the day-to-day operations and implementation of our programs.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {executiveTeam.map((member, index) => (
-              <Card key={index} className="h-full">
-                <CardContent className="p-6 flex flex-col items-center text-center">
-                  <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <Users className="h-10 w-10 text-primary" />
+              <Card key={index} className="h-full hover:shadow-lg transition-shadow">
+                <CardContent className="p-3 sm:p-4 md:p-6 flex flex-col items-center text-center">
+                  <div className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
+                    <Users className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 text-primary" />
                   </div>
-                  <h3 className="text-lg font-bold">{member.name}</h3>
-                  <p className="text-primary font-medium">{member.role}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">{member.description}</p>
+                  <h3 className="text-sm sm:text-base md:text-lg font-bold">{member.name}</h3>
+                  <p className="text-primary font-medium text-xs sm:text-sm md:text-base">{member.role}</p>
+                  <p className="mt-2 text-xs sm:text-sm md:text-base text-muted-foreground">{member.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -120,33 +229,51 @@ export default function ManagementPage() {
       </section>
 
       {/* Organizational Structure */}
-      <section className="py-16 md:py-24 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="section-heading">Organizational Structure</h2>
-            <p className="max-w-3xl mx-auto text-lg text-muted-foreground">
+      <section className="py-8 sm:py-12 md:py-16 lg:py-20 bg-white">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-6 sm:mb-8 md:mb-12">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4">Organizational Structure</h2>
+            <p className="max-w-3xl mx-auto text-base sm:text-lg text-muted-foreground px-4">
               Our organization is structured to ensure efficient operations and maximum impact.
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white p-8 rounded-lg shadow-sm">
+          <div className="max-w-4xl mx-auto px-2 sm:px-4">
+            <div className="bg-white p-3 sm:p-4 md:p-6 lg:p-8 rounded-lg shadow-sm">
               <div className="flex flex-col items-center">
-                <div className="w-full max-w-md">
-                  <div className="bg-primary text-white p-4 rounded-lg text-center mb-4">Board of Directors</div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div className="bg-primary/20 p-3 rounded-lg text-center">Advisory Committee</div>
-                    <div className="bg-primary/20 p-3 rounded-lg text-center">Executive Team</div>
-                    <div className="bg-primary/20 p-3 rounded-lg text-center">Financial Oversight</div>
+                <div className="w-full max-w-md space-y-3 sm:space-y-4">
+                  <div className="bg-primary text-white p-2 sm:p-3 md:p-4 rounded-lg text-center text-xs sm:text-sm md:text-base">
+                    Board of Directors
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div className="bg-primary/10 p-3 rounded-lg text-center">Technical Staff</div>
-                    <div className="bg-primary/10 p-3 rounded-lg text-center">Administrative Staff</div>
-                    <div className="bg-primary/10 p-3 rounded-lg text-center">Operations Staff</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+                    <div className="bg-primary/20 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
+                      Advisory Committee
+                    </div>
+                    <div className="bg-primary/20 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
+                      Executive Team
+                    </div>
+                    <div className="bg-primary/20 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
+                      Financial Oversight
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-primary/5 p-3 rounded-lg text-center">Coaching Staff</div>
-                    <div className="bg-primary/5 p-3 rounded-lg text-center">Support Staff</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+                    <div className="bg-primary/10 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
+                      Technical Staff
+                    </div>
+                    <div className="bg-primary/10 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
+                      Administrative Staff
+                    </div>
+                    <div className="bg-primary/10 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
+                      Operations Staff
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+                    <div className="bg-primary/5 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
+                      Coaching Staff
+                    </div>
+                    <div className="bg-primary/5 p-2 sm:p-3 rounded-lg text-center text-xs sm:text-sm md:text-base">
+                      Support Staff
+                    </div>
                   </div>
                 </div>
               </div>
@@ -156,17 +283,21 @@ export default function ManagementPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 md:py-24 bg-primary text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Our Mission</h2>
-          <p className="text-lg max-w-2xl mx-auto mb-8">
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-primary text-white">
+        <div className="container mx-auto px-4 sm:px-6 text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">Join Our Mission</h2>
+          <p className="text-base sm:text-lg max-w-2xl mx-auto mb-6 sm:mb-8 px-4">
             Support our work to empower youth through sports and education. Together, we can make a difference.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-secondary text-primary hover:bg-secondary/90 font-bold">
+            <Button size="lg" className="bg-secondary text-primary hover:bg-secondary/90 font-bold w-full sm:w-auto">
               <Link href="/#support">Donate Now</Link>
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-primary  hover:text-primary/85  font-bold">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-white text-white hover:bg-white/10 font-bold w-full sm:w-auto"
+            >
               <Link href="/#contact">Contact Us</Link>
             </Button>
           </div>

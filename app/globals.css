@@ -166,3 +166,35 @@
 .shine-effect {
   animation: shine 1.5s ease-in-out infinite;
 }
+
+/* Logo Animations */
+@keyframes logoGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 15px rgba(253, 235, 137, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 30px rgba(253, 235, 137, 0.5));
+  }
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.logo-container {
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+.logo-container img {
+  animation: logoGlow 3s ease-in-out infinite;
+  transition: transform 0.3s ease;
+}
+
+.logo-container:hover img {
+  transform: scale(1.05) rotate(5deg);
+}

@@ -5,6 +5,7 @@ import { Canvas, useFrame } from "@react-three/fiber"
 import { useGLTF, Environment } from "@react-three/drei"
 import * as THREE from "three"
 import { gsap } from "gsap"
+import Image from "next/image"
 
 interface FootballGLTF {
   nodes: {
@@ -109,6 +110,55 @@ export function Preloader() {
   const [progress, setProgress] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
+  const leftLogoRef = useRef<HTMLDivElement>(null)
+  const rightLogoRef = useRef<HTMLDivElement>(null)
+
+  // Logo animations
+  useEffect(() => {
+    if (leftLogoRef.current && rightLogoRef.current) {
+      // Initial fade in and scale animation
+      gsap.fromTo(
+        [leftLogoRef.current, rightLogoRef.current],
+        {
+          opacity: 0,
+          scale: 0.8,
+          y: 20,
+        },
+        {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 1,
+          ease: "power3.out",
+          stagger: 0.2,
+        }
+      )
+
+      // Continuous floating animation
+      gsap.to([leftLogoRef.current, rightLogoRef.current], {
+        y: "10",
+        duration: 2,
+        ease: "power1.inOut",
+        yoyo: true,
+        repeat: -1,
+      })
+
+      // Continuous glow pulse animation
+      const glowTimeline = gsap.timeline({ repeat: -1 })
+      
+      glowTimeline.to([leftLogoRef.current, rightLogoRef.current], {
+        boxShadow: "0 0 30px rgba(253, 235, 137, 0.5)",
+        duration: 1.5,
+        ease: "power1.inOut",
+      })
+      
+      glowTimeline.to([leftLogoRef.current, rightLogoRef.current], {
+        boxShadow: "0 0 15px rgba(253, 235, 137, 0.2)",
+        duration: 1.5,
+        ease: "power1.inOut",
+      })
+    }
+  }, [])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -141,7 +191,7 @@ export function Preloader() {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6"
     >
       {/* Main background with stadium image */}
       <div 
@@ -179,51 +229,94 @@ export function Preloader() {
       />
 
       {/* Content wrapper with glass effect */}
-      <div className="relative z-10 w-full max-w-md p-8">
-        {/* 3D Football container */}
-        <div className="w-[300px] h-[300px] mb-8 relative mx-auto">
+      <div className="relative z-10 w-full max-w-5xl p-4 sm:p-6 lg:p-8">
+        {/* Logos and 3D Football container */}
+        <div className="flex flex-col items-center lg:flex-row lg:items-center lg:justify-between mb-8 lg:mb-12 space-y-8 lg:space-y-0">
+          {/* Snigmay FC Logo */}
           <div 
-            className="absolute inset-0 rounded-full"
+            ref={leftLogoRef}
+            className="logo-container w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 relative rounded-full overflow-hidden bg-black/10 backdrop-blur-sm"
             style={{
-              background: 'rgba(121, 40, 40, 0.1)',
-              backdropFilter: 'blur(8px)',
-              boxShadow: `
-                0 0 100px 20px rgba(253, 235, 137, 0.15),
-                inset 0 0 20px rgba(253, 235, 137, 0.1)
-              `
+              transition: 'transform 0.3s ease',
             }}
-          />
-          <Canvas
-            camera={{ position: [0, 0, 10], fov: 45 }}
-            style={{ width: "100%", height: "100%" }}
-            shadows
           >
-            <Environment preset="sunset" />
-            <ambientLight intensity={1.2} />
-            <directionalLight
-              position={[5, 5, 5]}
-              intensity={1.5}
-              castShadow
-              shadow-mapSize={[1024, 1024]}
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+              <Image
+                src="/images/snigmaypunefc-logo.png"
+                alt="Snigmay FC"
+                width={192}
+                height={192}
+                className="object-contain w-full h-full"
+                priority
+              />
+            </div>
+          </div>
+
+          {/* 3D Football container */}
+          <div className="w-[250px] h-[250px] sm:w-[280px] sm:h-[280px] lg:w-[300px] lg:h-[300px] relative mx-auto lg:mx-8">
+            <div 
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: 'rgba(121, 40, 40, 0.1)',
+                backdropFilter: 'blur(8px)',
+                boxShadow: `
+                  0 0 100px 20px rgba(253, 235, 137, 0.15),
+                  inset 0 0 20px rgba(253, 235, 137, 0.1)
+                `
+              }}
             />
-            <directionalLight
-              position={[-5, -5, -5]}
-              intensity={0.8}
-              castShadow
-            />
-            <pointLight position={[10, 10, 10]} intensity={1.0} />
-            <pointLight position={[-10, -10, -10]} intensity={0.7} />
-            <hemisphereLight
-              color="#ffffff"
-              groundColor="#000000"
-              intensity={0.7}
-            />
-            <PreloaderBall />
-          </Canvas>
+            <Canvas
+              camera={{ position: [0, 0, 10], fov: 45 }}
+              style={{ width: "100%", height: "100%" }}
+              shadows
+            >
+              <Environment preset="sunset" />
+              <ambientLight intensity={1.2} />
+              <directionalLight
+                position={[5, 5, 5]}
+                intensity={1.5}
+                castShadow
+                shadow-mapSize={[1024, 1024]}
+              />
+              <directionalLight
+                position={[-5, -5, -5]}
+                intensity={0.8}
+                castShadow
+              />
+              <pointLight position={[10, 10, 10]} intensity={1.0} />
+              <pointLight position={[-10, -10, -10]} intensity={0.7} />
+              <hemisphereLight
+                color="#ffffff"
+                groundColor="#000000"
+                intensity={0.7}
+              />
+              <PreloaderBall />
+            </Canvas>
+          </div>
+
+          {/* Snigmay Foundation Logo */}
+          <div 
+            ref={rightLogoRef}
+            className="logo-container w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 relative rounded-full overflow-hidden bg-black/10 backdrop-blur-sm"
+            style={{
+              transition: 'transform 0.3s ease',
+            }}
+          >
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+              <Image
+                src="/images/snimayfoundation-logo.png"
+                alt="Snigmay Foundation"
+                width={192}
+                height={192}
+                className="object-contain w-full h-full"
+                priority
+              />
+            </div>
+          </div>
         </div>
 
         {/* Loading bar with enhanced effects */}
-        <div className="w-[300px] h-3 bg-black/30 rounded-full overflow-hidden backdrop-blur-sm mx-auto">
+        <div className="w-full sm:w-[400px] md:w-[450px] lg:w-[500px] h-3 sm:h-4 bg-primary/20 rounded-full overflow-hidden backdrop-blur-sm mx-auto">
           <div
             className="h-full bg-secondary transition-all duration-300 ease-out relative"
             style={{
@@ -240,7 +333,7 @@ export function Preloader() {
 
         {/* Loading text with enhanced styling */}
         <div 
-          className="mt-6 text-2xl font-bold text-center text-[#fdeb89]"
+          className="mt-4 sm:mt-6 text-xl sm:text-2xl font-bold text-center text-secondary"
           style={{ 
             textShadow: `
               0 2px 4px rgba(0,0,0,0.3),
