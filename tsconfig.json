@@ -23,6 +23,6 @@
     },
     "typeRoots": ["./node_modules/@types", "./types"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "types/**/*.d.ts", "components/about.sxj", "components/support.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "types/**/*.d.ts", "components/about.sxj", "components/support.jsx", "app/management/page.tsx", "app/layout.tsx"],
   "exclude": ["node_modules"]
 }
