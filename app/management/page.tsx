@@ -397,7 +397,7 @@ const executiveTeam = [
 ]
 
 // Helper function to get icon based on area of expertise
-function getIcon(area) {
+function getIcon(area:any) {
   switch (area) {
     case "medical":
       return <Heart className="h-8 w-8 text-primary" />
