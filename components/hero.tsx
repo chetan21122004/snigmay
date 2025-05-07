@@ -111,7 +111,7 @@ export default function Hero() {
       <div>
         <div
   ref={scrollIndicatorRef}
-  className="relative bottom-16 sm:bottom-7  transform  cursor-pointer animate-bounce "
+  className="relative bottom-16 sm:top-24  transform  cursor-pointer animate-bounce "
   onClick={scrollToAbout}
 >
   <ChevronDown className="h-10 w-10 text-white opacity-80 transition-opacity duration-600 hover:opacity-100" />
