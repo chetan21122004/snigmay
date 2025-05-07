@@ -34,7 +34,7 @@ export default function Navbar() {
   }, [isOpen])
 
   return (
-    <header className="fixed top-0 w-full bg-[#ffbf00] dark:bg-gray-900/90 z-50 shadow-md">
+    <header className="fixed top-0 w-full bg-[#ffbf00] dark:bg-gray-900/90 z-30 shadow-md">
       <div className="container mx-auto px-4 flex items-center justify-between py-2">
         <Link href="/" className="flex items-center gap-2">
           <Image
@@ -77,7 +77,7 @@ export default function Navbar() {
 
         {/* Mobile Navigation Menu */}
         {isOpen && (
-          <div className="lg:hidden bg-white fixed inset-0 top-16 z-40 p-4">
+          <div className="lg:hidden bg-white fixed inset-0 top-16 z-30 p-4">
             <nav className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <Link
