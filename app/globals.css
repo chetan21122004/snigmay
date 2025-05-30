@@ -198,3 +198,22 @@
 .logo-container:hover img {
   transform: scale(1.05) rotate(5deg);
 }
+
+@keyframes glow {
+  0% {
+    opacity: 0.5;
+    transform: scale(1.02);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.03);
+  }
+  100% {
+    opacity: 0.5;
+    transform: scale(1.02);
+  }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}

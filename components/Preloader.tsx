@@ -22,25 +22,25 @@ function PreloaderBall() {
   const groupRef = useRef<THREE.Group>(null)
   const { nodes, materials } = useGLTF('/scene.gltf') as unknown as FootballGLTF
   const rotationSpeed = useRef(0.01)
-  const bounceHeight = useRef(0.2)
+  const bounceHeight = useRef(0.1)
 
   useEffect(() => {
     if (groupRef.current) {
-      groupRef.current.scale.set(9, 9, 9)
+      groupRef.current.scale.set(6, 6, 6)
       groupRef.current.rotation.x = THREE.MathUtils.degToRad(-15)
       
-      // Add initial animation
+      // Add initial animation with reduced speed
       gsap.to(rotationSpeed, {
-        current: 0.03,
-        duration: 2,
+        current: 0.02,
+        duration: 2.5,
         ease: "power2.inOut",
         yoyo: true,
         repeat: -1
       })
       
       gsap.to(bounceHeight, {
-        current: 0.4,
-        duration: 1.5,
+        current: 0.2,
+        duration: 2,
         ease: "power1.inOut",
         yoyo: true,
         repeat: -1
@@ -229,88 +229,91 @@ export function Preloader() {
       />
 
       {/* Content wrapper with glass effect */}
-      <div className="relative z-10 w-full max-w-5xl p-4 sm:p-6 lg:p-8">
+      <div className="relative z-10 w-full max-w-5xl p-4 sm:p-6 lg:p-8 mx-auto flex flex-col justify-center items-center">
         {/* Logos and 3D Football container */}
-        <div className="flex flex-col items-center lg:flex-row lg:items-center lg:justify-between mb-8 lg:mb-12 space-y-8 lg:space-y-0">
-          {/* Snigmay FC Logo */}
-          <div 
-            ref={leftLogoRef}
-            className="logo-container w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 relative rounded-full overflow-hidden bg-black/10 backdrop-blur-sm"
-            style={{
-              transition: 'transform 0.3s ease',
-            }}
-          >
-            <div className="absolute inset-0 flex items-center justify-center p-4">
-              <Image
-                src="/images/snigmaypunefc-logo.png"
-                alt="Snigmay FC"
-                width={192}
-                height={192}
-                className="object-contain w-full h-full"
-                priority
-              />
-            </div>
-          </div>
-
-          {/* 3D Football container */}
-          <div className="w-[250px] h-[250px] sm:w-[280px] sm:h-[280px] lg:w-[300px] lg:h-[300px] relative mx-auto lg:mx-8">
+        <div className="flex flex-col items-center justify-center mb-8 lg:mb-12">
+          {/* Combined Logo and 3D Football container */}
+          <div className="relative">
+            {/* Glowing border container */}
             <div 
-              className="absolute inset-0 rounded-full"
+              className="absolute inset-0 rounded-full animate-glow"
               style={{
-                background: 'rgba(121, 40, 40, 0.1)',
-                backdropFilter: 'blur(8px)',
-                boxShadow: `
-                  0 0 100px 20px rgba(253, 235, 137, 0.15),
-                  inset 0 0 20px rgba(253, 235, 137, 0.1)
-                `
+                background: `
+                  linear-gradient(45deg, 
+                    rgba(255, 215, 0, 0.5),
+                    rgba(253, 235, 137, 0.8),
+                    rgba(255, 215, 0, 0.5)
+                  )
+                `,
+                filter: 'blur(15px)',
+                transform: 'scale(1.02)',
               }}
             />
-            <Canvas
-              camera={{ position: [0, 0, 10], fov: 45 }}
-              style={{ width: "100%", height: "100%" }}
-              shadows
+            {/* Larger Logo Container */}
+            <div 
+              ref={rightLogoRef}
+              className="w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96 justify-center items-center  relative rounded-full overflow-hidden bg-black/10 backdrop-blur-sm"
+              style={{
+                transition: 'transform 0.3s ease',
+                border: '2px solid rgba(253, 235, 137, 0.8)',
+                boxShadow: `
+                  0 0 50px rgba(253, 235, 137, 0.2),
+                  inset 0 0 20px rgba(253, 235, 137, 0.2)
+                `,
+              }}
             >
-              <Environment preset="sunset" />
-              <ambientLight intensity={1.2} />
-              <directionalLight
-                position={[5, 5, 5]}
-                intensity={1.5}
-                castShadow
-                shadow-mapSize={[1024, 1024]}
-              />
-              <directionalLight
-                position={[-5, -5, -5]}
-                intensity={0.8}
-                castShadow
-              />
-              <pointLight position={[10, 10, 10]} intensity={1.0} />
-              <pointLight position={[-10, -10, -10]} intensity={0.7} />
-              <hemisphereLight
-                color="#ffffff"
-                groundColor="#000000"
-                intensity={0.7}
-              />
-              <PreloaderBall />
-            </Canvas>
-          </div>
+              <div className="absolute inset-0 flex left-2 top-2  items-center justify-center">
+                <Image
+                  src="/images/snimayfoundation-logo.png"
+                  alt="Snigmay Foundation"
+                  width={384}
+                  height={384}
+                  className="object-contain w-full h-full 
+                  "
+                  priority
+                />
+              </div>
+            </div>
 
-          {/* Snigmay Foundation Logo */}
-          <div 
-            ref={rightLogoRef}
-            className="logo-container w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 relative rounded-full overflow-hidden bg-black/10 backdrop-blur-sm"
-            style={{
-              transition: 'transform 0.3s ease',
-            }}
-          >
-            <div className="absolute inset-0 flex items-center justify-center p-4">
-              <Image
-                src="/images/snimayfoundation-logo.png"
-                alt="Snigmay Foundation"
-                width={192}
-                height={192}
-                className="object-contain w-full h-full"
-                priority
+            {/* 3D Football container - positioned absolutely over the logo */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 sm:w-48 sm:h-48 lg:w-56 lg:h-56">
+              <div 
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: 'rgba(121, 40, 40, 0.1)',
+                  boxShadow: `
+                    0 0 60px 10px rgba(253, 235, 137, 0.15),
+                    inset 0 0 20px rgba(253, 235, 137, 0.1)
+                  `
+                }}
               />
+              <Canvas
+                camera={{ position: [0, 0, 10], fov: 45 }}
+                style={{ width: "100%", height: "100%" }}
+                shadows
+              >
+                <Environment preset="sunset" />
+                <ambientLight intensity={0.8} />
+                <directionalLight
+                  position={[5, 5, 5]}
+                  intensity={1.2}
+                  castShadow
+                  shadow-mapSize={[1024, 1024]}
+                />
+                <directionalLight
+                  position={[-5, -5, -5]}
+                  intensity={0.6}
+                  castShadow
+                />
+                <pointLight position={[10, 10, 10]} intensity={0.8} />
+                <pointLight position={[-10, -10, -10]} intensity={0.5} />
+                <hemisphereLight
+                  color="#ffffff"
+                  groundColor="#000000"
+                  intensity={0.5}
+                />
+                <PreloaderBall />
+              </Canvas>
             </div>
           </div>
         </div>
