@@ -36,109 +36,98 @@ export default function Programs() {
   })
 
   return (
-    <section id="programs" ref={ref} className="py-12 bg-zinc-50 dark:bg-gray-800">
-  <div className="container mx-auto px-8 sm:px-4 lg:px-20">
-    <div className="text-center mb-16">
-      <h2 className="section-heading text-3xl lg:text-4xl">Our Programs & Development</h2>
-      <p className="max-w-3xl lg:max-w-4xl mx-auto text-xl lg:text-xl text-muted-foreground">
-        We operate through three distinct training modules designed to develop players at every level of their journey.
-      </p>
-    </div>
+    <section id="programs" ref={ref} className="py-24 bg-gradient-to-b from-zinc-50 to-white dark:from-gray-800 dark:to-gray-900">
+      <div className="container mx-auto px-8 sm:px-4 lg:px-20">
+        <div className="text-center mb-20">
+          <div className="inline-flex items-center justify-center p-1 mb-4 bg-primary/10 rounded-full">
+            <span className="px-4 py-1.5 text-sm font-medium text-primary">Our Training Programs</span>
+          </div>
+          <h2 className="section-heading text-4xl lg:text-5xl font-bold mb-6">Develop Your Football Career</h2>
+          <p className="max-w-3xl lg:max-w-4xl mx-auto text-xl text-muted-foreground">
+            We operate through three distinct training modules designed to develop players at every level of their journey.
+          </p>
+        </div>
 
-    <Tabs defaultValue="grassroots" className="w-full mx-auto">
-      <TabsList className="grid w-full grid-cols-3 lg:gap-8">
-        <TabsTrigger value="grassroots" className="flex items-center gap-3 lg:text-lg">
-          <Seedling className="h-5 w-5 lg:h-6 lg:w-6" />
-          <span className="hidden sm:inline">Grassroots</span>
-        </TabsTrigger>
-        <TabsTrigger value="elite" className="flex items-center gap-3 lg:text-lg">
-          <Star className="h-5 w-5 lg:h-6 lg:w-6" />
-          <span className="hidden sm:inline">Elite</span>
-        </TabsTrigger>
-        <TabsTrigger value="residential" className="flex items-center gap-3 lg:text-lg">
-          <Home className="h-5 w-5 lg:h-6 lg:w-6" />
-          <span className="hidden sm:inline">Residential</span>
-        </TabsTrigger>
-      </TabsList>
-
-      {/* Grassroots */}
-      <TabsContent value="grassroots" className="mt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-xl lg:text-2xl">
-              <Seedling className="h-6 w-6 text-primary" />
-              The Grassroots Program
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <p className="text-lg">
-              Designed for beginners entering the world of football, our Grassroots Program focuses on developing fundamental skills, fostering a love for the game, and introducing children to the joy of team sports.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ProgramFeature Icon={Dumbbell} title="Basic Skills Development" description="Fundamental football techniques and movement skills" />
-              <ProgramFeature Icon={UserCheck} title="Team Building" description="Learning to work together and develop social skills" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+          {/* Grassroots Program Card */}
+          <div className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 dark:border-gray-800">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="p-8 lg:p-10">
+              <div className="mb-8">
+                <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 mb-6 transform group-hover:scale-110 transition-transform duration-500">
+                  <Seedling className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">The Grassroots Program</h3>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Designed for beginners entering the world of football, our Grassroots Program focuses on developing fundamental skills, fostering a love for the game, and introducing children to the joy of team sports.
+                </p>
+              </div>
+              <div className="space-y-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                <ProgramFeature Icon={Dumbbell} title="Basic Skills Development" description="Fundamental football techniques and movement skills" />
+                <ProgramFeature Icon={UserCheck} title="Team Building" description="Learning to work together and develop social skills" />
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
+          </div>
 
-      {/* Elite */}
-      <TabsContent value="elite" className="mt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-xl lg:text-2xl">
-              <Star className="h-6 w-6 text-primary" />
-              The Elite Program
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <p className="text-lg">
-              Focused on professional readiness for players within Pune, our Elite Program provides advanced training, competitive opportunities, and specialized coaching to develop players for higher levels of competition.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ProgramFeature Icon={Dumbbell} title="Advanced Training" description="Specialized coaching and tactical development" />
-              <ProgramFeature Icon={Utensils} title="Athletic Diet" description="Nutrition guidance for optimal performance" />
+          {/* Elite Program Card */}
+          <div className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 dark:border-gray-800">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="p-8 lg:p-10">
+              <div className="mb-8">
+                <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 mb-6 transform group-hover:scale-110 transition-transform duration-500">
+                  <Star className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">The Elite Program</h3>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Focused on professional readiness for players within Pune, our Elite Program provides advanced training, competitive opportunities, and specialized coaching to develop players for higher levels of competition.
+                </p>
+              </div>
+              <div className="space-y-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                <ProgramFeature Icon={Dumbbell} title="Advanced Training" description="Specialized coaching and tactical development" />
+                <ProgramFeature Icon={Utensils} title="Athletic Diet" description="Nutrition guidance for optimal performance" />
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
+          </div>
 
-      {/* Residential */}
-      <TabsContent value="residential" className="mt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-xl lg:text-2xl">
-              <Home className="h-6 w-6 text-primary" />
-              The Residential Program
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <p className="text-lg">
-              A comprehensive PAN-India professional player development system, our Residential Program provides full-time training, education, accommodation, and holistic development for the most promising young talents from across the country.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ProgramFeature Icon={GraduationCap} title="Quality Education" description="Academic support alongside football development" />
-              <ProgramFeature Icon={Globe} title="National & International Exposure" description="Opportunities to compete at higher levels and gain visibility" />
-              <ProgramFeature Icon={UserCheck} title="Personal Mentorship" description="Individual guidance for personal and professional development" />
+          {/* Residential Program Card */}
+          <div className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 dark:border-gray-800">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="p-8 lg:p-10">
+              <div className="mb-8">
+                <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 mb-6 transform group-hover:scale-110 transition-transform duration-500">
+                  <Home className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">The Residential Program</h3>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  A comprehensive PAN-India professional player development system, our Residential Program provides full-time training, education, accommodation, and holistic development for the most promising young talents from across the country.
+                </p>
+              </div>
+              <div className="space-y-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                <ProgramFeature Icon={GraduationCap} title="Quality Education" description="Academic support alongside football development" />
+                <ProgramFeature Icon={Globe} title="National & International Exposure" description="Opportunities to compete at higher levels and gain visibility" />
+                <ProgramFeature Icon={UserCheck} title="Personal Mentorship" description="Individual guidance for personal and professional development" />
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
-    </Tabs>
+          </div>
+        </div>
 
-    {/* Holistic Approach Section */}
-    <div className="mt-24 mx-auto">
-      <h3 className="section-subheading text-center text-2xl lg:text-3xl mb-12">Our Holistic Development Approach</h3>
-      <div className={`grid grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-10 animate-on-scroll ${inView ? "visible" : ""}`}>
-        <DevelopmentCard Icon={Dumbbell} title="Expert Coaching" description="Professional training from experienced coaches" />
-        <DevelopmentCard Icon={Utensils} title="Athletic Diet" description="Nutritional guidance for optimal performance" />
-        <DevelopmentCard Icon={UserCheck} title="Mentorship" description="Personal guidance for growth and development" />
-        <DevelopmentCard Icon={GraduationCap} title="Education" description="Quality academic support alongside training" />
-        <DevelopmentCard Icon={Globe} title="Exposure" description="National and international competitive opportunities" />
+        {/* Holistic Approach Section */}
+        <div className="pt-16">
+          
+        
+          <h3 className="section-subheading text-center text-3xl lg:text-4xl font-bold mb-16">Our Approach</h3>
+          <div className={`grid grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 animate-on-scroll ${inView ? "visible" : ""}`}>
+            <DevelopmentCard Icon={Dumbbell} title="Expert Coaching" description="Professional training from experienced coaches" />
+            <DevelopmentCard Icon={Utensils} title="Athletic Diet" description="Nutritional guidance for optimal performance" />
+            <DevelopmentCard Icon={UserCheck} title="Mentorship" description="Personal guidance for growth and development" />
+            <DevelopmentCard Icon={GraduationCap} title="Education" description="Quality academic support alongside training" />
+            <DevelopmentCard Icon={Globe} title="Exposure" description="National and international competitive opportunities" />
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</section>
-
+    </section>
   )
 }

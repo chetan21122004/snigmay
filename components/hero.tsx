@@ -84,20 +84,13 @@ export default function Hero() {
           {/* Logo Section */}
           <div className="flex flex-col items-center justify-center gap-4">
             <div ref={logoRef} className="flex  items-center sm:gap-6 justify-center flex-wrap">
-              <Image
-                src="/images/snigmaypunefc-logo.png"
-                width={300}
-                height={300}
-                alt="Snigmay Pune FC Logo"
-                className="w-40 md:w-80"
-                priority
-              />
+             
               <Image
                 src="/images/snimayfoundation-logo.png"
                 width={200}
                 height={200}
                 alt="Snigmay Foundation Logo"
-                className="w-40 md:w-48"
+                className="w-40 md:w-52"
                 priority
               />
             </div>

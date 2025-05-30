@@ -37,19 +37,13 @@ export default function Navbar() {
     <header className="fixed top-0 w-full bg-[#ffbf00] dark:bg-gray-900/90 z-30 shadow-md">
       <div className="container mx-auto px-4 flex items-center justify-between py-2">
         <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/images/snigmaypunefc-logo.png"
-            alt="Snigmay Pune FC Logo"
-            width={60}
-            height={60}
-            className="h-12 w-auto"
-          />
+        
           <Image
             src="/images/snimayfoundation-logo.png"
             alt="Snigmay Foundation Logo"
             width={40}
             height={40}
-            className="h-10 w-auto hidden md:block"
+            className="h-12 w-auto "
           />
         </Link>
 

@@ -108,36 +108,11 @@ export default function Achievements() {
           </p>
         </div>
 
-        <Tabs defaultValue="team" className="w-full mx-auto">
+        <Tabs defaultValue="players" className="w-full mx-auto">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="team">Team Achievements</TabsTrigger>
             <TabsTrigger value="players">Player Achievements</TabsTrigger>
+            <TabsTrigger value="team">Team Achievements</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="team" className="mt-6">
-            <div className="space-y-4">
-              {achievements.slice(0, visibleAchievements).map((achievement, index) => (
-                <Card
-                  key={index}
-                  className={`animate-on-scroll ${inView ? "visible" : ""}`}
-                  style={{ transitionDelay: `${index * 100}ms` }}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        {achievement.icon}
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-lg">{achievement.title}</h4>
-                        <p className="text-muted-foreground">{achievement.description}</p>
-                        <p className="text-sm text-primary font-medium mt-1">{achievement.year}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
 
           <TabsContent value="players" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -202,6 +177,31 @@ export default function Achievements() {
                   </div>
                 </div>
               </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="team" className="mt-6">
+            <div className="space-y-4">
+              {achievements.slice(0, visibleAchievements).map((achievement, index) => (
+                <Card
+                  key={index}
+                  className={`animate-on-scroll ${inView ? "visible" : ""}`}
+                  style={{ transitionDelay: `${index * 100}ms` }}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        {achievement.icon}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-lg">{achievement.title}</h4>
+                        <p className="text-muted-foreground">{achievement.description}</p>
+                        <p className="text-sm text-primary font-medium mt-1">{achievement.year}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </TabsContent>
         </Tabs>

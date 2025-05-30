@@ -160,7 +160,7 @@ export default function About() {
             <div ref={statsRef} className="grid grid-cols-2 gap-4 mt-8">
               <div className="text-center">
                 <div className="counter-value">
-                  <span data-counter data-counter-target="500">
+                  <span data-counter data-counter-target="1000">
                     0
                   </span>
                   +
@@ -186,7 +186,7 @@ export default function About() {
               </div>
               <div className="text-center">
                 <div className="counter-value">
-                  <span data-counter data-counter-target="25">
+                  <span data-counter data-counter-target="50">
                     0
                   </span>
                   +

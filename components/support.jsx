@@ -268,34 +268,29 @@ export default function Support() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setDonationAmount(1000);
-                    setCustomAmount("");
-                  }}
-                >
-                  ₹1,000
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setDonationAmount(5000);
-                    setCustomAmount("");
-                  }}
-                >
-                  ₹5,000
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setDonationAmount(10000);
-                    setCustomAmount("");
-                  }}
-                >
-                  ₹10,000
-                </Button>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {[1000, 2500, 5000, 10000, 25000, 50000].map((amount) => (
+                  <Button
+                    key={amount}
+                    variant={donationAmount === amount ? "default" : "outline"}
+                    onClick={() => {
+                      setDonationAmount(amount);
+                      setCustomAmount("");
+                    }}
+                    className={`relative transition-all duration-200 ${
+                      donationAmount === amount 
+                        ? "border-2 border-primary shadow-md transform -translate-y-0.5"
+                        : "hover:border-primary/50"
+                    }`}
+                  >
+                    <span className="text-sm sm:text-base font-medium">
+                      ₹{amount.toLocaleString()}
+                    </span>
+                    {donationAmount === amount && (
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full" />
+                    )}
+                  </Button>
+                ))}
               </div>
 
               <div className="space-y-4">

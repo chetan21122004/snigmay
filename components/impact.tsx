@@ -14,7 +14,7 @@ export default function Impact() {
   })
 
   const counterRefs = {
-    investment: useRef<HTMLSpanElement>(null),
+    nationalPlayers: useRef<HTMLSpanElement>(null),
     players: useRef<HTMLSpanElement>(null),
     professional: useRef<HTMLSpanElement>(null),
     lives: useRef<HTMLSpanElement>(null),
@@ -54,7 +54,7 @@ export default function Impact() {
         window.requestAnimationFrame(step)
       }
 
-      animateCounter(counterRefs.investment, 10, 2000, "₹", "L")
+      animateCounter(counterRefs.nationalPlayers, 20)
       animateCounter(counterRefs.players, 150000)
       animateCounter(counterRefs.professional, 500)
       animateCounter(counterRefs.lives, 15000)
@@ -76,12 +76,12 @@ export default function Impact() {
           <Card className={`animate-on-scroll ${inView ? "visible" : ""}`}>
             <CardContent className="p-6 flex flex-col items-center text-center">
               <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <TrendingUp className="h-8 w-8 text-primary" />
+                <Award className="h-8 w-8 text-primary" />
               </div>
               <div className="counter-value">
-                <span ref={counterRefs.investment}>₹0L</span>
+                <span ref={counterRefs.nationalPlayers}>0</span>+
               </div>
-              <p className="counter-label">Average investment per player over 10 years</p>
+              <p className="counter-label">Projected National Players in Next 10 Years</p>
             </CardContent>
           </Card>
 
@@ -122,112 +122,6 @@ export default function Impact() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-lg">
-            <h3 className="text-2xl font-bold mb-6">Per-Player Investment</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span>Education</span>
-                <span className="font-bold">₹35K</span>
-              </div>
-              <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full">
-                <div className="h-full bg-primary rounded-full" style={{ width: "10%" }}></div>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span>Athletic diet</span>
-                <span className="font-bold">₹1.2L</span>
-              </div>
-              <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full">
-                <div className="h-full bg-primary rounded-full" style={{ width: "35%" }}></div>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span>Coaching</span>
-                <span className="font-bold">₹55K</span>
-              </div>
-              <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full">
-                <div className="h-full bg-primary rounded-full" style={{ width: "15%" }}></div>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span>Tech-driven training</span>
-                <span className="font-bold">₹25K</span>
-              </div>
-              <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full">
-                <div className="h-full bg-primary rounded-full" style={{ width: "7%" }}></div>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span>Tournaments</span>
-                <span className="font-bold">₹1L</span>
-              </div>
-              <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full">
-                <div className="h-full bg-primary rounded-full" style={{ width: "30%" }}></div>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span>Insurance</span>
-                <span className="font-bold">₹15K</span>
-              </div>
-              <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full">
-                <div className="h-full bg-primary rounded-full" style={{ width: "5%" }}></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-lg">
-            <h3 className="text-2xl font-bold mb-6">Return on Investment</h3>
-            <p className="text-muted-foreground mb-6">
-              Our programs are designed to be cost-effective while maximizing impact. For every rupee invested, we
-              create multiple returns in terms of:
-            </p>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
-                  <Award className="h-3 w-3 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-medium">Professional Opportunities</h4>
-                  <p className="text-sm text-muted-foreground">Creating pathways to professional careers in sports</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
-                  <Users className="h-3 w-3 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-medium">Community Development</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Building stronger, healthier communities through sports
-                  </p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
-                  <Globe className="h-3 w-3 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-medium">National Representation</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Developing talent that represents India on international stages
-                  </p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
-                  <TrendingUp className="h-3 w-3 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-medium">Economic Impact</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Creating jobs and economic opportunities in the sports sector
-                  </p>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
       </div>
     </section>
   )
