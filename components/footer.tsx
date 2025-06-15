@@ -31,15 +31,17 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm text-white/80">
                 <MapPin className="h-4 w-4 text-secondary" />
-                <span>Pune, Maharashtra, India</span>
+                <span>Snigmay Foundation,
+                  Sportszy Arena, Opposite Sharda English High School,
+                  Rahatani, Pune</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-white/80">
                 <Phone className="h-4 w-4 text-secondary" />
-                <span>+91 XXX XXX XXXX</span>
+                <span>+91 99230614314</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-white/80">
                 <Mail className="h-4 w-4 text-secondary" />
-                <span>contact@snigmay.org</span>
+                <span>snigmayfoundation@gmail.com</span>
               </div>
             </div>
             {/* Social Links */}

@@ -152,7 +152,7 @@ export default function Contact() {
 
         <div className="rounded-lg overflow-hidden h-[400px] relative">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d242118.14199917082!2d73.72287834316403!3d18.524564859944!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2bf2e67461101%3A0x828d43bf9d9ee343!2sPune%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1651835325821!5m2!1sen!2sin"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d30249.712885410576!2d73.7734492143174!3d18.609436984472747!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2b98f901102e9%3A0xad9758500561934e!2sSportszy%20Arena!5e0!3m2!1sen!2sin!4v1749984818577!5m2!1sen!2sin"
             width="100%"
             height="100%"
             style={{ border: 0 }}
