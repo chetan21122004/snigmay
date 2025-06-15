@@ -249,7 +249,7 @@ export default function About() {
             </CardContent>
           </Card>
 
-          {/* <Card className="animate-on-scroll">
+          <Card className="animate-on-scroll">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Award className="h-6 w-6 text-primary" />
@@ -258,7 +258,7 @@ export default function About() {
               <p className="text-muted-foreground">
                 Creating opportunities for sustainable career development in sports
               </p>
-            </CardContent> */}
+            </CardContent>
           </Card>
         </div>
       </div>
