@@ -17,15 +17,17 @@ const ProgramFeature = ({ Icon, title, description }) => (
 );
 
 const DevelopmentCard = ({ Icon, title, description }) => (
-  <Card>
-    <CardContent className="p-6 flex flex-col items-center text-center">
-      <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-        <Icon className="h-6 w-6 text-primary" />
+  <div className="flex flex-col h-full">
+    <div className="flex items-center gap-4 mb-4">
+      <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 shadow-inner">
+        <Icon className="h-7 w-7 text-primary" />
       </div>
-      <h4 className="font-bold text-base lg:text-lg mb-2">{title}</h4>
-      <p className="text-sm lg:text-base text-muted-foreground">{description}</p>
-    </CardContent>
-  </Card>
+      <h4 className="font-bold text-xl">{title}</h4>
+    </div>
+    <p className="text-base text-muted-foreground leading-relaxed">
+      {description}
+    </p>
+  </div>
 );
 
 
@@ -119,12 +121,44 @@ export default function Programs() {
           
         
           <h3 className="section-subheading text-center text-3xl lg:text-4xl font-bold mb-16">Our Approach</h3>
-          <div className={`grid grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 animate-on-scroll ${inView ? "visible" : ""}`}>
-            <DevelopmentCard Icon={Dumbbell} title="Expert Coaching" description="Professional training from experienced coaches" />
-            <DevelopmentCard Icon={Utensils} title="Athletic Diet" description="Nutritional guidance for optimal performance" />
-            <DevelopmentCard Icon={UserCheck} title="Mentorship" description="Personal guidance for growth and development" />
-            <DevelopmentCard Icon={GraduationCap} title="Education" description="Quality academic support alongside training" />
-            <DevelopmentCard Icon={Globe} title="Exposure" description="National and international competitive opportunities" />
+          <div 
+            className={`flex flex-wrap justify-center gap-8 lg:gap-10 animate-on-scroll ${inView ? "visible" : ""}`}
+          >
+            <div className="flex-1 min-w-[240px] max-w-[280px] p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-primary/20 hover:border-primary">
+              <DevelopmentCard 
+                Icon={Dumbbell} 
+                title="Expert Coaching" 
+                description="Professional training from experienced coaches" 
+              />
+            </div>
+            <div className="flex-1 min-w-[240px] max-w-[280px] p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-primary/20 hover:border-primary">
+              <DevelopmentCard 
+                Icon={Utensils} 
+                title="Athletic Diet" 
+                description="Nutritional guidance for optimal performance" 
+              />
+            </div>
+            <div className="flex-1 min-w-[240px] max-w-[280px] p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-primary/20 hover:border-primary">
+              <DevelopmentCard 
+                Icon={UserCheck} 
+                title="Mentorship" 
+                description="Personal guidance for growth and development" 
+              />
+            </div>
+            <div className="flex-1 min-w-[240px] max-w-[280px] p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-primary/20 hover:border-primary">
+              <DevelopmentCard 
+                Icon={GraduationCap} 
+                title="Education" 
+                description="Quality academic support alongside training" 
+              />
+            </div>
+            <div className="flex-1 min-w-[240px] max-w-[280px] p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-primary/20 hover:border-primary">
+              <DevelopmentCard 
+                Icon={Globe} 
+                title="Exposure" 
+                description="National and international competitive opportunities" 
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -111,29 +111,39 @@ export default function Support() {
 
   const donorBenefits = [
     {
-      title: "Social Media Exposure",
-      description: "Recognition on our social media platforms",
-      icon: <Share2 className="h-5 w-5 text-primary" />,
-    },
-    {
-      title: "On-premises Branding",
-      description: "Branding opportunities at our facilities",
+      title: "Tax Exemption",
+      description: "Donations are eligible for tax deductions under applicable sections of the Income Tax Act (e.g., 80G in India)",
       icon: <Building className="h-5 w-5 text-primary" />,
     },
     {
-      title: "Employee Engagement",
-      description: "Activities for corporate partners' employees",
+      title: "Impact Transparency",
+      description: "Receive regular updates, reports, and success stories showing exactly how your support is transforming young lives",
+      icon: <Share2 className="h-5 w-5 text-primary" />,
+    },
+    {
+      title: "Recognition & Visibility",
+      description: "Acknowledgment through social media, annual reports, and events (optional anonymity respected)",
       icon: <Users className="h-5 w-5 text-primary" />,
     },
     {
-      title: "Match Invitations",
-      description: "VIP access to matches and events",
+      title: "CSR Partnership",
+      description: "Fulfill CSR obligations while directly impacting community development and youth empowerment",
+      icon: <Building className="h-5 w-5 text-primary" />,
+    },
+    {
+      title: "Event Invitations",
+      description: "Attend football matches, workshops, and community events to witness impact firsthand",
       icon: <Ticket className="h-5 w-5 text-primary" />,
     },
     {
-      title: "Kit Branding",
-      description: "Logo placement on team kits",
+      title: "Brand Association",
+      description: "Align your brand with education, empowerment, and positive social change through sport",
       icon: <ShoppingBag className="h-5 w-5 text-primary" />,
+    },
+    {
+      title: "Personal Fulfillment",
+      description: "Experience the joy of helping shape the future of underprivileged youth through skill-building",
+      icon: <Heart className="h-5 w-5 text-primary" />,
     },
   ];
 
@@ -233,100 +243,59 @@ export default function Support() {
             ref={donationFormRef}
             className="bg-gray-50 dark:bg-gray-800 p-8 rounded-lg"
           >
-            <h3 className="text-2xl font-bold mb-6">Make a Donation</h3>
+            <h3 className="text-2xl font-bold mb-6">Contact Us to Donate</h3>
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Donation Amount (₹)
-                </label>
-                <div className="space-y-4">
-                  <Slider
-                    defaultValue={[5000]}
-                    max={50000}
-                    step={1000}
-                    value={[donationAmount]}
-                    onValueChange={handleSliderChange}
-                    className="py-4"
-                  />
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>₹1,000</span>
-                    <span>₹25,000</span>
-                    <span>₹50,000</span>
+              <div className="bg-white dark:bg-gray-700 p-6 rounded-lg">
+                <h4 className="font-bold text-lg mb-4">How to Contribute</h4>
+                <p className="text-muted-foreground mb-4">
+                  To make a donation and support our mission, please reach out to us at:
+                </p>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                      <polyline points="22,6 12,13 2,6"/>
+                    </svg>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <Input
-                      type="number"
-                      placeholder="Custom amount"
-                      value={customAmount}
-                      onChange={handleCustomAmountChange}
-                      className="flex-1"
-                    />
-                    <div className="text-2xl font-bold">
-                      ₹{donationAmount.toLocaleString()}
-                    </div>
-                  </div>
+                  <a href="mailto:snigmayfoundation@gmail.com" className="text-primary hover:underline">
+                    snigmayfoundation@gmail.com
+                  </a>
                 </div>
+                <p className="text-sm text-muted-foreground mt-4">
+                  Our team will get back to you with detailed information about donation methods and documentation for tax benefits.
+                </p>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {[1000, 2500, 5000, 10000, 25000, 50000].map((amount) => (
-                  <Button
-                    key={amount}
-                    variant={donationAmount === amount ? "default" : "outline"}
-                    onClick={() => {
-                      setDonationAmount(amount);
-                      setCustomAmount("");
-                    }}
-                    className={`relative transition-all duration-200 ${
-                      donationAmount === amount 
-                        ? "border-2 border-primary shadow-md transform -translate-y-0.5"
-                        : "hover:border-primary/50"
-                    }`}
-                  >
-                    <span className="text-sm sm:text-base font-medium">
-                      ₹{amount.toLocaleString()}
-                    </span>
-                    {donationAmount === amount && (
-                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full" />
-                    )}
-                  </Button>
-                ))}
+              <div className="bg-primary/5 p-4 rounded-lg">
+                <p className="text-sm text-muted-foreground text-center">
+                  All donations are tax-deductible under Section 80G of the Income Tax Act. Documentation will be provided upon request.
+                </p>
               </div>
-
-              <div className="space-y-4">
-                <Input placeholder="Full Name" />
-                <Input placeholder="Email Address" type="email" />
-                <Input placeholder="Phone Number" type="tel" />
-              </div>
-
-              <Button className="w-full bg-primary hover:bg-primary/90 text-white">
-                Donate Now
-              </Button>
-
-              <p className="text-xs text-muted-foreground text-center">
-                All donations are tax-deductible under Section 80G of the Income
-                Tax Act.
-              </p>
             </div>
           </div>
         </div>
 
-        <div className=" mx-auto">
-          <h3 className="section-subheading text-center mb-8">
+        <div className="mx-auto ">
+          <h3 className="section-subheading text-center mb-12">
             Donor Benefits
           </h3>
           <div
             ref={benefitsRef}
-            className="grid grid-cols-2 lg:grid-cols-3 gap-6"
+            className="flex flex-wrap justify-center h-full gap-6"
           >
             {donorBenefits.map((benefit, index) => (
-              <Card key={index} className="animate-on-scroll">
-                <CardContent className="p-6 flex flex-col items-center text-center">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    {benefit.icon}
+              <Card 
+                key={index} 
+                className="animate-on-scroll flex-1 w-[850px] flex-wrap transition-all duration-300 hover:shadow-lg hover:scale-105 border-2 border-primary/50 hover:border-primary"
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 shadow-inner">
+                      {benefit.icon}
+                    </div>
+                    <h4 className="font-bold text-xl">{benefit.title}</h4>
                   </div>
-                  <h4 className="font-bold text-lg mb-2">{benefit.title}</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-base text-muted-foreground leading-relaxed">
                     {benefit.description}
                   </p>
                 </CardContent>

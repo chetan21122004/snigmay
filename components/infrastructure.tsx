@@ -61,35 +61,30 @@ export default function Infrastructure() {
   const facilities = [
     {
       title: "Natural 11-a-side ground",
-      cost: "₹1.2 Cr",
       icon: <Landmark className="h-5 w-5 text-primary" />,
       description: "Full-size professional playing surface for matches and training",
       progressRef: progressRefs.ground,
     },
     {
       title: "Artificial 9-a-side ground",
-      cost: "₹85L",
       icon: <Landmark className="h-5 w-5 text-primary" />,
       description: "All-weather training facility for year-round development",
       progressRef: progressRefs.artificial,
     },
     {
       title: "Residential & academic complex",
-      cost: "₹3 Cr",
       icon: <Building className="h-5 w-5 text-primary" />,
       description: "Housing, classrooms, and administrative facilities",
       progressRef: progressRefs.residential,
     },
     {
       title: "High-performance center",
-      cost: "₹75L",
       icon: <Dumbbell className="h-5 w-5 text-primary" />,
       description: "Gym, swimming pool, and strength & conditioning zones",
       progressRef: progressRefs.performance,
     },
     {
       title: "Medical equipment",
-      cost: "₹40L",
       icon: <Stethoscope className="h-5 w-5 text-primary" />,
       description: "Including ambulance and rehabilitation facilities",
       progressRef: progressRefs.medical,
@@ -180,8 +175,7 @@ export default function Infrastructure() {
                     </div>
                     <span>{facility.title}</span>
                   </div>
-                  <span className="text-lg font-bold text-primary">{facility.cost}</span>
-                </CardTitle>
+                  </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-3">{facility.description}</p>

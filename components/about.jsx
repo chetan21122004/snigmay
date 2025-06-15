@@ -142,8 +142,8 @@ export default function About() {
         <div className="text-center mb-12">
           <h2 className="section-heading">About Snigmay Foundation</h2>
           <p className="max-w-3xl mx-auto text-lg text-muted-foreground">
-            A Pune-based non-profit organization focused on nation-building
-            through youth development, sports, and women empowerment.
+            A Pune-based NGO dedicated to nation building through youth development
+            and empowering young lives through the beautiful game of football.
           </p>
         </div>
 
@@ -151,11 +151,12 @@ export default function About() {
           <div ref={textRef} className="space-y-6">
             <h3 className="section-subheading">Our Vision & Mission</h3>
             <p className="text-muted-foreground">
-              Snigmay Foundation embraces the philosophy of "Inspire | Integrate
-              | Empower" as reflected in our circular logo. Our approach centers
-              on holistic development, addressing not just athletic skills but
-              also physical, mental, social, educational, and behavioral aspects
-              of a child's growth.
+              By combining sport, education, and life skills training, we create safe
+              and inclusive spaces for young people to grow, lead, and thrive. Our
+              mission is to foster personal development, teamwork, and resilience—on
+              and off the field. We have successfully impacted more than 1000+
+              families, helping them create career opportunities through this
+              initiative.
             </p>
             <div ref={statsRef} className="grid grid-cols-2 gap-4 mt-8">
               <div className="text-center">
@@ -165,7 +166,7 @@ export default function About() {
                   </span>
                   +
                 </div>
-                <div className="counter-label">Talented Footballers</div>
+                <div className="counter-label">Families Impacted</div>
               </div>
               <div className="text-center">
                 <div className="counter-value">
@@ -186,12 +187,12 @@ export default function About() {
               </div>
               <div className="text-center">
                 <div className="counter-value">
-                  <span data-counter data-counter-target="50">
+                  <span data-counter data-counter-target="100">
                     0
                   </span>
-                  +
+                  %
                 </div>
-                <div className="counter-label">Major Achievements</div>
+                <div className="counter-label">Commitment</div>
               </div>
             </div>
           </div>
@@ -217,10 +218,9 @@ export default function About() {
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Trophy className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-bold text-lg mb-2">Social inequality</h3>
+              <h3 className="font-bold text-lg mb-2">Youth Development</h3>
               <p className="text-muted-foreground">
-                Addressing social inequality in sports access for
-                underprivileged youth
+                Empowering young lives through sports and education for holistic growth
               </p>
             </CardContent>
           </Card>
@@ -230,9 +230,9 @@ export default function About() {
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Users className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-bold text-lg mb-2">Limited resources</h3>
+              <h3 className="font-bold text-lg mb-2">Safe Spaces</h3>
               <p className="text-muted-foreground">
-                Providing resources for talented but underprivileged children
+                Creating inclusive environments for young people to grow and thrive
               </p>
             </CardContent>
           </Card>
@@ -242,24 +242,23 @@ export default function About() {
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Heart className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-bold text-lg mb-2">Missed potential</h3>
+              <h3 className="font-bold text-lg mb-2">Life Skills</h3>
               <p className="text-muted-foreground">
-                Preventing missed potential due to lack of guidance and support
+                Building resilience and character through sports and education
               </p>
             </CardContent>
           </Card>
 
-          <Card className="animate-on-scroll">
+          {/* <Card className="animate-on-scroll">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Award className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-bold text-lg mb-2">Career visibility</h3>
+              <h3 className="font-bold text-lg mb-2">Career Growth</h3>
               <p className="text-muted-foreground">
-                Increasing visibility of football as a viable career path in
-                India
+                Creating opportunities for sustainable career development in sports
               </p>
-            </CardContent>
+            </CardContent> */}
           </Card>
         </div>
       </div>
