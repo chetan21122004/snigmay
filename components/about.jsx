@@ -208,6 +208,8 @@ export default function About() {
             />
           </div>
         </div>
+        <h2 className="section-heading mx-auto text-center">Challenges Snigmay Solves</h2>
+
 
         <div
           ref={cardsRef}

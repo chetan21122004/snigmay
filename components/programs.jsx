@@ -44,7 +44,7 @@ export default function Programs() {
           <div className="inline-flex items-center justify-center p-1 mb-4 bg-primary/10 rounded-full">
             <span className="px-4 py-1.5 text-sm font-medium text-primary">Our Training Programs</span>
           </div>
-          <h2 className="section-heading text-4xl lg:text-5xl font-bold mb-6">Develop Your Football Career</h2>
+            <h2 className="section-heading text-4xl lg:text-5xl font-bold mb-6">How We Help To Develop Professional Career</h2>
           <p className="max-w-3xl lg:max-w-4xl mx-auto text-xl text-muted-foreground">
             We operate through three distinct training modules designed to develop players at every level of their journey.
           </p>
