@@ -17,17 +17,17 @@ export default function Contact() {
     {
       icon: <MapPin className="h-5 w-5 text-primary" />,
       title: "Address",
-      details: "Snigmay Foundation, Pune, Maharashtra, India",
+      details: "Sportszy Arena, Opposite Sharda English High School, Rahatani, Pune",
     },
     {
       icon: <Phone className="h-5 w-5 text-primary" />,
       title: "Phone",
-      details: "+91 XXXXX XXXXX",
+      details: "+91 9923061431",
     },
     {
       icon: <Mail className="h-5 w-5 text-primary" />,
       title: "Email",
-      details: "info@snigmayfoundation.org",
+      details: "snigmayfoundation@gmail.com",
     },
     {
       icon: <Clock className="h-5 w-5 text-primary" />,
