@@ -22,7 +22,7 @@ export default function Contact() {
     {
       icon: <Phone className="h-5 w-5 text-primary" />,
       title: "Phone",
-      details: "+91 9923061431",
+      details: "+91 9920614314",
     },
     {
       icon: <Mail className="h-5 w-5 text-primary" />,

@@ -12,6 +12,8 @@ import {
   Users,
   Ticket,
   ShoppingBag,
+  TrendingUp,
+  FileText,
 } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -111,39 +113,39 @@ export default function Support() {
 
   const donorBenefits = [
     {
-      title: "Tax Exemption",
-      description: "Donations are eligible for tax deductions under applicable sections of the Income Tax Act (e.g., 80G in India)",
-      icon: <Building className="h-5 w-5 text-primary" />,
+      title: "National Level Impact",
+      description: "Be part of a transformative movement shaping the future of Indian football through youth development and empowerment",
+      icon: <TrendingUp className="h-5 w-5 text-primary" />,
     },
     {
       title: "Impact Transparency",
-      description: "Receive regular updates, reports, and success stories showing exactly how your support is transforming young lives",
+      description: "Receive detailed quarterly reports and success stories showcasing the direct impact of your contribution on young lives",
       icon: <Share2 className="h-5 w-5 text-primary" />,
     },
     {
       title: "Recognition & Visibility",
-      description: "Acknowledgment through social media, annual reports, and events (optional anonymity respected)",
+      description: "Gain recognition through our digital platforms, annual reports, and events while maintaining optional anonymity",
       icon: <Users className="h-5 w-5 text-primary" />,
     },
     {
+      title: "Personal Fulfilment & Involvement",
+      description: "Experience the joy of directly contributing to youth development and participate in our community initiatives",
+      icon: <Heart className="h-5 w-5 text-primary" />,
+    },
+    {
       title: "CSR Partnership",
-      description: "Fulfill CSR obligations while directly impacting community development and youth empowerment",
+      description: "Align your corporate social responsibility goals with measurable community impact and youth empowerment",
       icon: <Building className="h-5 w-5 text-primary" />,
     },
     {
-      title: "Event Invitations",
-      description: "Attend football matches, workshops, and community events to witness impact firsthand",
+      title: "Tax Exemption",
+      description: "Benefit from tax deductions under Section 80G of the Income Tax Act with complete documentation support",
+      icon: <FileText className="h-5 w-5 text-primary" />,
+    },
+    {
+      title: "Exclusive Event Access",
+      description: "Enjoy VIP access to tournaments, training sessions, award ceremonies, and networking events. Connect with players, coaches, and fellow supporters",
       icon: <Ticket className="h-5 w-5 text-primary" />,
-    },
-    {
-      title: "Brand Association",
-      description: "Align your brand with education, empowerment, and positive social change through sport",
-      icon: <ShoppingBag className="h-5 w-5 text-primary" />,
-    },
-    {
-      title: "Personal Fulfillment",
-      description: "Experience the joy of helping shape the future of underprivileged youth through skill-building",
-      icon: <Heart className="h-5 w-5 text-primary" />,
     },
   ];
 
@@ -172,40 +174,7 @@ export default function Support() {
             </p>
 
             <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Heart className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-lg">Per-Player Expenses</h4>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <div>
-                      <p className="text-sm font-medium">Education</p>
-                      <p className="text-lg font-bold text-primary">₹35K</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Athletic Diet</p>
-                      <p className="text-lg font-bold text-primary">₹1.2L</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Coaching</p>
-                      <p className="text-lg font-bold text-primary">₹55K</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Tech Training</p>
-                      <p className="text-lg font-bold text-primary">₹25K</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Tournaments</p>
-                      <p className="text-lg font-bold text-primary">₹1L</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Insurance</p>
-                      <p className="text-lg font-bold text-primary">₹15K</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+             
 
               <div className="flex items-start gap-4">
                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
@@ -275,27 +244,27 @@ export default function Support() {
           </div>
         </div>
 
-        <div className="mx-auto ">
+        <div className="mx-auto">
           <h3 className="section-subheading text-center mb-12">
             Donor Benefits
           </h3>
           <div
             ref={benefitsRef}
-            className="flex flex-wrap justify-center h-full gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-[1400px] mx-auto"
           >
             {donorBenefits.map((benefit, index) => (
               <Card 
                 key={index} 
-                className="animate-on-scroll flex-1 w-[850px] flex-wrap transition-all duration-300 hover:shadow-lg hover:scale-105 border-2 border-primary/50 hover:border-primary"
+                className={`animate-on-scroll transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border border-primary/10 hover:border-primary/30 bg-gradient-to-br from-white to-primary/5 dark:from-gray-800 dark:to-primary/10`}
               >
                 <CardContent className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 shadow-inner">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 shadow-inner">
                       {benefit.icon}
                     </div>
-                    <h4 className="font-bold text-xl">{benefit.title}</h4>
+                    <h4 className="font-semibold text-lg leading-tight">{benefit.title}</h4>
                   </div>
-                  <p className="text-base text-muted-foreground leading-relaxed">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     {benefit.description}
                   </p>
                 </CardContent>

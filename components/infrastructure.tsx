@@ -1,12 +1,17 @@
 "use client"
 
-import type React from "react"
-
-import { useEffect, useRef } from "react"
+import { useRef } from "react"
 import { useInView } from "react-intersection-observer"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Landmark, Building, Dumbbell, Stethoscope } from "lucide-react"
+import { 
+  Landmark, 
+  Building, 
+  Dumbbell, 
+  Stethoscope, 
+  MapPin, 
+  Users, 
+  GraduationCap, 
+  Briefcase 
+} from "lucide-react"
 
 export default function Infrastructure() {
   const { ref, inView } = useInView({
@@ -14,199 +19,172 @@ export default function Infrastructure() {
     triggerOnce: true,
   })
 
-  const progressRefs = {
-    ground: useRef<HTMLDivElement>(null),
-    artificial: useRef<HTMLDivElement>(null),
-    residential: useRef<HTMLDivElement>(null),
-    performance: useRef<HTMLDivElement>(null),
-    medical: useRef<HTMLDivElement>(null),
-  }
-
-  useEffect(() => {
-    if (inView) {
-      // Animate progress bars
-      const animateProgress = (ref: React.RefObject<HTMLDivElement>, targetValue: number, duration = 1500) => {
-        if (!ref.current) return
-
-        let startTime: number | null = null
-        const startValue = 0
-
-        const step = (timestamp: number) => {
-          if (!startTime) startTime = timestamp
-          const progress = Math.min((timestamp - startTime) / duration, 1)
-          const value = Math.floor(progress * (targetValue - startValue) + startValue)
-
-          if (ref.current) {
-            ref.current.style.width = `${value}%`
-            ref.current.setAttribute("aria-valuenow", value.toString())
-          }
-
-          if (progress < 1) {
-            window.requestAnimationFrame(step)
-          }
-        }
-
-        window.requestAnimationFrame(step)
-      }
-
-      // Set different progress values for each facility
-      animateProgress(progressRefs.ground, 30)
-      animateProgress(progressRefs.artificial, 45)
-      animateProgress(progressRefs.residential, 20)
-      animateProgress(progressRefs.performance, 35)
-      animateProgress(progressRefs.medical, 50)
-    }
-  }, [inView])
-
   const facilities = [
     {
       title: "Natural 11-a-side ground",
-      icon: <Landmark className="h-5 w-5 text-primary" />,
-      description: "Full-size professional playing surface for matches and training",
-      progressRef: progressRefs.ground,
+      icon: <Landmark className="h-6 w-6 text-primary" />,
+      description: "Professional-grade playing surface for official matches and elite training sessions",
     },
     {
       title: "Artificial 9-a-side ground",
-      icon: <Landmark className="h-5 w-5 text-primary" />,
-      description: "All-weather training facility for year-round development",
-      progressRef: progressRefs.artificial,
+      icon: <Landmark className="h-6 w-6 text-primary" />,
+      description: "All-weather training facility enabling year-round development regardless of seasonal conditions",
     },
     {
-      title: "Residential & academic complex",
-      icon: <Building className="h-5 w-5 text-primary" />,
-      description: "Housing, classrooms, and administrative facilities",
-      progressRef: progressRefs.residential,
+      title: "Residential complex",
+      icon: <Building className="h-6 w-6 text-primary" />,
+      description: "State-of-the-art accommodation designed specifically for athletes' comfort and recovery",
+    },
+    {
+      title: "Academic facilities",
+      icon: <GraduationCap className="h-6 w-6 text-primary" />,
+      description: "Modern classrooms and study areas supporting players' educational development alongside athletics",
     },
     {
       title: "High-performance center",
-      icon: <Dumbbell className="h-5 w-5 text-primary" />,
-      description: "Gym, swimming pool, and strength & conditioning zones",
-      progressRef: progressRefs.performance,
+      icon: <Dumbbell className="h-6 w-6 text-primary" />,
+      description: "Specialized training zones including gym, swimming pool, and strength & conditioning areas",
     },
     {
-      title: "Medical equipment",
-      icon: <Stethoscope className="h-5 w-5 text-primary" />,
-      description: "Including ambulance and rehabilitation facilities",
-      progressRef: progressRefs.medical,
+      title: "Medical facilities",
+      icon: <Stethoscope className="h-6 w-6 text-primary" />,
+      description: "Comprehensive medical support including rehabilitation equipment and emergency services",
+    },
+  ]
+
+  const expansionPoints = [
+    {
+      title: "Multiple Training Centers",
+      icon: <MapPin className="h-6 w-6 text-white" />,
+      description: "Strategic expansion across multiple locations to maximize accessibility and talent discovery",
+    },
+    {
+      title: "Increased Player Capacity",
+      icon: <Users className="h-6 w-6 text-white" />,
+      description: "Expanded facilities to accommodate more talented players from diverse backgrounds",
+    },
+    {
+      title: "Enhanced Education Programs",
+      icon: <GraduationCap className="h-6 w-6 text-white" />,
+      description: "Comprehensive academic curriculum integrated with athletic development",
+    },
+    {
+      title: "Professional Career Pathways",
+      icon: <Briefcase className="h-6 w-6 text-white" />,
+      description: "Creating clear progression routes to professional football and alternative career opportunities",
     },
   ]
 
   return (
-    <section id="infrastructure" ref={ref} className="py-16 md:py-24 bg-gray-50 dark:bg-gray-800">
-      <div className="container mx-auto px-8 sm:px-4">
+    <section id="infrastructure" ref={ref} className="py-16 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="section-heading">Infrastructure & Development</h2>
-          <p className="max-w-3xl mx-auto text-lg text-muted-foreground">
-            We are currently working to expand our facilities to better serve our growing community of players.
+          <div className="w-20 h-1 bg-primary mx-auto mt-2 mb-4"></div>
+          <p className="max-w-3xl mx-auto text-muted-foreground">
+            Building world-class facilities to nurture talent and create the optimal environment for player development
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20">
+          {/* Current Infrastructure */}
           <div>
-            <h3 className="section-subheading">Current Operations</h3>
-            <p className="text-muted-foreground mb-6">
-              Currently operational at 6 centers, with ambitions to expand to 10 new centers in the next year and 25
-              centers within 5 years, significantly increasing our reach and impact across India.
-            </p>
-
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm">
-              <h4 className="font-bold text-lg mb-4">Expansion Goals</h4>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">Current Centers</span>
-                    <span className="text-sm font-medium">6</span>
-                  </div>
-                  <Progress value={24} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">1-Year Goal</span>
-                    <span className="text-sm font-medium">16</span>
-                  </div>
-                  <Progress value={64} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">5-Year Goal</span>
-                    <span className="text-sm font-medium">25</span>
-                  </div>
-                  <Progress value={100} className="h-2" />
-                </div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
+                <Building className="h-5 w-5 text-white" />
               </div>
+              <h3 className="text-2xl font-bold">World-Class Facilities</h3>
             </div>
-          </div>
-
-          <div>
-            <h3 className="section-subheading">Future Development</h3>
-            <p className="text-muted-foreground mb-6">
-              We are raising funds to develop world-class facilities that will support the holistic development of our
-              players and provide them with the best possible environment to thrive.
-            </p>
-
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm">
-              <h4 className="font-bold text-lg mb-4">Total Funding Required</h4>
-              <div className="text-4xl font-bold text-primary mb-2">₹6.2 Cr</div>
-              <p className="text-sm text-muted-foreground mb-4">For complete infrastructure development</p>
-
-              <div className="flex justify-between mb-1">
-                <span className="text-sm font-medium">Overall Progress</span>
-                <span className="text-sm font-medium">35%</span>
-              </div>
-              <Progress value={35} className="h-2 mb-4" />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-6 max-w-4xl mx-auto">
-          <h3 className="section-subheading text-center">Infrastructure Development Projects</h3>
-
-          {facilities.map((facility, index) => (
-            <Card
-              key={index}
-              className={`animate-on-scroll ${inView ? "visible" : ""}`}
-              style={{ transitionDelay: `${index * 100}ms` }}
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+            
+            <div className="grid grid-cols-1 gap-6">
+              {facilities.map((facility, index) => (
+                <div 
+                  key={index} 
+                  className={`bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-700 ${
+                    inView ? "animate-fade-in-up" : "opacity-0"
+                  }`}
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="flex gap-4">
+                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                       {facility.icon}
                     </div>
-                    <span>{facility.title}</span>
+                    <div>
+                      <h4 className="font-bold text-lg mb-1">{facility.title}</h4>
+                      <p className="text-sm text-muted-foreground">{facility.description}</p>
+                    </div>
                   </div>
-                  </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-3">{facility.description}</p>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">Fundraising Progress</span>
-                  <span className="text-sm font-medium">
-                    {facility.progressRef === progressRefs.ground
-                      ? "30%"
-                      : facility.progressRef === progressRefs.artificial
-                        ? "45%"
-                        : facility.progressRef === progressRefs.residential
-                          ? "20%"
-                          : facility.progressRef === progressRefs.performance
-                            ? "35%"
-                            : "50%"}
-                  </span>
                 </div>
-                <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                  <div
-                    ref={facility.progressRef}
-                    className="h-full bg-primary rounded-full"
-                    style={{ width: "0%" }}
-                    aria-valuenow={0}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                  ></div>
+              ))}
+            </div>
+          </div>
+
+          {/* Future Development */}
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
+                <MapPin className="h-5 w-5 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold">Strategic Expansion</h3>
+            </div>
+
+            <div className="bg-gradient-to-br from-primary to-primary/80 text-white rounded-xl p-8 mb-8 shadow-lg">
+              <h4 className="text-xl font-bold mb-4">Our Vision</h4>
+              <p className="mb-4">
+                We're expanding our footprint to create India's premier football development ecosystem, with multiple centers of excellence across the country.
+              </p>
+              <p>
+                This strategic growth will enable us to discover and nurture talent from diverse backgrounds, providing more opportunities for aspiring players nationwide.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {expansionPoints.map((point, index) => (
+                <div 
+                  key={index} 
+                  className={`bg-primary/10 dark:bg-primary/20 rounded-xl p-5 ${
+                    inView ? "animate-fade-in-up" : "opacity-0"
+                  }`}
+                  style={{ animationDelay: `${(index + 6) * 100}ms` }}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+                      {point.icon}
+                    </div>
+                    <h4 className="font-bold">{point.title}</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground pl-11">{point.description}</p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              ))}
+            </div>
+          </div>
         </div>
+
+        {/* Call to Action */}
+        <div className="max-w-3xl mx-auto text-center">
+          <div className={`bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 ${
+            inView ? "animate-fade-in-up" : "opacity-0"
+          }`} style={{ animationDelay: "1000ms" }}>
+            <h3 className="text-2xl font-bold mb-4">Partner With Us</h3>
+            <p className="text-muted-foreground mb-6">
+              Join us in building the future of Indian football by supporting our infrastructure development initiatives. 
+              Together, we can create opportunities for talented young players across the nation.
+            </p>
+            <button className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+              Become a Supporter
+            </button>
+          </div>
+        </div>
+
+        <style jsx global>{`
+          .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+          }
+          @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
       </div>
     </section>
   )

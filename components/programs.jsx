@@ -2,7 +2,7 @@
 import { useInView } from "react-intersection-observer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { SproutIcon as Seedling, Star, Home, Dumbbell, Utensils, UserCheck, GraduationCap, Globe } from "lucide-react"
+import { SproutIcon as Seedling, Star, Home, Dumbbell, Utensils, UserCheck, GraduationCap, Globe, Trophy, Zap, Award, Users } from "lucide-react"
 
 const ProgramFeature = ({ Icon, title, description }) => (
   <div className="flex items-start gap-4">
@@ -88,7 +88,10 @@ export default function Programs() {
               </div>
               <div className="space-y-6 pt-6 border-t border-gray-100 dark:border-gray-800">
                 <ProgramFeature Icon={Dumbbell} title="Advanced Training" description="Specialized coaching and tactical development" />
-                <ProgramFeature Icon={Utensils} title="Athletic Diet" description="Nutrition guidance for optimal performance" />
+                <ProgramFeature Icon={Trophy} title="Professional Match Exposure" description="Opportunities to compete in high-level matches" />
+                <ProgramFeature Icon={Users} title="Dietary Sessions" description="Educational sessions on proper nutrition for athletes" />
+                <ProgramFeature Icon={Zap} title="Strength & Conditioning" description="Specialized physical training to enhance performance" />
+                <ProgramFeature Icon={Award} title="Tournament Participation" description="District, State & National level competitions" />
               </div>
             </div>
           </div>
@@ -111,16 +114,17 @@ export default function Programs() {
                 <ProgramFeature Icon={GraduationCap} title="Quality Education" description="Academic support alongside football development" />
                 <ProgramFeature Icon={Globe} title="National & International Exposure" description="Opportunities to compete at higher levels and gain visibility" />
                 <ProgramFeature Icon={UserCheck} title="Personal Mentorship" description="Individual guidance for personal and professional development" />
+                <ProgramFeature Icon={Utensils} title="Athletic Diet" description="Comprehensive nutrition program for optimal performance" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Holistic Approach Section */}
-        <div className="pt-16">
+        <div className="pt-16 text-center">
           
         
-          <h3 className="section-subheading text-center text-3xl lg:text-4xl font-bold mb-16">Our Approach</h3>
+          <h3 className="section-heading text-4xl lg:text-5xl font-bold mb-6 ">Holistic Approach</h3>
           <div 
             className={`flex flex-wrap justify-center gap-8 lg:gap-10 animate-on-scroll ${inView ? "visible" : ""}`}
           >

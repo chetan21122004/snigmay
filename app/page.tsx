@@ -15,10 +15,10 @@ export default function Home() {
     <main className="flex min-h-screen w-screen flex-col items-center">
       <Hero />
       <About />
-       <Programs />
+      <Impact />
+      <Programs />
       <Achievements />
       <Infrastructure />
-      <Impact />
       <Management />
       <Support />
       <Contact />
