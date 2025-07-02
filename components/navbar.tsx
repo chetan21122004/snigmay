@@ -14,7 +14,7 @@ const navLinks = [
   { name: "Achievements", href: "/#achievements" },
   { name: "Infrastructure", href: "/#infrastructure" },
   { name: "Impact", href: "/#impact" },
-  { name: "Management", href: "/management" },
+  // { name: "Management", href: "/management" },
   { name: "Support Us", href: "/#support" },
   { name: "Contact", href: "/#contact" },
 ]

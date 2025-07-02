@@ -19,7 +19,7 @@ export default function Home() {
       <Programs />
       <Achievements />
       <Infrastructure />
-      <Management />
+      {/* <Management /> */}
       <Support />
       <Contact />
     </main>
