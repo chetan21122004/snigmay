@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://nqkpmwdmlkcelorvqyyl.supabase.co"
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xa3Btd2RtbGtjZWxvcnZxeXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA1NTMzMTIsImV4cCI6MjAzNjEyOTMxMn0.Bq7Hf9kHBWKlQZbGlXQgVe4Yl1M-Ww8KLJiSJQQTpnc"
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
@@ -12,14 +12,16 @@ export type Database = {
         Row: {
           id: string
           email: string
+          password_hash: string
           full_name: string
           role: "admin" | "coach"
           created_at: string
           updated_at: string
         }
         Insert: {
-          id: string
+          id?: string
           email: string
+          password_hash: string
           full_name: string
           role?: "admin" | "coach"
           created_at?: string
@@ -28,6 +30,7 @@ export type Database = {
         Update: {
           id?: string
           email?: string
+          password_hash?: string
           full_name?: string
           role?: "admin" | "coach"
           created_at?: string
@@ -115,6 +118,29 @@ export type Database = {
           date?: string
           status?: "present" | "absent"
           marked_by?: string | null
+          created_at?: string
+        }
+      }
+      sessions: {
+        Row: {
+          id: string
+          user_id: string
+          token: string
+          expires_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          token: string
+          expires_at: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          token?: string
+          expires_at?: string
           created_at?: string
         }
       }
