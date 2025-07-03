@@ -1,149 +1,141 @@
-Here’s a detailed, clear, and actionable prompt you can use to guide yourself (or your team) for designing and building this basic Football Academy Attendance Management System using Next.js + Supabase:
+📝 Project Context: Snigmay Pune FC – Attendance & Fee Management System
 
-⚡ Prompt to Design Football Academy Attendance Management System (Next.js + Supabase)
+🎯 Objective
 
-👉 Goal:
-Design and develop a basic web-based attendance management system for a football academy, supporting admin and coach roles. The system will manage batches, coaches, students, and attendance records.
+To design and develop a web-based system for Snigmay Pune FC to efficiently manage its football training operations. This includes centralized handling of attendance, student records, fee tracking, and role-based control across multiple training centers.
 
-🟢 User Roles & Permissions
+🏟️ Organization Overview
 
-✅ Admin
+Snigmay Pune FC operates football coaching centers in three locations:
 
-Can create, update, delete batches.
+Kharadi
 
-Can assign or change coaches for batches.
+Viman Nagar
 
-Can add, edit, and remove students.
+Hadapsar
 
-Can add, edit, and remove coaches.
+Each center hosts multiple batches, coaches, students, and administrative staff. The system is intended to bring operational efficiency, transparency, and ease of tracking across all levels.
 
-Can view attendance records for all batches and students.
+👥 User Roles and Control Levels
 
-✅ Coach
+The system will support five roles, each with specific permissions:
 
-Can view assigned batches.
+1. Super Admin
 
-Can take attendance batch-wise (mark students present/absent).
+Full access to all modules and data across all centers.
 
-Can view attendance records of their batches.
+Can manage users, roles, centers, attendance, and fee records.
 
-Can add new students (optionally pending admin approval).
+2. Club Manager
 
-🟢 Core Functionalities
+Access to view and manage attendance and financials across all centers.
 
-1️⃣ Authentication
+Cannot delete centers or users.
 
-User login (via Supabase Auth — email/password).
+3. Head Coach
 
-Users have a role (admin or coach) stored in the users table.
+Can view and manage attendance and fee data across all centers.
 
-2️⃣ Batch Management (Admin)
+Can oversee batch performance and fee status.
 
-Create, update, delete batch.
+4. Coach
 
-Assign coach to batch.
+Access limited to their assigned center(s) only.
 
-View batch list.
+Can manage attendance and view/update fee details for students in their batch.
 
-3️⃣ Coach Management (Admin)
+5. Center Manager
 
-Create, update, delete coach profiles.
+Access limited to their own center.
 
-View coach list.
+Can track student attendance and update/manage fee statuses.
 
-4️⃣ Student Management (Admin + Coach)
+Assists in operational coordination at the center level.
 
-Add student to batch (name, age, contact info).
+📋 Core Functionalities
 
-Edit or remove student.
+🔐 Authentication & Role Management
 
-View list of students batch-wise.
+Secure login for all roles.
 
-5️⃣ Attendance Management
+Role-based dashboard visibility and actions.
 
-Coach selects batch → sees student list → marks present/absent → submits.
+Each user is assigned a role and optionally linked to a center.
 
-Admin can view attendance records by:
+🏫 Center & Batch Management
 
-Batch
+Ability to manage multiple centers.
+
+Creation and organization of batches under each center.
+
+Assign coaches to specific batches.
+
+🧒 Student Management
+
+Add/edit/remove student records.
+
+Assign students to specific batches and centers.
+
+Track age, contact, guardian info, and center association.
+
+🕒 Attendance Management
+
+Coaches and managers mark attendance daily.
+
+Admins and head coaches can view attendance reports filtered by:
 
 Date
 
+Batch
+
+Center
+
 Student
 
-🟢 Frontend Pages
+Attendance marked as Present / Absent / Late (optional)
 
-✅ Login page
-✅ Admin dashboard
+💸 Fee Management
 
-Batches list / create / edit / delete
+Maintain student-wise fee structure and dues.
 
-Coaches list / add / edit / delete
+Record payments, payment modes, and receipts.
 
-Students list / add / edit / delete
+Generate reports by:
 
-Attendance reports (filters: batch, date, student)
+Center
 
-✅ Coach dashboard
+Batch
 
-View assigned batches
+Student
 
-Mark attendance
+Payment Status (Paid / Due / Overdue)
 
-View attendance history
+📊 Reporting and Filters
 
-🟢 Flow
+Attendance Reports
 
-1️⃣ User logs in → role determines dashboard
-2️⃣ Admin manages batches/coaches/students
-3️⃣ Coach marks attendance per session
-4️⃣ Admin monitors reports
+By center, batch, date, or student
 
-🟢 Design Guidelines
+Fee Reports
 
-Keep UI simple (Next.js pages with basic forms/tables).
+By center, batch, student, payment date, and due status
 
-Use Supabase APIs for DB operations.
+User-wise usage tracking (optional for audit purposes)
 
-Apply Row Level Security so coaches see only their data.
+🔒 Data Access & Security
 
-No unnecessary complexity (no parent login, no advanced analytics at this stage).
+Role-based data visibility
 
-🟢 Deliverables
+Each coach/center manager can access data only for their assigned center.
 
-✅ Wireframes / mockups:
+Higher-level roles can access aggregated and full-system views.
 
-Login page
+📈 Future Scope (Optional/Not in MVP)
 
-Admin dashboard pages
+SMS/email fee reminders to parents.
 
-Coach dashboard pages
+Attendance notifications.
 
-✅ Page flow design / navigation map
+Parent login for viewing student performance.
 
-✅ API endpoints (Supabase auto-generated)
-
-✅ ER diagram for database design (optional visual aid)
-
-📝 Sample Prompt to Give to Your Team / Yourself
-
-"Design a basic football academy attendance management system using Next.js + Supabase. Include the following:
-
-Authentication for admin and coach using Supabase Auth.
-
-Admin dashboard to create/manage batches, assign coaches, manage students, view attendance reports.
-
-Coach dashboard to mark batch-wise attendance and view attendance history.
-
-Supabase tables for users, batches, students, and attendance, with appropriate relationships.
-
-Minimal clean UI: use basic forms and tables for management. No complex styling needed initially.
-
-Ensure role-based dashboard and visibility (admin sees all; coach sees assigned batches only).
-
-Do not implement parent login or notifications at this stage."
-
-If you'd like, I can:
-✅ Generate wireframes for all key pages
-✅ Create a navigation flow diagram
-✅ Draft API interaction plan (which Supabase functions you'll call)
+Analytics dashboard for player tracking and training reports.
