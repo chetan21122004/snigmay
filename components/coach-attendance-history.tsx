@@ -1,155 +1,78 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { supabase } from "@/lib/supabase"
+import { useState } from "react"
+import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
-
-interface AttendanceRecord {
-  id: string
-  date: string
-  status: "present" | "absent"
-  student_name: string
-}
-
-interface Batch {
-  id: string
-  name: string
-}
+import { CalendarIcon } from "lucide-react"
 
 interface CoachAttendanceHistoryProps {
-  batches: Batch[]
+  batches?: string[]
 }
 
-export function CoachAttendanceHistory({ batches }: CoachAttendanceHistoryProps) {
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([])
-  const [selectedBatch, setSelectedBatch] = useState("")
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    if (selectedBatch) {
-      loadAttendanceHistory()
-    }
-  }, [selectedBatch])
-
-  const loadAttendanceHistory = async () => {
-    setLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from("attendance")
-        .select(`
-          id,
-          date,
-          status,
-          students:student_id (
-            name
-          )
-        `)
-        .eq("batch_id", selectedBatch)
-        .order("date", { ascending: false })
-
-      if (error) throw error
-
-      const formattedRecords =
-        data?.map((record) => ({
-          id: record.id,
-          date: record.date,
-          status: record.status,
-          student_name: record.students?.name || "Unknown",
-        })) || []
-
-      setAttendanceRecords(formattedRecords)
-    } catch (error) {
-      console.error("Error loading attendance history:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const presentCount = attendanceRecords.filter((r) => r.status === "present").length
-  const absentCount = attendanceRecords.filter((r) => r.status === "absent").length
+export function CoachAttendanceHistory({ batches = [] }: CoachAttendanceHistoryProps) {
+  const [selectedBatch, setSelectedBatch] = useState<string | undefined>(undefined)
+  const [date, setDate] = useState<Date | undefined>(new Date())
 
   return (
-    <div className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium mb-2">Select Batch</label>
-        <Select value={selectedBatch} onValueChange={setSelectedBatch}>
-          <SelectTrigger className="w-full md:w-64">
-            <SelectValue placeholder="Choose a batch" />
-          </SelectTrigger>
-          <SelectContent>
-            {batches.map((batch) => (
-              <SelectItem key={batch.id} value={batch.id}>
-                {batch.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="batch">Select Batch</Label>
+          <Select value={selectedBatch} onValueChange={setSelectedBatch}>
+            <SelectTrigger id="batch">
+              <SelectValue placeholder="Select a batch" />
+            </SelectTrigger>
+            <SelectContent>
+              {batches.length > 0 ? (
+                batches.map((batch) => (
+                  <SelectItem key={batch} value={batch}>
+                    {batch}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="no-batches" disabled>
+                  No batches available
+                </SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Select Date</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? format(date, "PPP") : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div className="space-y-2 flex items-end">
+          <Button className="w-full">View Attendance History</Button>
+        </div>
       </div>
 
-      {selectedBatch && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Present</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">{presentCount}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Absent</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-600">{absentCount}</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Attendance History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-8">Loading...</div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Student</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {attendanceRecords.map((record) => (
-                      <TableRow key={record.id}>
-                        <TableCell>{format(new Date(record.date), "PPP")}</TableCell>
-                        <TableCell className="font-medium">{record.student_name}</TableCell>
-                        <TableCell>
-                          <Badge variant={record.status === "present" ? "default" : "destructive"}>
-                            {record.status}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-
-              {!loading && attendanceRecords.length === 0 && (
-                <div className="text-center py-8 text-gray-500">No attendance records found for this batch.</div>
-              )}
-            </CardContent>
-          </Card>
-        </>
-      )}
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-center text-gray-500">
+            Select a batch and date to view attendance history
+          </p>
+        </CardContent>
+      </Card>
     </div>
   )
 }

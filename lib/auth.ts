@@ -5,6 +5,8 @@ import * as bcrypt from "bcryptjs"
 
 export type User = Database["public"]["Tables"]["users"]["Row"]
 
+export type UserRole = "super_admin" | "club_manager" | "head_coach" | "coach" | "center_manager"
+
 // Helper function to hash passwords
 async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(10)
@@ -52,7 +54,7 @@ export async function getCurrentUser(): Promise<User | null> {
     // Get user data
     const { data: userData } = await supabase
       .from("users")
-      .select("*")
+      .select("*, centers:center_id(*)")
       .eq("id", session.user_id)
       .single()
     
@@ -67,7 +69,7 @@ export async function signIn(email: string, password: string) {
     // Find user by email
     const { data: user, error: userError } = await supabase
       .from("users")
-      .select("*")
+      .select("*, centers:center_id(*)")
       .eq("email", email.toLowerCase())
       .single()
     
@@ -134,14 +136,25 @@ export async function signOut() {
   }
 }
 
-export async function signUp(email: string, password: string, fullName: string, role: "admin" | "coach" = "coach") {
+export async function signUp(
+  email: string, 
+  password: string, 
+  fullName: string, 
+  role: UserRole = "coach", 
+  centerId?: string
+) {
   try {
     // Check if user already exists
-    const { data: existingUser } = await supabase
+    const { data: existingUser, error: checkError } = await supabase
       .from("users")
       .select("id")
       .eq("email", email.toLowerCase())
       .single()
+    
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error("Error checking existing user:", checkError)
+      return { data: { user: null }, error: { message: `Database error: ${checkError.message}` } }
+    }
     
     if (existingUser) {
       return { data: { user: null }, error: { message: "Email already in use" } }
@@ -150,20 +163,30 @@ export async function signUp(email: string, password: string, fullName: string, 
     // Hash password
     const passwordHash = await hashPassword(password)
     
+    // Create user with a specific ID
+    const userId = uuidv4()
+    
     // Create user
     const { data: userData, error: userError } = await supabase
       .from("users")
       .insert({
+        id: userId,
         email: email.toLowerCase(),
         password_hash: passwordHash,
         full_name: fullName,
         role,
+        center_id: centerId || null,
       })
       .select()
       .single()
     
-    if (userError || !userData) {
-      return { data: { user: null }, error: { message: "Failed to create user" } }
+    if (userError) {
+      console.error("Error creating user:", userError)
+      return { data: { user: null }, error: { message: `Failed to create user: ${userError.message}` } }
+    }
+    
+    if (!userData) {
+      return { data: { user: null }, error: { message: "User created but no data returned" } }
     }
     
     // Create session
@@ -180,7 +203,8 @@ export async function signUp(email: string, password: string, fullName: string, 
       })
     
     if (sessionError) {
-      return { data: { user: userData }, error: { message: "User created but failed to create session" } }
+      console.error("Error creating session:", sessionError)
+      return { data: { user: userData }, error: { message: `User created but failed to create session: ${sessionError.message}` } }
     }
     
     // Save token to localStorage (client-side only)
@@ -191,8 +215,8 @@ export async function signUp(email: string, password: string, fullName: string, 
     // Return user data without password
     const { password_hash, ...user } = userData
     return { data: { user }, error: null }
-  } catch (err) {
+  } catch (err: any) {
     console.error("Sign up error:", err)
-    return { data: { user: null }, error: { message: "An unexpected error occurred" } }
+    return { data: { user: null }, error: { message: `An unexpected error occurred: ${err.message || 'Unknown error'}` } }
   }
 }

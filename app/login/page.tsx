@@ -2,13 +2,14 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { signIn } from "@/lib/auth"
+import Link from "next/link"
+import { signIn, getCurrentUser } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
 
@@ -19,26 +20,43 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const router = useRouter()
 
+  // Check if user is already logged in
+  useEffect(() => {
+    async function checkAuth() {
+      const user = await getCurrentUser()
+      if (user) {
+        router.push("/dashboard")
+      }
+    }
+    checkAuth()
+  }, [router])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError("")
 
     try {
+      console.log("Attempting to sign in with:", email)
       const { data, error } = await signIn(email, password)
 
       if (error) {
+        console.error("Login error:", error)
         setError(error.message)
+        setLoading(false)
         return
       }
 
-      if (data.user) {
-        // Redirect based on user role
+      if (data?.user) {
+        console.log("Login successful, redirecting to dashboard")
         router.push("/dashboard")
+      } else {
+        setError("Failed to login. Please try again.")
+        setLoading(false)
       }
     } catch (err) {
+      console.error("Unexpected error during login:", err)
       setError("An unexpected error occurred")
-    } finally {
       setLoading(false)
     }
   }
@@ -47,7 +65,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Football Academy</CardTitle>
+          <CardTitle className="text-2xl font-bold">Snigmay Pune FC</CardTitle>
           <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
         <CardContent>
@@ -92,10 +110,19 @@ export default function LoginPage() {
             <p>
               <strong>Demo Accounts:</strong>
             </p>
-            <p>Admin: admin@academy.com / password123</p>
-            <p>Coach: coach1@academy.com / password123</p>
+            <p>Super Admin: admin@snigmaypune.com / password123</p>
+            <p>Coach: coach@snigmaypune.com / password123</p>
+            <p>Center Manager: center@snigmaypune.com / password123</p>
           </div>
         </CardContent>
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{" "}
+            <Link href="/signup" className="text-blue-600 hover:underline">
+              Sign up
+            </Link>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   )

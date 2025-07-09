@@ -28,5 +28,28 @@ export default function DashboardPage() {
     )
   }
 
-  return <AuthGuard>{user?.role === "admin" ? <AdminDashboard /> : <CoachDashboard />}</AuthGuard>
+  // Render the appropriate dashboard based on user role
+  const renderDashboard = () => {
+    if (!user) return null;
+
+    switch (user.role) {
+      case "super_admin":
+        return <AdminDashboard />;
+      case "club_manager":
+        // Will be implemented later
+        return <div>Club Manager Dashboard</div>;
+      case "head_coach":
+        // Will be implemented later
+        return <div>Head Coach Dashboard</div>;
+      case "coach":
+        return <CoachDashboard />;
+      case "center_manager":
+        // Will be implemented later
+        return <div>Center Manager Dashboard</div>;
+      default:
+        return <div>Unknown role</div>;
+    }
+  };
+
+  return <AuthGuard>{renderDashboard()}</AuthGuard>
 }
