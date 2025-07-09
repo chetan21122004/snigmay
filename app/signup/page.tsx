@@ -31,8 +31,12 @@ export default function SignupPage() {
   useEffect(() => {
     async function checkAuth() {
       const user = await getCurrentUser()
-      if (user) {
-        router.push("/dashboard")
+      if (!user) {
+        router.push("/login")
+        return
+      }
+      if (user.role !== "super_admin") {
+        router.push("/unauthorized")
       }
     }
     checkAuth()

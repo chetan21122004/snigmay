@@ -1,12 +1,12 @@
 "use client"
 
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { CenterDashboard } from "@/components/center-dashboard"
+import { BatchManagement } from "@/components/batch-management"
 
-export default function DashboardPage() {
+export default function BatchesPage() {
   return (
     <DashboardLayout>
-      <CenterDashboard />
+      <BatchManagement />
     </DashboardLayout>
   )
-}
+} 

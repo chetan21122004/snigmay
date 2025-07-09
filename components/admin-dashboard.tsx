@@ -166,6 +166,26 @@ export function AdminDashboard() {
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </Button>
+          {/* User Management (Super Admin only) */}
+          {user?.role === "super_admin" && (
+            <Button
+              variant={activeTab === "user-management" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => { setActiveTab("user-management"); router.push("/user-management"); }}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              User Management
+            </Button>
+          )}
+          {/* Change Password (all users) */}
+          <Button
+            variant={activeTab === "change-password" ? "default" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => { setActiveTab("change-password"); router.push("/change-password"); }}
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            Change Password
+          </Button>
         </nav>
         
         <div className="p-4 border-t border-gray-200">
@@ -250,6 +270,34 @@ export function AdminDashboard() {
             <Button onClick={handleSignOut} variant="outline" className="w-full justify-start">
               <LogOut className="mr-2 h-4 w-4" />
               Sign Out
+            </Button>
+            {/* User Management (Super Admin only) */}
+            {user?.role === "super_admin" && (
+              <Button
+                variant={activeTab === "user-management" ? "default" : "ghost"}
+                className="w-full justify-start"
+                onClick={() => {
+                  setActiveTab("user-management");
+                  setMobileMenuOpen(false);
+                  router.push("/user-management");
+                }}
+              >
+                <Users className="mr-2 h-4 w-4" />
+                User Management
+              </Button>
+            )}
+            {/* Change Password (all users) */}
+            <Button
+              variant={activeTab === "change-password" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => {
+                setActiveTab("change-password");
+                setMobileMenuOpen(false);
+                router.push("/change-password");
+              }}
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Change Password
             </Button>
           </nav>
         )}

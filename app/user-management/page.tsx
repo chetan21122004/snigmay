@@ -1,12 +1,12 @@
 "use client"
 
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { CenterDashboard } from "@/components/center-dashboard"
+import UserManagement from "@/components/user-management"
 
-export default function DashboardPage() {
+export default function UserManagementPage() {
   return (
     <DashboardLayout>
-      <CenterDashboard />
+      <UserManagement />
     </DashboardLayout>
   )
-}
+} 

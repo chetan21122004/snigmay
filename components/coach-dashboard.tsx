@@ -60,6 +60,9 @@ export function CoachDashboard() {
               <LogOut className="mr-2 h-4 w-4" />
               Sign Out
             </Button>
+            <Button onClick={() => router.push('/change-password')} variant="outline" className="ml-2">
+              Change Password
+            </Button>
           </div>
         </div>
       </header>

@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react"
 import { BatchManagement } from "./batch-management"
 import { StudentManagement } from "./student-management"
 import { AttendanceReports } from "./attendance-reports"
+import { Button } from "@/components/ui/button"
 
 export function ClubManagerDashboard() {
   const [user, setUser] = useState<any>(null)
@@ -33,7 +34,12 @@ export function ClubManagerDashboard() {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Club Manager Dashboard</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Club Manager Dashboard</h1>
+        <Button onClick={() => window.location.href = '/change-password'} variant="outline">
+          Change Password
+        </Button>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Card>

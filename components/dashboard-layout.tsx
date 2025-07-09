@@ -1,0 +1,335 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { signOut, getCurrentUser, type User } from "@/lib/auth"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  LayoutDashboard,
+  Users,
+  GraduationCap,
+  Calendar,
+  CreditCard,
+  UserCog,
+  Menu,
+  LogOut,
+  Lock,
+  User as UserIcon,
+  Building,
+  ClipboardList,
+  BarChart3,
+} from "lucide-react"
+import { cn } from "@/lib/utils"
+
+interface DashboardLayoutProps {
+  children: React.ReactNode
+}
+
+interface Center {
+  id: string
+  name: string
+  location: string
+}
+
+interface MenuItem {
+  title: string
+  href: string
+  icon: any
+  roles?: string[]
+}
+
+const menuItems: MenuItem[] = [
+  {
+    title: "Dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Students",
+    href: "/students",
+    icon: Users,
+  },
+  {
+    title: "Batches",
+    href: "/batches",
+    icon: ClipboardList,
+  },
+  {
+    title: "Attendance",
+    href: "/attendance",
+    icon: Calendar,
+  },
+  {
+    title: "Fee Management",
+    href: "/fees",
+    icon: CreditCard,
+  },
+  {
+    title: "Coaches",
+    href: "/coaches",
+    icon: GraduationCap,
+    roles: ["super_admin", "club_manager", "head_coach"],
+  },
+  {
+    title: "Centers",
+    href: "/centers",
+    icon: Building,
+    roles: ["super_admin", "club_manager"],
+  },
+  {
+    title: "Reports",
+    href: "/reports",
+    icon: BarChart3,
+  },
+  {
+    title: "User Management",
+    href: "/user-management",
+    icon: UserCog,
+    roles: ["super_admin"],
+  },
+]
+
+export function DashboardLayout({ children }: DashboardLayoutProps) {
+  const [user, setUser] = useState<User | null>(null)
+  const [centers, setCenters] = useState<Center[]>([])
+  const [selectedCenter, setSelectedCenter] = useState<string>("all")
+  const [loading, setLoading] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    loadUserAndCenters()
+  }, [])
+
+  const loadUserAndCenters = async () => {
+    try {
+      const currentUser = await getCurrentUser()
+      if (!currentUser) {
+        router.push("/login")
+        return
+      }
+      setUser(currentUser)
+
+      // Fetch centers
+      const response = await fetch("/api/centers")
+      const centersData = await response.json()
+      setCenters(centersData)
+
+      // Set default center based on user role
+      if (currentUser.role === "coach" || currentUser.role === "center_manager") {
+        setSelectedCenter(currentUser.center_id || "all")
+      } else {
+        setSelectedCenter(localStorage.getItem("selectedCenter") || "all")
+      }
+    } catch (error) {
+      console.error("Error loading user and centers:", error)
+      router.push("/login")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCenterChange = (centerId: string) => {
+    setSelectedCenter(centerId)
+    localStorage.setItem("selectedCenter", centerId)
+    // Reload the page to update data based on selected center
+    window.location.reload()
+  }
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push("/login")
+  }
+
+  const getFilteredMenuItems = () => {
+    if (!user) return []
+    return menuItems.filter((item) => {
+      if (!item.roles) return true
+      return item.roles.includes(user.role)
+    })
+  }
+
+  const canSwitchCenter = () => {
+    if (!user) return false
+    return ["super_admin", "club_manager", "head_coach"].includes(user.role)
+  }
+
+  const getUserInitials = () => {
+    if (!user) return "U"
+    return user.full_name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  const SidebarContent = () => (
+    <>
+      <div className="p-6 border-b">
+        <h1 className="text-xl font-bold text-primary">Snigmay Pune FC</h1>
+        <p className="text-xs text-muted-foreground mt-1">
+          {user?.role.replace("_", " ").charAt(0).toUpperCase() + user?.role.slice(1).replace("_", " ")} Portal
+        </p>
+      </div>
+
+      <nav className="flex-1 p-4 space-y-1">
+        {getFilteredMenuItems().map((item) => {
+          const Icon = item.icon
+          return (
+            <Link key={item.href} href={item.href}>
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <Icon className="mr-2 h-4 w-4" />
+                {item.title}
+              </Button>
+            </Link>
+          )
+        })}
+      </nav>
+    </>
+  )
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200 h-screen fixed">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Sidebar */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-64">
+          <SidebarContent />
+        </SheetContent>
+      </Sheet>
+
+      {/* Main Content Area */}
+      <div className="md:ml-64">
+        {/* Top Navbar */}
+        <header className="bg-white shadow-sm border-b sticky top-0 z-10">
+          <div className="px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-4">
+              <div className="flex items-center gap-4">
+                {/* Mobile Menu Toggle */}
+                <Sheet>
+                  <SheetTrigger asChild className="md:hidden">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSidebarOpen(true)}
+                    >
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </SheetTrigger>
+                </Sheet>
+
+                {/* Center Selector */}
+                {canSwitchCenter() && (
+                  <div className="flex items-center gap-2">
+                    <Building className="h-4 w-4 text-muted-foreground" />
+                    <Select value={selectedCenter} onValueChange={handleCenterChange}>
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Select Center" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Centers</SelectItem>
+                        {centers.map((center) => (
+                          <SelectItem key={center.id} value={center.id}>
+                            {center.location}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Fixed Center Display for Coaches */}
+                {!canSwitchCenter() && user?.center_id && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Building className="h-4 w-4" />
+                    <span>
+                      {centers.find((c) => c.id === user.center_id)?.location || "Center"}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* User Profile Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src="" alt={user?.full_name} />
+                      <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user?.full_name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer">
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/change-password" className="cursor-pointer">
+                      <Lock className="mr-2 h-4 w-4" />
+                      <span>Change Password</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+      </div>
+    </div>
+  )
+} 

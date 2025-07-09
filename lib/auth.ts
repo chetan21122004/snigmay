@@ -8,7 +8,7 @@ export type User = Database["public"]["Tables"]["users"]["Row"]
 export type UserRole = "super_admin" | "club_manager" | "head_coach" | "coach" | "center_manager"
 
 // Helper function to hash passwords
-async function hashPassword(password: string): Promise<string> {
+export async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(10)
   return bcrypt.hash(password, salt)
 }
