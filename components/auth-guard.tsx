@@ -1,82 +1,77 @@
 "use client"
 
-import type React from "react"
-
-import { useEffect, useState } from "react"
+import { useState, useEffect, ReactNode } from "react"
 import { useRouter } from "next/navigation"
-import { getCurrentUser, type User, type UserRole } from "@/lib/auth"
-import { Loader2 } from "lucide-react"
+import Image from "next/image"
+import { getCurrentUser, type User } from "@/lib/auth"
 
 interface AuthGuardProps {
-  children: React.ReactNode
-  requiredRole?: UserRole | UserRole[]
-  requiredCenter?: string
+  children: ReactNode
+  requiredRoles?: string[]
 }
 
-export function AuthGuard({ children, requiredRole, requiredCenter }: AuthGuardProps) {
+export function AuthGuard({ children, requiredRoles = [] }: AuthGuardProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [authorized, setAuthorized] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
     async function checkAuth() {
       try {
         const currentUser = await getCurrentUser()
-
+        
         if (!currentUser) {
           router.push("/login")
           return
         }
-
-        // Check if user has the required role
-        if (requiredRole) {
-          const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
-          
-          // Super admin can access everything
-          if (currentUser.role === "super_admin") {
-            setUser(currentUser)
-            setLoading(false)
-            return
-          }
-          
-          if (!roles.includes(currentUser.role)) {
-            router.push("/unauthorized")
-            return
-          }
+        
+        setUser(currentUser)
+        
+        // Check if user has required role
+        if (requiredRoles.length > 0 && !requiredRoles.includes(currentUser.role)) {
+          router.push("/unauthorized")
+          return
         }
         
-        // Check if user has access to the required center
-        if (requiredCenter && currentUser.role !== "super_admin" && 
-            currentUser.role !== "club_manager" && currentUser.role !== "head_coach") {
-          // Center managers and coaches need to be associated with the center
-          if (currentUser.center_id !== requiredCenter) {
-            router.push("/unauthorized")
-            return
-          }
-        }
-
-        setUser(currentUser)
+        setAuthorized(true)
       } catch (error) {
-        console.error("Auth check failed:", error)
+        console.error("Auth error:", error)
         router.push("/login")
       } finally {
-        setLoading(false)
+        // Add a small delay to ensure smooth transitions
+        setTimeout(() => setLoading(false), 500)
       }
     }
-
+    
     checkAuth()
-  }, [router, requiredRole, requiredCenter])
+  }, [router, requiredRoles])
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="mb-6 flex justify-center">
+            <Image 
+              src="/placeholder-logo.svg" 
+              alt="Snigmay Pune FC Logo" 
+              width={80} 
+              height={80} 
+              className="rounded-full bg-white p-2 shadow-md"
+            />
+          </div>
+          <h1 className="text-2xl font-bold text-[#0e4c92] mb-2">Snigmay Pune FC</h1>
+          <div className="flex justify-center mt-6">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0e4c92]"></div>
+          </div>
+          <p className="text-sm text-gray-500 mt-4">Verifying access...</p>
+        </div>
       </div>
     )
   }
 
-  if (!user) {
-    return null
+  if (!authorized) {
+    return null // This prevents flash of unauthorized content
   }
 
   return <>{children}</>
