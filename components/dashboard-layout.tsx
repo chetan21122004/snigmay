@@ -93,10 +93,10 @@ const menuCategories: MenuCategory[] = [
         icon: ClipboardList,
       },
       {
-        title: "Coaches",
-        href: "/coaches",
-        icon: GraduationCap,
-        roles: ["super_admin", "club_manager", "head_coach"],
+        title: "User Management",
+        href: "/user-management",
+        icon: UserCog,
+        roles: ["super_admin", "coach"],
       },
       {
         title: "Centers",

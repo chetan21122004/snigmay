@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { getCurrentUser, signUp } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Table, TableHead, TableRow, TableCell, TableBody } from "@/components/ui/table";
+import { Table, TableHeader, TableRow, TableHead, TableCell, TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -26,7 +26,13 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [showReset, setShowReset] = useState<{ open: boolean; user?: any }>({ open: false });
-  const [form, setForm] = useState({ email: "", fullName: "", password: "", role: "coach", centerId: "" });
+  const [form, setForm] = useState<{
+    email: string;
+    fullName: string;
+    password: string;
+    role: UserRole;
+    centerId: string;
+  }>({ email: "", fullName: "", password: "", role: "coach", centerId: "" });
   const [resetPassword, setResetPassword] = useState("");
   const router = useRouter();
 
@@ -95,15 +101,15 @@ export default function UserManagement() {
             <div className="text-center py-8">Loading...</div>
           ) : (
             <Table>
-              <TableHead>
+              <TableHeader>
                 <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Role</TableCell>
-                  <TableCell>Center</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Center</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              </TableHead>
+              </TableHeader>
               <TableBody>
                 {users.map((user) => (
                   <TableRow key={user.id}>
@@ -123,6 +129,7 @@ export default function UserManagement() {
           )}
         </CardContent>
       </Card>
+
       {/* Create User Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="max-w-md">
@@ -155,7 +162,7 @@ export default function UserManagement() {
                 </SelectContent>
               </Select>
             </div>
-            {(form.role === "coach" || form.role === "center_manager") && (
+            {form.role !== "super_admin" && (
               <div>
                 <Label>Center</Label>
                 <Select value={form.centerId} onValueChange={val => setForm(f => ({ ...f, centerId: val }))}>
@@ -176,6 +183,7 @@ export default function UserManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       {/* Reset Password Dialog */}
       <Dialog open={showReset.open} onOpenChange={open => setShowReset({ open })}>
         <DialogContent className="max-w-md">
