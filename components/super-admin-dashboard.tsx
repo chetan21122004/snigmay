@@ -469,7 +469,7 @@ export function SuperAdminDashboard() {
         <TabsList className="bg-muted/60">
           <TabsTrigger value="overview">System Overview</TabsTrigger>
           <TabsTrigger value="centers">Centers Management</TabsTrigger>
-          <TabsTrigger value="users">User Management</TabsTrigger>
+                      <TabsTrigger value="users">Coach Management</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="system">System Health</TabsTrigger>
         </TabsList>
@@ -524,7 +524,7 @@ export function SuperAdminDashboard() {
                 <Button variant="outline" className="w-full justify-start" asChild>
                   <a href="/user-management">
                     <Users className="mr-2 h-4 w-4" />
-                    User Management
+                    Coach Management
                   </a>
                 </Button>
                 <Button variant="outline" className="w-full justify-start" asChild>
@@ -605,8 +605,8 @@ export function SuperAdminDashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg">User Management</CardTitle>
-                  <CardDescription>Create and manage all system users and their roles</CardDescription>
+                  <CardTitle className="text-lg">Coach Management</CardTitle>
+                  <CardDescription>Create and manage all coaches and their roles</CardDescription>
                 </div>
                 <UserCreationDialog onUserCreated={loadDashboardData} />
               </div>
@@ -659,7 +659,7 @@ export function SuperAdminDashboard() {
                 <Button variant="outline" className="w-full" asChild>
                   <a href="/user-management">
                     <Users className="mr-2 h-4 w-4" />
-                    Access Full User Management System
+                    Access Full Coach Management System
                   </a>
                 </Button>
               </div>

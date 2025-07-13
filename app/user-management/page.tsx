@@ -3,7 +3,7 @@
 import { DashboardLayout } from "@/components/dashboard-layout"
 import UserManagement from "@/components/user-management"
 
-export default function UserManagementPage() {
+export default function CoachManagementPage() {
   return (
     <DashboardLayout>
       <UserManagement />

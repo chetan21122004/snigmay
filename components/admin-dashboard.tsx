@@ -166,7 +166,7 @@ export function AdminDashboard() {
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </Button>
-          {/* User Management (Super Admin only) */}
+          {/* Coach Management (Super Admin only) */}
           {user?.role === "super_admin" && (
             <Button
               variant={activeTab === "user-management" ? "default" : "ghost"}
@@ -174,7 +174,7 @@ export function AdminDashboard() {
               onClick={() => { setActiveTab("user-management"); router.push("/user-management"); }}
             >
               <Users className="mr-2 h-4 w-4" />
-              User Management
+              Coach Management
             </Button>
           )}
           {/* Change Password (all users) */}
@@ -271,7 +271,7 @@ export function AdminDashboard() {
               <LogOut className="mr-2 h-4 w-4" />
               Sign Out
             </Button>
-            {/* User Management (Super Admin only) */}
+            {/* Coach Management (Super Admin only) */}
             {user?.role === "super_admin" && (
               <Button
                 variant={activeTab === "user-management" ? "default" : "ghost"}
@@ -283,7 +283,7 @@ export function AdminDashboard() {
                 }}
               >
                 <Users className="mr-2 h-4 w-4" />
-                User Management
+                Coach Management
               </Button>
             )}
             {/* Change Password (all users) */}

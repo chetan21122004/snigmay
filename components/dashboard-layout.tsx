@@ -88,7 +88,7 @@ const menuItems: MenuItem[] = [
     icon: CreditCard,
   },
   {
-    title: "User Management",
+    title: "Coach Management",
     href: "/user-management",
     icon: UserCog,
     roles: ["super_admin", "club_manager", "head_coach"],
