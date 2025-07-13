@@ -45,17 +45,13 @@ import {
   ChevronRight,
   HelpCircle,
   Database,
+  MapPin,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { CenterProvider, useCenterContext } from "@/context/center-context"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
-}
-
-interface Center {
-  id: string
-  name: string
-  location: string
 }
 
 interface MenuItem {
@@ -150,20 +146,87 @@ const menuCategories: MenuCategory[] = [
   }
 ];
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+// Center selector component
+const CenterSelector = () => {
+  const { selectedCenter, setSelectedCenter, availableCenters, user, loading } = useCenterContext();
+
+  if (loading) {
+    return (
+      <div className="px-3 py-2">
+        <div className="h-8 bg-muted rounded animate-pulse" />
+      </div>
+    );
+  }
+
+  if (!user || availableCenters.length === 0) {
+    return null;
+  }
+
+  // For restricted roles, show center as read-only badge
+  if (user.role === 'coach' || user.role === 'center_manager') {
+    return (
+      <div className="px-3 py-2">
+        <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+          <MapPin className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">
+            {selectedCenter?.location || 'No Center Assigned'}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // For unrestricted roles, show dropdown
+  return (
+    <div className="px-3 py-2">
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground px-2">Center</p>
+        <Select
+          value={selectedCenter?.id || ''}
+          onValueChange={(value) => {
+            const center = availableCenters.find(c => c.id === value);
+            setSelectedCenter(center || null);
+          }}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select center">
+              {selectedCenter && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  <span>{selectedCenter.location}</span>
+                </div>
+              )}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {availableCenters.map((center) => (
+              <SelectItem key={center.id} value={center.id}>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  <span>{center.location}</span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+};
+
+// Main dashboard layout component
+const DashboardLayoutContent = ({ children }: DashboardLayoutProps) => {
   const [user, setUser] = useState<User | null>(null)
-  const [centers, setCenters] = useState<Center[]>([])
-  const [selectedCenter, setSelectedCenter] = useState<string>("all")
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [notifications, setNotifications] = useState<number>(3) // Example notification count
   const router = useRouter()
 
   useEffect(() => {
-    loadUserAndCenters()
+    loadUser()
   }, [])
 
-  const loadUserAndCenters = async () => {
+  const loadUser = async () => {
     try {
       const currentUser = await getCurrentUser()
       if (!currentUser) {
@@ -171,31 +234,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         return
       }
       setUser(currentUser)
-
-      // Fetch centers
-      const response = await fetch("/api/centers")
-      const centersData = await response.json()
-      setCenters(centersData)
-
-      // Set default center based on user role
-      if (currentUser.role === "coach" || currentUser.role === "center_manager") {
-        setSelectedCenter(currentUser.center_id || "all")
-      } else {
-        setSelectedCenter(localStorage.getItem("selectedCenter") || "all")
-      }
     } catch (error) {
-      console.error("Error loading user and centers:", error)
+      console.error("Error loading user:", error)
       router.push("/login")
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleCenterChange = (centerId: string) => {
-    setSelectedCenter(centerId)
-    localStorage.setItem("selectedCenter", centerId)
-    // Reload the page to update data based on selected center
-    window.location.reload()
   }
 
   const handleSignOut = async () => {
@@ -217,11 +261,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         items: filteredItems
       };
     }).filter(category => category.items.length > 0);
-  }
-
-  const canSwitchCenter = () => {
-    if (!user) return false
-    return ["super_admin", "club_manager", "head_coach"].includes(user.role)
   }
 
   const getUserInitials = () => {
@@ -285,6 +324,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </div>
 
+      {/* Center Selector */}
+      <CenterSelector />
+      <Separator className="mx-3" />
+
       <div className="flex-1 overflow-y-auto">
         {getFilteredMenuCategories().map((category, idx) => (
           <div key={idx} className="py-2">
@@ -294,7 +337,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <nav className="px-3 space-y-1">
               {category.items.map((item) => {
                 const Icon = item.icon
-                const isActive = window.location.pathname === item.href
+                const isActive = typeof window !== 'undefined' && window.location.pathname === item.href
                 
                 return (
                   <Link key={item.href} href={item.href}>
@@ -372,36 +415,24 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <div className="hidden sm:flex items-center text-sm">
                   <span className="text-muted-foreground">Snigmay FC</span>
                   <ChevronRight className="h-4 w-4 mx-1 text-muted-foreground" />
-                  <span className="font-medium">{window.location.pathname.split('/').pop()?.charAt(0).toUpperCase() + window.location.pathname.split('/').pop()?.slice(1) || 'Dashboard'}</span>
+                  <span className="font-medium">
+                    {typeof window !== 'undefined' && 
+                      (() => {
+                        const pathSegment = window.location.pathname.split('/').pop();
+                        return pathSegment ? 
+                          (pathSegment.charAt(0).toUpperCase() + pathSegment.slice(1)) : 
+                          'Dashboard';
+                      })()}
+                  </span>
                 </div>
 
-                {/* Center Selector */}
-                {canSwitchCenter() && (
-                  <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4 text-muted-foreground" />
-                    <Select value={selectedCenter} onValueChange={handleCenterChange}>
-                      <SelectTrigger className="w-[200px] h-9 text-sm">
-                        <SelectValue placeholder="Select Center" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Centers</SelectItem>
-                        {centers.map((center) => (
-                          <SelectItem key={center.id} value={center.id}>
-                            {center.location}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {/* Fixed Center Display for Coaches */}
-                {!canSwitchCenter() && user?.center_id && (
+                {/* Role Display */}
+                {user && (
                   <div className="flex items-center gap-2 text-sm">
-                    <Badge variant="outline" className="pl-1 pr-2 py-0 flex items-center gap-1 border-green-200 bg-green-50">
-                      <Building className="h-3 w-3 text-green-600" />
-                      <span className="text-green-700">
-                        {centers.find((c) => c.id === user.center_id)?.location || "Center"}
+                    <Badge variant="outline" className="pl-1 pr-2 py-0 flex items-center gap-1 border-blue-200 bg-blue-50">
+                      <UserIcon className="h-3 w-3 text-blue-600" />
+                      <span className="text-blue-700">
+                        {getRoleName()}
                       </span>
                     </Badge>
                   </div>
@@ -502,5 +533,49 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </footer>
       </div>
     </div>
+  )
+}
+
+// Main export with CenterProvider wrapper
+export function DashboardLayout({ children }: DashboardLayoutProps) {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const currentUser = await getCurrentUser()
+        if (!currentUser) {
+          router.push("/login")
+          return
+        }
+        setUser(currentUser)
+      } catch (error) {
+        console.error("Error loading user:", error)
+        router.push("/login")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadUser()
+  }, [router])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <CenterProvider user={user}>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </CenterProvider>
   )
 } 

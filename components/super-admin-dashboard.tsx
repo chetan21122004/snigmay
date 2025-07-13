@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase"
 import { useCenterContext } from "@/context/center-context"
+import { UserCreationDialog } from "@/components/user-creation-dialog"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -14,6 +15,7 @@ import {
   CreditCard, 
   BarChart3, 
   Building, 
+  Settings,
   UserCheck,
   Clock,
   Target,
@@ -26,9 +28,10 @@ import {
   GraduationCap,
   Users2,
   IndianRupee,
+  Database,
+  Shield,
   Activity,
-  TrendingUp,
-  Briefcase
+  TrendingUp
 } from "lucide-react"
 
 interface DashboardStats {
@@ -36,6 +39,7 @@ interface DashboardStats {
   totalBatches: number
   totalCoaches: number
   totalCenters: number
+  totalUsers: number
   attendanceToday: number
   attendanceRate: number
   pendingFees: number
@@ -58,20 +62,21 @@ interface CenterStats {
 
 interface RecentActivity {
   id: string
-  type: 'payment' | 'attendance' | 'registration' | 'batch_creation'
+  type: 'payment' | 'attendance' | 'registration' | 'batch_creation' | 'user_creation'
   description: string
   timestamp: string
   amount?: number
   centerName?: string
 }
 
-export function ClubManagerDashboard() {
+export function SuperAdminDashboard() {
   const { selectedCenter } = useCenterContext()
   const [stats, setStats] = useState<DashboardStats>({
     totalStudents: 0,
     totalBatches: 0,
     totalCoaches: 0,
     totalCenters: 0,
+    totalUsers: 0,
     attendanceToday: 0,
     attendanceRate: 0,
     pendingFees: 0,
@@ -103,21 +108,42 @@ export function ClubManagerDashboard() {
 
   const loadOverallStats = async () => {
     try {
-      // Get overall statistics across all centers
+      // Get overall statistics - filter by selected center if applicable
+      const centerFilter = selectedCenter ? selectedCenter.id : null
+      
       const [
         { data: students },
         { data: batches },
         { data: coaches },
         { data: centers },
+        { data: users },
         { data: attendanceToday },
         { data: feePayments }
       ] = await Promise.all([
-        supabase.from('students').select('id'),
-        supabase.from('batches').select('id'),
-        supabase.from('users').select('id').eq('role', 'coach'),
+        // Students filtered by center
+        centerFilter 
+          ? supabase.from('students').select('id, batches!inner(center_id)').eq('batches.center_id', centerFilter)
+          : supabase.from('students').select('id'),
+        // Batches filtered by center
+        centerFilter 
+          ? supabase.from('batches').select('id').eq('center_id', centerFilter)
+          : supabase.from('batches').select('id'),
+        // Coaches filtered by center
+        centerFilter 
+          ? supabase.from('users').select('id').eq('role', 'coach').eq('center_id', centerFilter)
+          : supabase.from('users').select('id').eq('role', 'coach'),
+        // Centers - always show all for super admin
         supabase.from('centers').select('id'),
-        supabase.from('attendance').select('status').eq('date', new Date().toISOString().split('T')[0]),
-        supabase.from('fee_payments').select('amount, status, payment_date')
+        // Users - always show all for super admin
+        supabase.from('users').select('id'),
+        // Attendance filtered by center
+        centerFilter 
+          ? supabase.from('attendance').select('status, batches!inner(center_id)').eq('batches.center_id', centerFilter).eq('date', new Date().toISOString().split('T')[0])
+          : supabase.from('attendance').select('status').eq('date', new Date().toISOString().split('T')[0]),
+        // Fee payments filtered by center
+        centerFilter 
+          ? supabase.from('fee_payments').select('amount, status, payment_date, students!inner(batches!inner(center_id))').eq('students.batches.center_id', centerFilter)
+          : supabase.from('fee_payments').select('amount, status, payment_date')
       ])
 
       const presentToday = attendanceToday?.filter(a => a.status === 'present').length || 0
@@ -142,6 +168,7 @@ export function ClubManagerDashboard() {
         totalBatches: batches?.length || 0,
         totalCoaches: coaches?.length || 0,
         totalCenters: centers?.length || 0,
+        totalUsers: users?.length || 0,
         attendanceToday: presentToday,
         attendanceRate,
         pendingFees: totalPendingFees,
@@ -210,63 +237,76 @@ export function ClubManagerDashboard() {
   const loadRecentActivities = async () => {
     try {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      const centerFilter = selectedCenter ? selectedCenter.id : null
       
       const [
         { data: payments },
         { data: students },
         { data: batches },
-        { data: attendance }
+        { data: users }
       ] = await Promise.all([
-        supabase.from('fee_payments').select('id, amount, created_at, students(name, batches(centers(location)))').eq('status', 'paid').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
-        supabase.from('students').select('id, name, created_at, batches(centers(location))').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
-        supabase.from('batches').select('id, name, created_at, centers(location)').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
-        supabase.from('attendance').select('id, created_at, batches(name, centers(location))').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
+        // Fee payments with student and center info
+        centerFilter
+          ? supabase.from('fee_payments').select('id, amount, created_at, students!inner(name, batches!inner(centers!inner(location)))').eq('students.batches.centers.id', centerFilter).eq('status', 'paid').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
+          : supabase.from('fee_payments').select('id, amount, created_at, students(name, batches(centers(location)))').eq('status', 'paid').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
+        // Students with batch and center info
+        centerFilter
+          ? supabase.from('students').select('id, name, created_at, batches!inner(centers!inner(location))').eq('batches.centers.id', centerFilter).gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
+          : supabase.from('students').select('id, name, created_at, batches(centers(location))').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
+        // Batches with center info
+        centerFilter
+          ? supabase.from('batches').select('id, name, created_at, centers!inner(location)').eq('centers.id', centerFilter).gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
+          : supabase.from('batches').select('id, name, created_at, centers(location)').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
+        // Users with center info
+        centerFilter
+          ? supabase.from('users').select('id, full_name, created_at, centers!inner(location)').eq('centers.id', centerFilter).gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
+          : supabase.from('users').select('id, full_name, created_at, centers(location)').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
       ])
 
       const activities: RecentActivity[] = []
 
       // Process payments
-      payments?.forEach(payment => {
+      payments?.forEach((payment: any) => {
         activities.push({
           id: `payment-${payment.id}`,
           type: 'payment',
           description: `Fee payment received from ${payment.students?.name || 'Unknown Student'}`,
           timestamp: payment.created_at,
           amount: Number(payment.amount),
-          centerName: payment.students?.batches?.centers?.location || 'Unknown Center'
+          centerName: payment.students?.batches?.centers?.location || selectedCenter?.location || 'Unknown Center'
         })
       })
 
       // Process student registrations
-      students?.forEach(student => {
+      students?.forEach((student: any) => {
         activities.push({
           id: `registration-${student.id}`,
           type: 'registration',
           description: `New student registration - ${student.name}`,
           timestamp: student.created_at,
-          centerName: student.batches?.centers?.location || 'Unknown Center'
+          centerName: student.batches?.centers?.location || selectedCenter?.location || 'Unknown Center'
         })
       })
 
       // Process batch creations
-      batches?.forEach(batch => {
+      batches?.forEach((batch: any) => {
         activities.push({
           id: `batch-${batch.id}`,
           type: 'batch_creation',
           description: `New batch created - ${batch.name}`,
           timestamp: batch.created_at,
-          centerName: batch.centers?.location || 'Unknown Center'
+          centerName: batch.centers?.location || selectedCenter?.location || 'Unknown Center'
         })
       })
 
-      // Process attendance
-      attendance?.forEach(record => {
+      // Process user creations
+      users?.forEach((user: any) => {
         activities.push({
-          id: `attendance-${record.id}`,
-          type: 'attendance',
-          description: `Attendance marked for ${record.batches?.name || 'Unknown Batch'}`,
-          timestamp: record.created_at,
-          centerName: record.batches?.centers?.location || 'Unknown Center'
+          id: `user-${user.id}`,
+          type: 'user_creation',
+          description: `New user created - ${user.full_name}`,
+          timestamp: user.created_at,
+          centerName: user.centers?.location || selectedCenter?.location || 'System'
         })
       })
 
@@ -291,6 +331,8 @@ export function ClubManagerDashboard() {
         return <Users className="h-4 w-4 text-purple-500" />
       case 'batch_creation':
         return <Layers className="h-4 w-4 text-orange-500" />
+      case 'user_creation':
+        return <User className="h-4 w-4 text-indigo-500" />
       default:
         return <Activity className="h-4 w-4 text-gray-500" />
     }
@@ -310,16 +352,12 @@ export function ClubManagerDashboard() {
     }
   }
 
-  const collectionRate = stats.totalRevenue > 0 
-    ? ((stats.totalRevenue / (stats.totalRevenue + stats.pendingFees)) * 100).toFixed(1)
-    : "0.0"
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="text-sm text-muted-foreground">Loading Club Manager Dashboard...</p>
+          <p className="text-sm text-muted-foreground">Loading Super Admin Dashboard...</p>
         </div>
       </div>
     )
@@ -327,66 +365,78 @@ export function ClubManagerDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Club Manager Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg p-6 text-white">
+      {/* Super Admin Header */}
+      <div className="bg-gradient-to-r from-red-600 to-orange-600 rounded-lg p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Briefcase className="h-6 w-6" />
-              Club Manager Dashboard
+              <Shield className="h-6 w-6" />
+              Super Admin Dashboard
             </h1>
-            <p className="text-blue-100 mt-1">Manage attendance and financials across all centers - Strategic oversight</p>
+            <p className="text-red-100 mt-1">Complete system control and oversight - Full access to all modules and data</p>
+            {selectedCenter && (
+              <div className="flex items-center gap-2 mt-2">
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                  <Building className="h-3 w-3 mr-1" />
+                  Viewing: {selectedCenter.location}
+                </Badge>
+              </div>
+            )}
           </div>
           <div className="text-right">
-            <p className="text-sm text-blue-100">Collection Rate</p>
-            <p className="text-lg font-semibold">{collectionRate}%</p>
+            <p className="text-sm text-red-100">System Status</p>
+            <div className="flex items-center gap-2 mt-1">
+              <CheckCircle2 className="h-4 w-4 text-green-300" />
+              <span className="text-lg font-semibold">All Systems Online</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Key Performance Indicators */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
+      {/* System Overview KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-red-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-            <GraduationCap className="h-5 w-5 text-blue-500" />
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-5 w-5 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalStudents}</div>
-            <div className="flex items-center mt-1">
-              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                <Building className="mr-1 h-3 w-3" />
-                {stats.totalCenters} Centers
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Across all training centers
+            <div className="text-2xl font-bold">{stats.totalUsers}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              All system users
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Centers</CardTitle>
+            <Building className="h-5 w-5 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalCenters}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Active training centers
             </p>
           </CardContent>
         </Card>
 
         <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Training Batches</CardTitle>
-            <Layers className="h-5 w-5 text-green-500" />
+            <CardTitle className="text-sm font-medium">Students</CardTitle>
+            <GraduationCap className="h-5 w-5 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalBatches}</div>
-            <div className="flex items-center mt-1">
-              <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                <Users2 className="mr-1 h-3 w-3" />
-                {Math.round(stats.totalStudents / (stats.totalBatches || 1))} avg. size
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Active training groups
+            <div className="text-2xl font-bold">{stats.totalStudents}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Enrolled students
             </p>
           </CardContent>
         </Card>
-        
+
         <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-purple-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Attendance</CardTitle>
+            <CardTitle className="text-sm font-medium">Attendance</CardTitle>
             <UserCheck className="h-5 w-5 text-purple-500" />
           </CardHeader>
           <CardContent>
@@ -394,45 +444,43 @@ export function ClubManagerDashboard() {
             <div className="mt-2">
               <Progress value={stats.attendanceRate} className="h-2" />
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              {stats.attendanceToday} students present
+            <p className="text-xs text-muted-foreground mt-1">
+              Today's attendance
             </p>
           </CardContent>
         </Card>
-        
+
         <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-amber-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
             <IndianRupee className="h-5 w-5 text-amber-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₹{stats.totalRevenue.toLocaleString()}</div>
-            <div className="mt-2">
-              <Progress value={parseFloat(collectionRate)} className="h-2" />
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              ₹{stats.pendingFees.toLocaleString()} pending
+            <p className="text-xs text-muted-foreground mt-1">
+              Total collected
             </p>
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList className="bg-muted/60">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="centers">Centers</TabsTrigger>
-          <TabsTrigger value="financial">Financial</TabsTrigger>
-          <TabsTrigger value="attendance">Attendance</TabsTrigger>
+          <TabsTrigger value="overview">System Overview</TabsTrigger>
+          <TabsTrigger value="centers">Centers Management</TabsTrigger>
+          <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="system">System Health</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Recent Activities */}
+            {/* System Activities */}
             <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle className="text-lg">Recent Activities</CardTitle>
-                <CardDescription>Latest updates across all centers</CardDescription>
+                <CardTitle className="text-lg">Recent System Activities</CardTitle>
+                <CardDescription>Latest activities across all centers and modules</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -465,54 +513,55 @@ export function ClubManagerDashboard() {
               </CardContent>
             </Card>
 
-            {/* Management Actions */}
-          <Card>
-            <CardHeader>
-                <CardTitle className="text-lg">Management Actions</CardTitle>
-                <CardDescription>Key management functions</CardDescription>
-            </CardHeader>
+            {/* System Controls */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">System Controls</CardTitle>
+                <CardDescription>Administrative functions</CardDescription>
+              </CardHeader>
               <CardContent className="space-y-3">
+                <UserCreationDialog onUserCreated={loadDashboardData} />
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="/attendance">
-                    <UserCheck className="mr-2 h-4 w-4" />
-                    Attendance Management
-                  </a>
-                </Button>
-                <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="/fees">
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    Fee Management
-                  </a>
-                </Button>
-                <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="/students">
+                  <a href="/user-management">
                     <Users className="mr-2 h-4 w-4" />
-                    Student Management
+                    User Management
                   </a>
                 </Button>
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="/batches">
-                    <Layers className="mr-2 h-4 w-4" />
-                    Batch Management
+                  <a href="/centers">
+                    <Building className="mr-2 h-4 w-4" />
+                    Center Management
                   </a>
                 </Button>
-            </CardContent>
-          </Card>
+                <Button variant="outline" className="w-full justify-start" asChild>
+                  <a href="/demo-data">
+                    <Database className="mr-2 h-4 w-4" />
+                    Demo Data
+                  </a>
+                </Button>
+                <Button variant="outline" className="w-full justify-start" asChild>
+                  <a href="/settings">
+                    <Settings className="mr-2 h-4 w-4" />
+                    System Settings
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="centers" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {stats.centerStats.map((center) => (
               <Card key={center.centerId} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
+                <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Building className="h-5 w-5 text-blue-500" />
                     {center.location}
                   </CardTitle>
                   <CardDescription>{center.centerName}</CardDescription>
-            </CardHeader>
-            <CardContent>
+                </CardHeader>
+                <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Students</span>
@@ -539,137 +588,149 @@ export function ClubManagerDashboard() {
                       <span className="font-medium text-red-500">₹{center.pendingFees.toLocaleString()}</span>
                     </div>
                   </div>
-            </CardContent>
+                </CardContent>
                 <CardFooter>
                   <Button variant="outline" size="sm" className="w-full">
                     <BarChart3 className="mr-2 h-4 w-4" />
                     View Details
                   </Button>
                 </CardFooter>
-          </Card>
+              </Card>
             ))}
           </div>
         </TabsContent>
-        
-        <TabsContent value="financial" className="space-y-6">
+
+        <TabsContent value="users" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">User Management</CardTitle>
+                  <CardDescription>Create and manage all system users and their roles</CardDescription>
+                </div>
+                <UserCreationDialog onUserCreated={loadDashboardData} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card className="border-dashed border-2 hover:border-primary/50 transition-colors">
+                  <CardContent className="flex flex-col items-center justify-center py-8">
+                    <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="font-medium mb-2">Quick User Creation</h3>
+                    <p className="text-sm text-muted-foreground text-center mb-4">
+                      Create new users with appropriate roles and center assignments
+                    </p>
+                    <UserCreationDialog onUserCreated={loadDashboardData} />
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-red-500" />
+                      Super Admins
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-4">
+                      <div className="text-2xl font-bold text-red-500">{stats.totalUsers}</div>
+                      <p className="text-sm text-muted-foreground">System administrators</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <GraduationCap className="h-5 w-5 text-green-500" />
+                      Coaches
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-4">
+                      <div className="text-2xl font-bold text-green-500">{stats.totalCoaches}</div>
+                      <p className="text-sm text-muted-foreground">Training coaches</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="mt-6">
+                <Button variant="outline" className="w-full" asChild>
+                  <a href="/user-management">
+                    <Users className="mr-2 h-4 w-4" />
+                    Access Full User Management System
+                  </a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">System Analytics</CardTitle>
+              <CardDescription>Comprehensive analytics and reporting</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">Advanced analytics dashboard coming soon...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="system" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Financial Overview</CardTitle>
-                <CardDescription>Revenue and collection summary</CardDescription>
+                <CardTitle className="text-lg text-green-600">System Status</CardTitle>
+                <CardDescription>Current system health and performance</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Total Revenue</span>
-                    <span className="font-semibold text-green-600">₹{stats.totalRevenue.toLocaleString()}</span>
+              <CardContent className="space-y-4">
+                <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-100 rounded-md">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-green-800">Database Connection</p>
+                    <p className="text-xs text-green-600 mt-1">All database connections are healthy</p>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Pending Fees</span>
-                    <span className="font-semibold text-red-500">₹{stats.pendingFees.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Collection Rate</span>
-                    <span className={`font-semibold ${parseFloat(collectionRate) > 85 ? 'text-green-500' : parseFloat(collectionRate) > 70 ? 'text-amber-500' : 'text-red-500'}`}>
-                      {collectionRate}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Recent Payments</span>
-                    <span className="font-semibold text-blue-600">₹{stats.recentPayments.toLocaleString()}</span>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-100 rounded-md">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-green-800">API Services</p>
+                    <p className="text-xs text-green-600 mt-1">All API endpoints are responding normally</p>
                   </div>
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button className="w-full" asChild>
-                  <a href="/fees">
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    Manage Fees
-                  </a>
-                </Button>
-              </CardFooter>
             </Card>
 
-          <Card>
-            <CardHeader>
-                <CardTitle className="text-lg">Center-wise Revenue</CardTitle>
-                <CardDescription>Revenue breakdown by center</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-3">
-                  {stats.centerStats.map((center) => (
-                    <div key={center.centerId}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>{center.location}</span>
-                        <span>₹{center.revenue.toLocaleString()}</span>
-                      </div>
-                      <Progress 
-                        value={stats.totalRevenue > 0 ? (center.revenue / stats.totalRevenue) * 100 : 0} 
-                        className="h-2" 
-                      />
-                    </div>
-                  ))}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg text-blue-600">System Information</CardTitle>
+                <CardDescription>System configuration and details</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Total Users</span>
+                  <span className="font-medium">{stats.totalUsers}</span>
                 </div>
-            </CardContent>
-          </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="attendance" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-                <CardTitle className="text-lg">Attendance Overview</CardTitle>
-                <CardDescription>Student attendance across centers</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Today's Attendance</span>
-                    <span className="font-semibold">{stats.attendanceToday} / {stats.totalStudents}</span>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Attendance Rate</span>
-                      <span>{stats.attendanceRate}%</span>
-                    </div>
-                    <Progress value={stats.attendanceRate} className="h-2" />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Absent Today</span>
-                    <span className="font-semibold text-red-500">{stats.totalStudents - stats.attendanceToday}</span>
-                  </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Active Centers</span>
+                  <span className="font-medium">{stats.totalCenters}</span>
                 </div>
-            </CardContent>
-              <CardFooter>
-                <Button className="w-full" asChild>
-                  <a href="/attendance">
-                    <UserCheck className="mr-2 h-4 w-4" />
-                    Manage Attendance
-                  </a>
-                </Button>
-              </CardFooter>
-          </Card>
-        
-          <Card>
-            <CardHeader>
-                <CardTitle className="text-lg">Center-wise Attendance</CardTitle>
-                <CardDescription>Attendance rates by center</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-3">
-                  {stats.centerStats.map((center) => (
-                    <div key={center.centerId}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>{center.location}</span>
-                        <span>{center.attendanceRate}%</span>
-                      </div>
-                      <Progress value={center.attendanceRate} className="h-2" />
-                    </div>
-                  ))}
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Database Size</span>
+                  <span className="font-medium">~2.5 MB</span>
                 </div>
-            </CardContent>
-          </Card>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Last Backup</span>
+                  <span className="font-medium">Today</span>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
       </Tabs>

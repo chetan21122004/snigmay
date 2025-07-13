@@ -1,21 +1,23 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { FeeManagement } from "@/components/fee-management"
+import { FinanceManagement } from "@/components/finance-management"
 
 export default function FeesPage() {
-  const [selectedCenter, setSelectedCenter] = useState<string>("all")
-
-  useEffect(() => {
-    // Get selected center from localStorage
-    const storedCenter = localStorage.getItem("selectedCenter") || "all"
-    setSelectedCenter(storedCenter)
-  }, [])
-
   return (
     <DashboardLayout>
-      <FeeManagement selectedCenter={selectedCenter} />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Fee Management</h1>
+            <p className="text-muted-foreground">
+              Comprehensive student fee tracking and payment management
+            </p>
+          </div>
+        </div>
+        
+        <FinanceManagement />
+      </div>
     </DashboardLayout>
   )
 } 
