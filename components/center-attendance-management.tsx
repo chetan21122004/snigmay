@@ -1,18 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { getCurrentUser } from "@/lib/auth"
+import React, { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, Users, CheckCircle, XCircle, Clock, Filter, Download, Search, CalendarIcon, UserCheck } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
-import { CalendarIcon, Search, Filter, Download, UserCheck, UserX } from "lucide-react"
+import { getCurrentUser } from "@/lib/auth"
+import { useCenterContext } from "@/context/center-context"
 
 interface AttendanceRecord {
   id: string
@@ -43,116 +45,91 @@ interface CenterAttendanceProps {
   selectedCenter: string
 }
 
-export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceProps) {
+export function CenterAttendanceManagement() {
+  const { selectedCenter } = useCenterContext()
   const [user, setUser] = useState<any>(null)
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([])
   const [batches, setBatches] = useState<Batch[]>([])
   const [students, setStudents] = useState<Student[]>([])
-  const [loading, setLoading] = useState(true)
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [selectedBatch, setSelectedBatch] = useState<string>("")
+  const [loading, setLoading] = useState(false)
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedBatch, setSelectedBatch] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
   const [markingMode, setMarkingMode] = useState(false)
+  const [attendanceData, setAttendanceData] = useState<{ [key: string]: boolean }>({})
 
   useEffect(() => {
-    loadUserAndData()
-  }, [selectedCenter])
+    loadUser()
+  }, [])
 
   useEffect(() => {
-    if (user) {
+    if (user && selectedCenter) {
+      loadBatches()
       loadAttendanceRecords()
     }
-  }, [selectedDate, selectedBatch])
+  }, [user, selectedCenter])
 
   useEffect(() => {
-    if (user) {
+    if (user && selectedCenter && selectedBatch) {
       loadStudents()
     }
-  }, [selectedBatch])
+  }, [user, selectedCenter, selectedBatch])
 
-  const loadUserAndData = async () => {
+  const loadUser = async () => {
     try {
       const currentUser = await getCurrentUser()
       setUser(currentUser)
-      
-      await Promise.all([
-        loadAttendanceRecords(),
-        loadBatches(),
-        loadStudents()
-      ])
     } catch (error) {
-      console.error('Error loading data:', error)
+      console.error('Error loading user:', error)
+    }
+  }
+
+  const loadBatches = async () => {
+    if (!selectedCenter?.id) return
+    
+    try {
+      const response = await fetch(`/api/batches?centerId=${selectedCenter.id}`)
+      const data = await response.json()
+      setBatches(data)
+    } catch (error) {
+      console.error('Error loading batches:', error)
+    }
+  }
+
+  const loadAttendanceRecords = async () => {
+    if (!selectedCenter?.id) return
+    
+    try {
+      setLoading(true)
+      let url = `/api/attendance?centerId=${selectedCenter.id}&date=${selectedDate}`
+      if (selectedBatch !== '') {
+        url += `&batch=${selectedBatch}`
+      }
+      
+      const response = await fetch(url)
+      const data = await response.json()
+      setAttendanceRecords(data)
+    } catch (error) {
+      console.error('Error loading attendance records:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const loadAttendanceRecords = async () => {
-    try {
-      const params = new URLSearchParams({
-        center: selectedCenter,
-        date: format(selectedDate, 'yyyy-MM-dd')
-      })
-      
-      if (selectedBatch !== '') {
-        params.append('batch', selectedBatch)
-      }
-
-      const response = await fetch(`/api/attendance?${params}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch attendance records')
-      }
-      
-      const data = await response.json()
-      setAttendanceRecords(data)
-    } catch (error) {
-      console.error('Error loading attendance records:', error)
-      // Fallback to empty array on error
-      setAttendanceRecords([])
-    }
-  }
-
-  const loadBatches = async () => {
-    try {
-      const params = new URLSearchParams({
-        center: selectedCenter
-      })
-
-      const response = await fetch(`/api/batches?${params}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch batches')
-      }
-      
-      const data = await response.json()
-      setBatches(data)
-    } catch (error) {
-      console.error('Error loading batches:', error)
-      // Fallback to empty array on error
-      setBatches([])
-    }
-  }
-
   const loadStudents = async () => {
+    if (!selectedCenter?.id) return
+    
     try {
-      const params = new URLSearchParams({
-        center: selectedCenter
-      })
-      
+      let url = `/api/students?centerId=${selectedCenter.id}`
       if (selectedBatch !== '') {
-        params.append('batch', selectedBatch)
-      }
-
-      const response = await fetch(`/api/students?${params}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch students')
+        url += `&batch=${selectedBatch}`
       }
       
+      const response = await fetch(url)
       const data = await response.json()
       setStudents(data)
     } catch (error) {
       console.error('Error loading students:', error)
-      // Fallback to empty array on error
-      setStudents([])
     }
   }
 
@@ -171,7 +148,7 @@ export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceP
         body: JSON.stringify({
           student_id: studentId,
           batch_id: student.batch_id,
-          date: format(selectedDate, 'yyyy-MM-dd'),
+          date: selectedDate,
           status,
           marked_by: user?.id
         })
@@ -198,29 +175,35 @@ export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceP
   }
 
   const filteredRecords = attendanceRecords.filter(record => {
+    const matchesSearch = record.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) || false
     const matchesBatch = selectedBatch === '' || record.batch_name === selectedBatch
-    const matchesSearch = record.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         record.batch_name.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    return matchesBatch && matchesSearch
+    return matchesSearch && matchesBatch
   })
+
+  const getFilteredStudents = () => {
+    return students.filter(student => {
+      const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesBatch = selectedBatch === '' || student.batch_name === selectedBatch
+      return matchesSearch && matchesBatch
+    })
+  }
 
   const getFilteredBatches = () => {
     return batches
   }
 
-  const getFilteredStudents = () => {
-    let filtered = students
-    
-    if (selectedBatch !== '') {
-      filtered = filtered.filter(student => student.batch_name === selectedBatch)
-    }
-    
-    return filtered
-  }
-
   const canMarkAttendance = () => {
     return user && ['super_admin', 'club_manager', 'head_coach', 'coach', 'center_manager'].includes(user.role)
+  }
+
+  if (!selectedCenter) {
+    return (
+      <div className="text-center py-12">
+        <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Select a Center</h3>
+        <p className="text-gray-600">Please select a center from the sidebar to manage attendance.</p>
+      </div>
+    )
   }
 
   if (loading) {
@@ -229,26 +212,17 @@ export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceP
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Attendance Management</h2>
-          <p className="text-gray-600">
-            {selectedCenter ? `${selectedCenter} Center` : 'Select Center'}
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {selectedCenter.name} - Attendance Management
+          </h1>
+          <p className="text-gray-600">Track and manage student attendance</p>
         </div>
-        
-        <div className="flex gap-2">
-          <Button onClick={exportAttendance} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          {canMarkAttendance() && (
-            <Button onClick={() => setMarkingMode(!markingMode)}>
-              {markingMode ? 'View Mode' : 'Mark Attendance'}
-            </Button>
-          )}
-        </div>
+        <Button onClick={exportAttendance} variant="outline">
+          <Download className="h-4 w-4 mr-2" />
+          Export Data
+        </Button>
       </div>
 
       {/* Filters */}
@@ -264,16 +238,16 @@ export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceP
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {format(selectedDate, 'PPP')}
+                    {format(new Date(selectedDate), 'PPP')}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(date) => date && setSelectedDate(date)}
-                    initialFocus
-                  />
+                                  <PopoverContent className="w-auto p-0">
+                    <CalendarComponent
+                      mode="single"
+                      selected={new Date(selectedDate)}
+                      onSelect={(date: Date | undefined) => date && setSelectedDate(date.toISOString().split('T')[0])}
+                      initialFocus
+                    />
                 </PopoverContent>
               </Popover>
             </div>
@@ -325,7 +299,7 @@ export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceP
       {markingMode && canMarkAttendance() && (
         <Card>
           <CardHeader>
-            <CardTitle>Mark Attendance - {format(selectedDate, 'PPP')}</CardTitle>
+            <CardTitle>Mark Attendance - {format(new Date(selectedDate), 'PPP')}</CardTitle>
             <CardDescription>Click on student names to mark their attendance</CardDescription>
           </CardHeader>
           <CardContent>
@@ -350,7 +324,7 @@ export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceP
                       onClick={() => markAttendance(student.id, 'absent')}
                       className="flex-1"
                     >
-                      <UserX className="h-4 w-4 mr-1" />
+                      <XCircle className="h-4 w-4 mr-1" />
                       Absent
                     </Button>
                   </div>

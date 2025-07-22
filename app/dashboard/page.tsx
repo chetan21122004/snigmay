@@ -8,6 +8,7 @@ import { ClubManagerDashboard } from "@/components/club-manager-dashboard"
 import { HeadCoachDashboard } from "@/components/head-coach-dashboard"
 import { CoachDashboard } from "@/components/coach-dashboard"
 import { CenterManagerDashboard } from "@/components/center-manager-dashboard"
+import { CenterProviderWrapper } from "@/components/center-provider-wrapper"
 
 interface User {
   id: string
@@ -52,10 +53,10 @@ export default function DashboardPage() {
         return <CenterManagerDashboard />
       default:
         return (
-          <div className="flex items-center justify-center min-h-screen">
+          <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
-              <p className="text-gray-600">Your role does not have dashboard access.</p>
+              <h2 className="text-2xl font-semibold text-gray-900">Access Denied</h2>
+              <p className="mt-2 text-gray-600">Your role does not have dashboard access.</p>
             </div>
           </div>
         )
@@ -63,21 +64,14 @@ export default function DashboardPage() {
   }
 
   if (loading) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="text-sm text-muted-foreground">Loading dashboard...</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    )
+    return <CenterProviderWrapper><div /></CenterProviderWrapper>
   }
 
   return (
-    <DashboardLayout>
-      {renderRoleDashboard()}
-    </DashboardLayout>
+    <CenterProviderWrapper>
+      <DashboardLayout>
+        {renderRoleDashboard()}
+      </DashboardLayout>
+    </CenterProviderWrapper>
   )
 }

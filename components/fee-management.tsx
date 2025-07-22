@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "@/components/ui/use-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CreditCard, DollarSign, AlertCircle, CheckCircle, Plus, Search, Filter, IndianRupee, Receipt, Calendar, Users } from "lucide-react"
+import { useCenterContext } from "@/context/center-context"
 
 interface FeePayment {
   id: string
@@ -38,7 +39,8 @@ interface FeeStats {
   overdueCount: number
 }
 
-export function FeeManagement({ selectedCenter }: { selectedCenter: string }) {
+export function FeeManagement() {
+  const { selectedCenter } = useCenterContext()
   const [payments, setPayments] = useState<FeePayment[]>([])
   const [stats, setStats] = useState<FeeStats>({
     totalCollected: 0,
@@ -61,13 +63,17 @@ export function FeeManagement({ selectedCenter }: { selectedCenter: string }) {
   })
 
   useEffect(() => {
-    loadPayments()
+    if (selectedCenter?.id) {
+      loadPayments()
+    }
   }, [selectedCenter])
 
   const loadPayments = async () => {
+    if (!selectedCenter?.id) return
+    
     try {
       setLoading(true)
-      const response = await fetch(`/api/fees?center=${selectedCenter}`)
+      const response = await fetch(`/api/fees?centerId=${selectedCenter.id}`)
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -200,6 +206,16 @@ export function FeeManagement({ selectedCenter }: { selectedCenter: string }) {
     
     return matchesSearch && matchesStatus
   })
+
+  if (!selectedCenter) {
+    return (
+      <div className="text-center py-12">
+        <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Select a Center</h3>
+        <p className="text-gray-600">Please select a center from the sidebar to manage fees.</p>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
