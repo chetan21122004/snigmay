@@ -30,8 +30,7 @@ import {
   TrendingUp,
   Zap,
   Medal,
-  ChartBar,
-  
+  ChartBar
 } from "lucide-react"
 
 
@@ -371,7 +370,7 @@ export function HeadCoachDashboard() {
       case 'batch_creation':
         return <Layers className="h-4 w-4 text-orange-500" />
       case 'coaching':
-        return <Whistle className="h-4 w-4 text-indigo-500" />
+        return <Target className="h-4 w-4 text-indigo-500" />
       default:
         return <Activity className="h-4 w-4 text-gray-500" />
     }
@@ -415,7 +414,7 @@ export function HeadCoachDashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Whistle className="h-6 w-6" />
+              <Target className="h-6 w-6" />
               Head Coach Dashboard
             </h1>
             <p className="text-green-100 mt-1">Oversee training performance and development across all centers</p>
@@ -702,7 +701,7 @@ export function HeadCoachDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-center py-8">
-                <Whistle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <p className="text-muted-foreground">Advanced coaching tools and resources coming soon...</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                   <Button variant="outline" className="w-full" asChild>

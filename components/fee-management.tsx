@@ -64,7 +64,7 @@ export function FeeManagement() {
 
   useEffect(() => {
     if (selectedCenter?.id) {
-      loadPayments()
+    loadPayments()
     }
   }, [selectedCenter])
 

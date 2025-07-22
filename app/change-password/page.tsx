@@ -83,7 +83,7 @@ export default function ChangePasswordPage() {
 
   return (
     <CenterProviderWrapper>
-      <DashboardLayout>
+    <DashboardLayout>
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Change Password</h1>
@@ -239,7 +239,7 @@ export default function ChangePasswordPage() {
             </CardContent>
           </Card>
         </div>
-      </DashboardLayout>
+    </DashboardLayout>
     </CenterProviderWrapper>
   )
 } 

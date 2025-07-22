@@ -7,9 +7,9 @@ import { CenterAttendanceManagement } from "@/components/center-attendance-manag
 export default function AttendancePage() {
   return (
     <CenterProviderWrapper>
-      <DashboardLayout>
+    <DashboardLayout>
         <CenterAttendanceManagement />
-      </DashboardLayout>
+    </DashboardLayout>
     </CenterProviderWrapper>
   )
 } 

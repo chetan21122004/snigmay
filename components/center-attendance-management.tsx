@@ -105,7 +105,7 @@ export function CenterAttendanceManagement() {
       if (selectedBatch !== '') {
         url += `&batch=${selectedBatch}`
       }
-      
+
       const response = await fetch(url)
       const data = await response.json()
       setAttendanceRecords(data)
@@ -124,7 +124,7 @@ export function CenterAttendanceManagement() {
       if (selectedBatch !== '') {
         url += `&batch=${selectedBatch}`
       }
-      
+
       const response = await fetch(url)
       const data = await response.json()
       setStudents(data)
@@ -219,10 +219,10 @@ export function CenterAttendanceManagement() {
           </h1>
           <p className="text-gray-600">Track and manage student attendance</p>
         </div>
-        <Button onClick={exportAttendance} variant="outline">
-          <Download className="h-4 w-4 mr-2" />
+          <Button onClick={exportAttendance} variant="outline">
+            <Download className="h-4 w-4 mr-2" />
           Export Data
-        </Button>
+            </Button>
       </div>
 
       {/* Filters */}
@@ -241,13 +241,13 @@ export function CenterAttendanceManagement() {
                     {format(new Date(selectedDate), 'PPP')}
                   </Button>
                 </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0">
+                <PopoverContent className="w-auto p-0">
                     <CalendarComponent
-                      mode="single"
+                    mode="single"
                       selected={new Date(selectedDate)}
                       onSelect={(date: Date | undefined) => date && setSelectedDate(date.toISOString().split('T')[0])}
-                      initialFocus
-                    />
+                    initialFocus
+                  />
                 </PopoverContent>
               </Popover>
             </div>

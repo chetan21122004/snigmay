@@ -123,27 +123,27 @@ const CenterSelector = () => {
         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
           Training Center
         </label>
-        <Select 
+    <Select 
           value={selectedCenter?.id || ""} 
-          onValueChange={(value) => {
-            const center = centers.find(c => c.id === value)
-            setSelectedCenter(center || null)
-          }}
-        >
+      onValueChange={(value) => {
+          const center = centers.find(c => c.id === value)
+          setSelectedCenter(center || null)
+      }}
+    >
           <SelectTrigger className="w-full h-10 bg-white border-gray-200 shadow-sm hover:border-burgundy-300 focus:border-burgundy-500 focus:ring-burgundy-500/20">
             <SelectValue placeholder="Select center" />
-          </SelectTrigger>
-          <SelectContent>
-            {centers.map((center) => (
+      </SelectTrigger>
+      <SelectContent>
+        {centers.map((center) => (
               <SelectItem key={center.id} value={center.id} className="py-2">
                 <div className="flex items-center gap-3">
                   <div className="h-2 w-2 rounded-full bg-burgundy-500" />
                   <span className="font-medium">{center.name}</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            </div>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
       </div>
     </div>
   )
@@ -170,7 +170,7 @@ const Sidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
     return item.roles.includes(user.role)
   })
 
-  return (
+    return (
     <div className={cn(
       "fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 transition-all duration-300 shadow-lg",
       collapsed ? "w-16" : "w-72"
@@ -194,8 +194,8 @@ const Sidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
               <div>
                 <h2 className="font-bold text-gray-900 text-sm">Snigmay Pune FC</h2>
                 <p className="text-xs text-gray-500">Management System</p>
-              </div>
-            </div>
+      </div>
+        </div>
           )}
           <Button
             variant="ghost"
@@ -205,25 +205,25 @@ const Sidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
-        </div>
+      </div>
 
-        {/* Center Selector */}
+      {/* Center Selector */}
         {!collapsed && <CenterSelector />}
 
-        {/* Navigation */}
+      {/* Navigation */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {filteredMenuItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
                 "group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
                 "text-gray-700 hover:text-burgundy-900 hover:bg-burgundy-50",
                 "focus:outline-none focus:ring-2 focus:ring-burgundy-500/20",
                 collapsed ? "justify-center" : ""
               )}
               title={collapsed ? item.title : undefined}
-            >
+          >
               <item.icon className={cn(
                 "h-5 w-5 transition-colors",
                 "text-gray-500 group-hover:text-burgundy-600"
@@ -234,11 +234,11 @@ const Sidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
                   <div className="text-xs text-gray-500 truncate">{item.description}</div>
                 </div>
               )}
-            </Link>
-          ))}
-        </nav>
+          </Link>
+        ))}
+      </nav>
 
-        {/* User Profile */}
+      {/* User Profile */}
         <div className={cn(
           "p-4 border-t border-gray-100 bg-gray-50/50",
           collapsed ? "px-3" : "px-4"
@@ -273,29 +273,29 @@ const Sidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
                         </Badge>
                       </div>
                     </div>
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/change-password">
+              </div>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/change-password">
                     <Settings className="mr-2 h-4 w-4" />
-                    Change Password
-                  </Link>
-                </DropdownMenuItem>
+                Change Password
+              </Link>
+            </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Bell className="mr-2 h-4 w-4" />
                   Notifications
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
+            <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
-                  <LogOut className="mr-2 h-4 w-4" />
+              <LogOut className="mr-2 h-4 w-4" />
                   Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
           )}
         </div>
       </div>
@@ -342,8 +342,8 @@ const Header = ({ collapsed, onMenuToggle }: { collapsed: boolean; onMenuToggle:
               <Settings className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-      </header>
+          </div>
+        </header>
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
@@ -362,8 +362,8 @@ const Header = ({ collapsed, onMenuToggle }: { collapsed: boolean; onMenuToggle:
               </Button>
             </div>
             <Sidebar collapsed={false} onToggle={() => {}} />
-          </div>
-        </div>
+      </div>
+    </div>
       )}
     </>
   )

@@ -370,7 +370,7 @@ export function CenterManagerDashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <div>
+              <div>
           <h1 className="text-3xl font-bold text-burgundy-900">{centerName} Center</h1>
           <p className="text-gray-600">Center Management Dashboard</p>
         </div>
@@ -381,7 +381,7 @@ export function CenterManagerDashboard() {
           height={100}
           className="h-auto w-auto"
         />
-      </div>
+            </div>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -402,37 +402,37 @@ export function CenterManagerDashboard() {
             <CardTitle className="text-lg font-medium text-burgundy-700">
               Active Batches
             </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </CardHeader>
+            <CardContent>
             <div className="text-3xl font-bold text-burgundy-900">{stats.totalBatches}</div>
             <p className="text-sm text-gray-600 mt-1">Training groups</p>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
         <Card className="bg-white border-burgundy-100 hover:border-burgundy-200 transition-colors">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium text-burgundy-700">
               Today's Attendance
             </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </CardHeader>
+            <CardContent>
             <div className="text-3xl font-bold text-green-600">{stats.attendanceRate}%</div>
             <p className="text-sm text-gray-600 mt-1">{stats.attendanceToday} students present</p>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
         <Card className="bg-white border-burgundy-100 hover:border-burgundy-200 transition-colors">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium text-burgundy-700">
               Fee Collection
             </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </CardHeader>
+            <CardContent>
             <div className="text-3xl font-bold text-gold-600">₹{(stats.totalRevenue / 1000).toFixed(1)}K</div>
             <p className="text-sm text-gray-600 mt-1">This month</p>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
 
       {/* Batch Performance & Recent Activities */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -441,7 +441,7 @@ export function CenterManagerDashboard() {
             <CardTitle className="text-xl font-semibold text-burgundy-900">Batch Performance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+                <div className="space-y-4">
               {stats.batchDetails.map((batch) => (
                 <div key={batch.id}>
                   <div className="flex justify-between items-center mb-2">
@@ -453,23 +453,23 @@ export function CenterManagerDashboard() {
                       className="h-2 bg-burgundy-600 rounded-full" 
                       style={{ width: `${batch.attendanceRate}%` }}
                     ></div>
-                  </div>
+                    </div>
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
                     <span>Attendance {batch.attendanceRate}%</span>
                     <span>Fee Collection {batch.feeCollectionRate}%</span>
                   </div>
-                </div>
-              ))}
+                    </div>
+                  ))}
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-white border-burgundy-100">
-          <CardHeader>
+              <CardHeader>
             <CardTitle className="text-xl font-semibold text-burgundy-900">Recent Activities</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
               {recentActivities.map((activity) => (
                 <div key={activity.id} className="flex items-center gap-4">
                   <div className={cn(
@@ -492,10 +492,10 @@ export function CenterManagerDashboard() {
                   </div>
                 </div>
               ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
     </div>
   )
 } 
