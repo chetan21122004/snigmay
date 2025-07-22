@@ -1,143 +1,119 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 import Image from "next/image"
-import { signIn, getCurrentUser } from "@/lib/auth"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, Lock, Mail, Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, AlertCircle } from "lucide-react"
+import { signIn, getCurrentUser } from "@/lib/auth"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  })
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   // Check if user is already logged in
   useEffect(() => {
-    async function checkAuth() {
+    const checkAuth = async () => {
       const user = await getCurrentUser()
       if (user) {
-        router.push("/dashboard")
+        router.push('/dashboard')
       }
     }
     checkAuth()
   }, [router])
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+    // Clear error when user starts typing
+    if (error) setError('')
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError("")
+    setError('')
 
     try {
-      const { data, error } = await signIn(email, password)
-
-      if (error) {
-        setError(error.message)
-        setLoading(false)
-        return
+      // Basic validation
+      if (!formData.email || !formData.password) {
+        throw new Error('Please fill in all fields')
       }
 
-      if (data?.user) {
-        router.push("/dashboard")
-      } else {
-        setError("Failed to login. Please try again.")
-        setLoading(false)
+      if (!formData.email.includes('@')) {
+        throw new Error('Please enter a valid email address')
       }
-    } catch (err) {
-      console.error("Unexpected error during login:", err)
-      setError("An unexpected error occurred")
+
+      const { user } = await signIn(formData)
+      
+      // Redirect based on role
+      router.push('/dashboard')
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please try again.')
+    } finally {
       setLoading(false)
     }
   }
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
-  }
-
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-green-50 to-blue-50">
-      {/* Left side - Branding */}
-      <div className="hidden md:flex md:w-1/2 bg-[#0e4c92] flex-col justify-center items-center p-8 text-white">
-        <div className="max-w-md text-center">
-          <div className="mb-8 flex justify-center">
-            <Image 
-              src="/placeholder-logo.svg" 
-              alt="Snigmay Pune FC Logo" 
-              width={120} 
-              height={120} 
-              className="rounded-full bg-white p-2"
-            />
-          </div>
-          <h1 className="text-4xl font-bold mb-4">Snigmay Pune FC</h1>
-          <p className="text-xl mb-6">Football Academy Management System</p>
-          <div className="space-y-4 text-left">
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center mr-4">
-                <span className="font-bold">1</span>
-              </div>
-              <p>Centralized attendance tracking across all centers</p>
-            </div>
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center mr-4">
-                <span className="font-bold">2</span>
-              </div>
-              <p>Streamlined fee management and payment tracking</p>
-            </div>
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center mr-4">
-                <span className="font-bold">3</span>
-              </div>
-              <p>Comprehensive student and batch management</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right side - Login form */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <Card className="w-full max-w-md shadow-xl border-0">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-2 md:hidden">
-              <Image 
-                src="/placeholder-logo.svg" 
-                alt="Snigmay Pune FC Logo" 
-                width={80} 
-                height={80} 
+    <div className="min-h-screen bg-gradient-to-br from-burgundy-50 to-gold-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <Card className="shadow-lg border-0">
+          <CardHeader className="text-center pb-8">
+            <div className="flex justify-center mb-6">
+              <Image
+                src="/snigmay_logo.png"
+                alt="Snigmay Pune FC"
+                width={80}
+                height={80}
+                className="h-20 w-auto"
+                priority
               />
             </div>
-            <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-            <CardDescription>Sign in to access your dashboard</CardDescription>
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              Welcome Back
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Sign in to your Snigmay Pune FC account
+            </CardDescription>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email Address</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="email"
+                    name="email"
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
                     placeholder="Enter your email"
+                    value={formData.email}
+                    onChange={handleInputChange}
                     className="pl-10"
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -145,58 +121,74 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="password"
+                    name="password"
                     type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
                     placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleInputChange}
                     className="pl-10 pr-10"
+                    disabled={loading}
                   />
-                  <button
+                  <Button
                     type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute right-3 top-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={loading}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
+                      <EyeOff className="h-4 w-4 text-gray-400" />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-4 w-4 text-gray-400" />
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-[#0e4c92] hover:bg-blue-800" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Sign In
+              <Button
+                type="submit"
+                className="w-full bg-burgundy-600 hover:bg-burgundy-700 text-white"
+                disabled={loading}
+              >
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Signing In...
+                  </div>
+                ) : (
+                  'Sign In'
+                )}
               </Button>
             </form>
 
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
-              <p className="text-sm font-medium text-gray-700 mb-2">
-                Demo Accounts:
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                Don't have an account?{' '}
+                <Link 
+                  href="/signup" 
+                  className="font-medium text-burgundy-600 hover:text-burgundy-700"
+                >
+                  Sign up here
+                </Link>
               </p>
-              <div className="space-y-1 text-xs text-gray-600">
-                <p><span className="font-semibold">Super Admin:</span> admin@snigmaypune.com / password123</p>
-                <p><span className="font-semibold">HeadCoach:</span> headcoach@snigmaypune.com / password123</p>
-                <p><span className="font-semibold">Club Manager:</span> clubman@snigmaypune.com / password123</p>
+            </div>
 
-                <p><span className="font-semibold">Coach:</span> coach@hadapsar.com / password123</p>
-                <p><span className="font-semibold">Coach:</span> coach@kharadi.com / password123</p>
-                <p><span className="font-semibold">Coach:</span> coach@vimannagar.com / password123</p>
-
-                <p><span className="font-semibold">Center Manager:</span> centerman@kharadi.com / password123</p>
-                <p><span className="font-semibold">Center Manager:</span> centerman@hadapsar.com / password123</p>
-                <p><span className="font-semibold">Center Manager:</span> centerman@vimannagar.com / password123</p>
+            {/* Demo credentials */}
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Demo Credentials:</h4>
+              <div className="text-xs text-gray-600 space-y-1">
+                <div><strong>Super Admin:</strong> admin@snigmay.com / admin123</div>
+                <div><strong>Club Manager:</strong> club@snigmay.com / club123</div>
+                <div><strong>Head Coach:</strong> headcoach@snigmay.com / coach123</div>
+                <div><strong>Coach:</strong> coach.kharadi@snigmay.com / coach123</div>
+                <div><strong>Center Manager:</strong> manager.kharadi@snigmay.com / manager123</div>
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-center text-sm text-gray-500">
-            <p>Contact administrator for account issues</p>
-          </CardFooter>
         </Card>
       </div>
     </div>

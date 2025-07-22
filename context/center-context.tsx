@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '@/lib/supabase';
 
 export interface Center {
   id: string;
@@ -37,6 +36,28 @@ export const useCenterContext = () => {
   return context;
 };
 
+// Mock centers data
+const MOCK_CENTERS: Center[] = [
+  {
+    id: 'center-1',
+    name: 'Kharadi Center',
+    location: 'Kharadi, Pune',
+    description: 'Main training facility in Kharadi'
+  },
+  {
+    id: 'center-2',
+    name: 'Viman Nagar Center',
+    location: 'Viman Nagar, Pune',
+    description: 'Training facility in Viman Nagar'
+  },
+  {
+    id: 'center-3',
+    name: 'Hadapsar Center',
+    location: 'Hadapsar, Pune',
+    description: 'Training facility in Hadapsar'
+  }
+];
+
 interface CenterProviderProps {
   children: ReactNode;
   user: User | null;
@@ -47,17 +68,26 @@ export const CenterProvider: React.FC<CenterProviderProps> = ({ children, user }
   const [selectedCenter, setSelectedCenter] = useState<Center | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Get available centers based on user role
+  // Get available centers based on user role according to context.md
   const getAvailableCenters = (userRole: string, userCenterId?: string | null): Center[] => {
     switch (userRole) {
       case 'super_admin':
+        // Super Admin: Full access to all modules and data across all centers
+        return centers;
       case 'club_manager':
+        // Club Manager: Access to view and manage attendance and financials across all centers
+        return centers;
       case 'head_coach':
-        // These roles can access all centers
+        // Head Coach: Can view and manage attendance and fee data across all centers
         return centers;
       case 'coach':
+        // Coach: Access limited to their assigned center(s) only
+        if (userCenterId) {
+          return centers.filter(center => center.id === userCenterId);
+        }
+        return [];
       case 'center_manager':
-        // These roles can only access their assigned center
+        // Center Manager: Access limited to their own center
         if (userCenterId) {
           return centers.filter(center => center.id === userCenterId);
         }
@@ -73,28 +103,22 @@ export const CenterProvider: React.FC<CenterProviderProps> = ({ children, user }
     const fetchCenters = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
-          .from('centers')
-          .select('*')
-          .order('name');
-
-        if (error) {
-          console.error('Error fetching centers:', error);
-          return;
-        }
-
-        setCenters(data || []);
+        
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        setCenters(MOCK_CENTERS);
 
         // Set default selected center based on user role
-        if (user && data && data.length > 0) {
+        if (user && MOCK_CENTERS.length > 0) {
           const userAvailableCenters = getAvailableCenters(user.role, user.center_id);
           if (userAvailableCenters.length > 0) {
-            // For restricted roles, set their assigned center
+            // For restricted roles (coach, center_manager), set their assigned center
             if (user.role === 'coach' || user.role === 'center_manager') {
               const userCenter = user.center_id ? userAvailableCenters.find(c => c.id === user.center_id) : undefined;
               setSelectedCenter(userCenter || userAvailableCenters[0]);
             } else {
-              // For unrestricted roles, set the first available center
+              // For unrestricted roles (super_admin, club_manager, head_coach), set the first available center
               setSelectedCenter(userAvailableCenters[0]);
             }
           }
@@ -110,14 +134,14 @@ export const CenterProvider: React.FC<CenterProviderProps> = ({ children, user }
   }, [user]);
 
   const handleSetSelectedCenter = (center: Center | null) => {
-    // Validate that the user can access this center
+    // Validate that the user can access this center based on role permissions
     if (center && user) {
       const userAvailableCenters = getAvailableCenters(user.role, user.center_id);
       const canAccess = userAvailableCenters.some(c => c.id === center.id);
       if (canAccess) {
         setSelectedCenter(center);
       } else {
-        console.warn('User does not have access to this center');
+        console.warn(`User with role ${user.role} does not have access to center: ${center.name}`);
       }
     } else {
       setSelectedCenter(center);

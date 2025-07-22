@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { CenterProvider } from "@/context/center-context"
 import { getCurrentUser } from "@/lib/auth"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -20,20 +21,26 @@ interface CenterProviderWrapperProps {
 export function CenterProviderWrapper({ children }: CenterProviderWrapperProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     const loadUser = async () => {
       try {
         const currentUser = await getCurrentUser()
+        if (!currentUser) {
+          router.push('/login')
+          return
+        }
         setUser(currentUser)
       } catch (error) {
         console.error('Error loading user:', error)
+        router.push('/login')
       } finally {
         setLoading(false)
       }
     }
     loadUser()
-  }, [])
+  }, [router])
 
   if (loading) {
     return (

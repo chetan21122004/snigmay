@@ -5,6 +5,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { useCenterContext } from "@/context/center-context"
+import { signOut } from "@/lib/auth"
+import { useRouter } from "next/navigation"
 import {
   LayoutDashboard,
   Users,
@@ -43,44 +45,49 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-// Professional menu items with better organization
+// Role-based menu items according to context.md specifications
 const menuItems = [
   {
     title: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
-    description: "Overview and analytics"
+    description: "Overview and analytics",
+    roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
   },
   {
     title: "Students",
     href: "/students",
     icon: Users,
-    description: "Manage student records"
+    description: "Manage student records",
+    roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
   },
   {
     title: "Batches",
     href: "/batches",
     icon: ClipboardList,
-    description: "Training groups"
+    description: "Training groups",
+    roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
   },
   {
     title: "Attendance",
     href: "/attendance",
     icon: Calendar,
-    description: "Track attendance"
+    description: "Track attendance",
+    roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
   },
   {
     title: "Fees",
     href: "/fees",
     icon: CreditCard,
-    description: "Payment management"
+    description: "Payment management",
+    roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
   },
   {
     title: "Staff Management",
     href: "/user-management",
     icon: UserCog,
     description: "Manage coaches & staff",
-    roles: ["super_admin", "club_manager", "head_coach"],
+    roles: ["super_admin", "club_manager", "head_coach"], // Only higher-level roles can manage users
   },
 ]
 
@@ -145,6 +152,16 @@ const CenterSelector = () => {
 // Professional sidebar component
 const Sidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) => {
   const { user } = useCenterContext()
+  const router = useRouter()
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      router.push('/login')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
+  }
 
   // Filter menu items based on user role
   const filteredMenuItems = menuItems.filter(item => {
@@ -262,16 +279,18 @@ const Sidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
+                <DropdownMenuItem asChild>
+                  <Link href="/change-password">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Change Password
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Bell className="mr-2 h-4 w-4" />
                   Notifications
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
+                <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign out
                 </DropdownMenuItem>

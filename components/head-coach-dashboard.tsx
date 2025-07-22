@@ -30,8 +30,10 @@ import {
   TrendingUp,
   Zap,
   Medal,
-  ChartBar
+  ChartBar,
+  
 } from "lucide-react"
+
 
 interface DashboardStats {
   totalStudents: number
