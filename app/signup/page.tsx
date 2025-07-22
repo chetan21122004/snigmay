@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Mail, Lock, User, UserCog, AlertCircle } from "lucide-react"
 import { signUp, getCurrentUser } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
 
 const ROLES = [
   { value: 'super_admin', label: 'Super Admin', description: 'Full access to all features' },
@@ -21,11 +22,11 @@ const ROLES = [
   { value: 'center_manager', label: 'Center Manager', description: 'Manage specific center operations' }
 ]
 
-const CENTERS = [
-  { id: 'center-1', name: 'Kharadi Center' },
-  { id: 'center-2', name: 'Viman Nagar Center' },
-  { id: 'center-3', name: 'Hadapsar Center' }
-]
+interface Center {
+  id: string
+  name: string
+  location: string
+}
 
 export default function SignupPage() {
   const router = useRouter()
@@ -41,6 +42,7 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [centers, setCenters] = useState<Center[]>([])
 
   // Check if user is already logged in
   useEffect(() => {
@@ -52,6 +54,27 @@ export default function SignupPage() {
     }
     checkAuth()
   }, [router])
+
+  // Fetch centers from Supabase
+  useEffect(() => {
+    const fetchCenters = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('centers')
+          .select('id, name, location')
+          .order('name')
+
+        if (error) {
+          console.error('Error fetching centers:', error)
+        } else {
+          setCenters(data || [])
+        }
+      } catch (error) {
+        console.error('Error fetching centers:', error)
+      }
+    }
+    fetchCenters()
+  }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -226,9 +249,12 @@ export default function SignupPage() {
                       <SelectValue placeholder="Select your center" />
                     </SelectTrigger>
                     <SelectContent>
-                      {CENTERS.map((center) => (
+                      {centers.map((center) => (
                         <SelectItem key={center.id} value={center.id}>
-                          {center.name}
+                          <div>
+                            <div className="font-medium">{center.name}</div>
+                            <div className="text-xs text-gray-500">{center.location}</div>
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>

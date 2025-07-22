@@ -93,7 +93,7 @@ const menuItems = [
 
 // Professional center selector component
 const CenterSelector = () => {
-  const { selectedCenter, setSelectedCenter, centers, loading } = useCenterContext()
+  const { selectedCenter, setSelectedCenter, availableCenters, loading } = useCenterContext()
 
   if (loading) {
     return (
@@ -106,7 +106,7 @@ const CenterSelector = () => {
     )
   }
 
-  if (centers.length === 0) {
+  if (availableCenters.length === 0) {
     return (
       <div className="p-4 border-b border-gray-100">
         <div className="text-center py-4">
@@ -117,33 +117,57 @@ const CenterSelector = () => {
     )
   }
 
+  // Show selector if user has access to multiple centers
+  if (availableCenters.length > 1) {
+    return (
+      <div className="p-4 border-b border-gray-100 bg-burgundy-50/30">
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-burgundy-600 uppercase tracking-wide">
+            Select Training Center
+          </label>
+          <Select 
+            value={selectedCenter?.id || ""} 
+            onValueChange={(value) => {
+              const center = availableCenters.find(c => c.id === value)
+              setSelectedCenter(center || null)
+            }}
+          >
+            <SelectTrigger className="w-full h-10 bg-white border-burgundy-200 shadow-sm hover:border-burgundy-300 focus:border-burgundy-500 focus:ring-burgundy-500/20">
+              <SelectValue placeholder="Select center" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableCenters.map((center) => (
+                <SelectItem key={center.id} value={center.id} className="py-2">
+                  <div className="flex items-center gap-3">
+                    <div className="h-2 w-2 rounded-full bg-burgundy-500" />
+                    <div>
+                      <span className="font-medium">{center.name}</span>
+                      <p className="text-xs text-gray-500">{center.location}</p>
+                    </div>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    )
+  }
+
+  // Show current center display if user has access to only one center
   return (
-    <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+    <div className="p-4 border-b border-gray-100 bg-burgundy-50/50">
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-          Training Center
+        <label className="text-xs font-semibold text-burgundy-600 uppercase tracking-wide">
+          Current Center
         </label>
-    <Select 
-          value={selectedCenter?.id || ""} 
-      onValueChange={(value) => {
-          const center = centers.find(c => c.id === value)
-          setSelectedCenter(center || null)
-      }}
-    >
-          <SelectTrigger className="w-full h-10 bg-white border-gray-200 shadow-sm hover:border-burgundy-300 focus:border-burgundy-500 focus:ring-burgundy-500/20">
-            <SelectValue placeholder="Select center" />
-      </SelectTrigger>
-      <SelectContent>
-        {centers.map((center) => (
-              <SelectItem key={center.id} value={center.id} className="py-2">
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-burgundy-500" />
-                  <span className="font-medium">{center.name}</span>
-            </div>
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+        <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-burgundy-200 shadow-sm">
+          <div className="h-3 w-3 rounded-full bg-burgundy-500" />
+          <div>
+            <p className="font-semibold text-burgundy-900">{selectedCenter?.name}</p>
+            <p className="text-xs text-burgundy-600">{selectedCenter?.location}</p>
+          </div>
+        </div>
       </div>
     </div>
   )
