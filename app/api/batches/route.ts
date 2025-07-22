@@ -6,33 +6,32 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const centerId = searchParams.get('center')
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-    const headers = {
-      'apikey': supabaseKey,
-      'Authorization': `Bearer ${supabaseKey}`,
-      'Content-Type': 'application/json'
-    }
-
-    // Build batches query with center information
-    let batchesQuery = `${supabaseUrl}/rest/v1/batches?select=id,name,description,center_id,coach_id,centers(id,name,location),users(id,full_name)&order=name`
+    let query = supabase
+      .from('batches')
+      .select(`
+        id,
+        name,
+        description,
+        center_id,
+        coach_id,
+        centers(id, name, location),
+        users(id, full_name)
+      `)
+      .order('name')
 
     // Filter by center if specified
-    if (centerId && centerId !== 'all') {
-      batchesQuery += `&center_id=eq.${centerId}`
+    if (centerId && centerId !== '') {
+      query = query.eq('center_id', centerId)
     }
 
-    const batchesRes = await fetch(batchesQuery, { headers })
-    
-    if (!batchesRes.ok) {
-      throw new Error('Failed to fetch batches data')
-    }
+    const { data: batchesData, error } = await query
 
-    const batchesData = await batchesRes.json()
+    if (error) {
+      throw new Error(`Failed to fetch batches: ${error.message}`)
+    }
 
     // Transform data for frontend
-    const transformedData = batchesData.map((batch: any) => ({
+    const transformedData = (batchesData || []).map((batch: any) => ({
       id: batch.id,
       name: batch.name,
       description: batch.description,

@@ -99,7 +99,7 @@ export default function UserManagement() {
   const [showDelete, setShowDelete] = useState<{ open: boolean; coach?: Coach }>({ open: false })
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
-  const [centerFilter, setCenterFilter] = useState<string>("all")
+  const [centerFilter, setCenterFilter] = useState<string>("")
   const [showPassword, setShowPassword] = useState(false)
   const [showResetPassword, setShowResetPassword] = useState(false)
   
@@ -179,7 +179,7 @@ export default function UserManagement() {
     }
 
     // Filter by center
-    if (centerFilter !== "all") {
+    if (centerFilter && centerFilter !== "") {
       filtered = filtered.filter(coach => coach.center_id === centerFilter)
     }
 
@@ -447,7 +447,6 @@ export default function UserManagement() {
                   <SelectValue placeholder="Filter by center" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Centers</SelectItem>
                   {centers.map((center) => (
                     <SelectItem key={center.id} value={center.id}>{center.location}</SelectItem>
                   ))}

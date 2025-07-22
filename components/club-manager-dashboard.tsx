@@ -170,11 +170,11 @@ export function ClubManagerDashboard() {
             { data: attendance },
             { data: feePayments }
           ] = await Promise.all([
-            supabase.from('students').select('id, batches!inner(center_id)').eq('batches.center_id', center.id),
+            supabase.from('students').select('id').eq('center_id', center.id),
             supabase.from('batches').select('id').eq('center_id', center.id),
             supabase.from('users').select('id').eq('role', 'coach').eq('center_id', center.id),
-            supabase.from('attendance').select('status, batches!inner(center_id)').eq('batches.center_id', center.id).eq('date', new Date().toISOString().split('T')[0]),
-            supabase.from('fee_payments').select('amount, status, students!inner(batches!inner(center_id))').eq('students.batches.center_id', center.id)
+            supabase.from('attendance').select('status, students!inner(center_id)').eq('students.center_id', center.id).eq('date', new Date().toISOString().split('T')[0]),
+            supabase.from('fee_payments').select('amount, status, students!inner(center_id)').eq('students.center_id', center.id)
           ])
 
           const centerStudents = students?.length || 0
@@ -217,41 +217,40 @@ export function ClubManagerDashboard() {
         { data: batches },
         { data: attendance }
       ] = await Promise.all([
-        supabase.from('fee_payments').select('id, amount, created_at, students(name, batches(centers(location)))').eq('status', 'paid').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
-        supabase.from('students').select('id, name, created_at, batches(centers(location))').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
+        supabase.from('fee_payments').select('id, amount, created_at, students(name, centers(location))').eq('status', 'paid').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
+        supabase.from('students').select('id, name, created_at, centers(location)').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
         supabase.from('batches').select('id, name, created_at, centers(location)').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
-        supabase.from('attendance').select('id, created_at, batches(name, centers(location))').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
+        supabase.from('attendance').select('id, created_at, students(name, centers(location))').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
       ])
 
       const activities: RecentActivity[] = []
 
       // Process payments
-      payments?.forEach(payment => {
+      payments?.forEach((payment: any) => {
         activities.push({
-          id: `payment-${payment.id}`,
+          id: payment.id,
           type: 'payment',
-          description: `Fee payment received from ${payment.students?.name || 'Unknown Student'}`,
+          description: `Fee payment received - ₹${payment.amount} from ${payment.students?.name}`,
           timestamp: payment.created_at,
-          amount: Number(payment.amount),
-          centerName: payment.students?.batches?.centers?.location || 'Unknown Center'
+          centerName: payment.students?.centers?.location || 'Unknown Center'
         })
       })
 
-      // Process student registrations
-      students?.forEach(student => {
+      // Process students
+      students?.forEach((student: any) => {
         activities.push({
-          id: `registration-${student.id}`,
+          id: student.id,
           type: 'registration',
           description: `New student registration - ${student.name}`,
           timestamp: student.created_at,
-          centerName: student.batches?.centers?.location || 'Unknown Center'
+          centerName: student.centers?.location || 'Unknown Center'
         })
       })
 
-      // Process batch creations
-      batches?.forEach(batch => {
+      // Process batches
+      batches?.forEach((batch: any) => {
         activities.push({
-          id: `batch-${batch.id}`,
+          id: batch.id,
           type: 'batch_creation',
           description: `New batch created - ${batch.name}`,
           timestamp: batch.created_at,
@@ -260,13 +259,13 @@ export function ClubManagerDashboard() {
       })
 
       // Process attendance
-      attendance?.forEach(record => {
+      attendance?.forEach((record: any) => {
         activities.push({
-          id: `attendance-${record.id}`,
+          id: record.id,
           type: 'attendance',
-          description: `Attendance marked for ${record.batches?.name || 'Unknown Batch'}`,
+          description: `Attendance marked for ${record.students?.name}`,
           timestamp: record.created_at,
-          centerName: record.batches?.centers?.location || 'Unknown Center'
+          centerName: record.students?.centers?.location || 'Unknown Center'
         })
       })
 

@@ -120,9 +120,9 @@ export function SuperAdminDashboard() {
         { data: attendanceToday },
         { data: feePayments }
       ] = await Promise.all([
-        // Students filtered by center
+        // Students filtered by center using direct center_id
         centerFilter 
-          ? supabase.from('students').select('id, batches!inner(center_id)').eq('batches.center_id', centerFilter)
+          ? supabase.from('students').select('id').eq('center_id', centerFilter)
           : supabase.from('students').select('id'),
         // Batches filtered by center
         centerFilter 
@@ -136,13 +136,13 @@ export function SuperAdminDashboard() {
         supabase.from('centers').select('id'),
         // Users - always show all for super admin
         supabase.from('users').select('id'),
-        // Attendance filtered by center
+        // Attendance filtered by center using students.center_id
         centerFilter 
-          ? supabase.from('attendance').select('status, batches!inner(center_id)').eq('batches.center_id', centerFilter).eq('date', new Date().toISOString().split('T')[0])
+          ? supabase.from('attendance').select('status, students!inner(center_id)').eq('students.center_id', centerFilter).eq('date', new Date().toISOString().split('T')[0])
           : supabase.from('attendance').select('status').eq('date', new Date().toISOString().split('T')[0]),
-        // Fee payments filtered by center
+        // Fee payments filtered by center using students.center_id
         centerFilter 
-          ? supabase.from('fee_payments').select('amount, status, payment_date, students!inner(batches!inner(center_id))').eq('students.batches.center_id', centerFilter)
+          ? supabase.from('fee_payments').select('amount, status, payment_date, students!inner(center_id)').eq('students.center_id', centerFilter)
           : supabase.from('fee_payments').select('amount, status, payment_date')
       ])
 
@@ -197,11 +197,11 @@ export function SuperAdminDashboard() {
             { data: attendance },
             { data: feePayments }
           ] = await Promise.all([
-            supabase.from('students').select('id, batches!inner(center_id)').eq('batches.center_id', center.id),
+            supabase.from('students').select('id').eq('center_id', center.id),
             supabase.from('batches').select('id').eq('center_id', center.id),
             supabase.from('users').select('id').eq('role', 'coach').eq('center_id', center.id),
-            supabase.from('attendance').select('status, batches!inner(center_id)').eq('batches.center_id', center.id).eq('date', new Date().toISOString().split('T')[0]),
-            supabase.from('fee_payments').select('amount, status, students!inner(batches!inner(center_id))').eq('students.batches.center_id', center.id)
+            supabase.from('attendance').select('status, students!inner(center_id)').eq('students.center_id', center.id).eq('date', new Date().toISOString().split('T')[0]),
+            supabase.from('fee_payments').select('amount, status, students!inner(center_id)').eq('students.center_id', center.id)
           ])
 
           const centerStudents = students?.length || 0
@@ -247,19 +247,19 @@ export function SuperAdminDashboard() {
       ] = await Promise.all([
         // Fee payments with student and center info
         centerFilter
-          ? supabase.from('fee_payments').select('id, amount, created_at, students!inner(name, batches!inner(centers!inner(location)))').eq('students.batches.centers.id', centerFilter).eq('status', 'paid').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
-          : supabase.from('fee_payments').select('id, amount, created_at, students(name, batches(centers(location)))').eq('status', 'paid').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
-        // Students with batch and center info
+          ? supabase.from('fee_payments').select('id, amount, created_at, students!inner(name, center_id, centers!inner(location))').eq('students.center_id', centerFilter).eq('status', 'paid').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
+          : supabase.from('fee_payments').select('id, amount, created_at, students(name, centers(location))').eq('status', 'paid').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
+        // Students with center info
         centerFilter
-          ? supabase.from('students').select('id, name, created_at, batches!inner(centers!inner(location))').eq('batches.centers.id', centerFilter).gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
-          : supabase.from('students').select('id, name, created_at, batches(centers(location))').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
+          ? supabase.from('students').select('id, name, created_at, centers!inner(location)').eq('center_id', centerFilter).gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
+          : supabase.from('students').select('id, name, created_at, centers(location)').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
         // Batches with center info
         centerFilter
-          ? supabase.from('batches').select('id, name, created_at, centers!inner(location)').eq('centers.id', centerFilter).gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
+          ? supabase.from('batches').select('id, name, created_at, centers!inner(location)').eq('center_id', centerFilter).gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
           : supabase.from('batches').select('id, name, created_at, centers(location)').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
         // Users with center info
         centerFilter
-          ? supabase.from('users').select('id, full_name, created_at, centers!inner(location)').eq('centers.id', centerFilter).gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
+          ? supabase.from('users').select('id, full_name, created_at, centers!inner(location)').eq('center_id', centerFilter).gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
           : supabase.from('users').select('id, full_name, created_at, centers(location)').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
       ])
 
@@ -273,7 +273,7 @@ export function SuperAdminDashboard() {
           description: `Fee payment received from ${payment.students?.name || 'Unknown Student'}`,
           timestamp: payment.created_at,
           amount: Number(payment.amount),
-          centerName: payment.students?.batches?.centers?.location || selectedCenter?.location || 'Unknown Center'
+          centerName: payment.students?.centers?.location || selectedCenter?.location || 'Unknown Center'
         })
       })
 
@@ -284,7 +284,7 @@ export function SuperAdminDashboard() {
           type: 'registration',
           description: `New student registration - ${student.name}`,
           timestamp: student.created_at,
-          centerName: student.batches?.centers?.location || selectedCenter?.location || 'Unknown Center'
+          centerName: student.centers?.location || selectedCenter?.location || 'Unknown Center'
         })
       })
 

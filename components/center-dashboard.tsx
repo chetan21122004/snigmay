@@ -65,7 +65,7 @@ const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 export function CenterDashboard() {
   const [user, setUser] = useState<User | null>(null)
   const [centers, setCenters] = useState<Center[]>([])
-  const [selectedCenter, setSelectedCenter] = useState<string>("all")
+  const [selectedCenter, setSelectedCenter] = useState<string>("")
   const [stats, setStats] = useState<DashboardStats>({
     totalStudents: 0,
     totalBatches: 0,
@@ -85,7 +85,7 @@ export function CenterDashboard() {
 
   useEffect(() => {
     // Get selected center from localStorage (set by layout)
-    const storedCenter = localStorage.getItem("selectedCenter") || "all"
+    const storedCenter = localStorage.getItem("selectedCenter") || ""
     setSelectedCenter(storedCenter)
     if (storedCenter) {
       loadDashboardStats(storedCenter)
@@ -103,7 +103,7 @@ export function CenterDashboard() {
       setCenters(centersData)
 
       // Get center from localStorage
-      const storedCenter = localStorage.getItem("selectedCenter") || "all"
+      const storedCenter = localStorage.getItem("selectedCenter") || ""
       setSelectedCenter(storedCenter)
     } catch (error) {
       console.error('Error loading user and centers:', error)
@@ -132,7 +132,7 @@ export function CenterDashboard() {
     
     // Coach and center manager can only access their assigned center
     if (['coach', 'center_manager'].includes(user.role)) {
-      return user.center_id === centerId || centerId === 'all'
+      return user.center_id === centerId
     }
     
     return false
@@ -149,8 +149,8 @@ export function CenterDashboard() {
   }
 
   const getDashboardTitle = () => {
-    if (selectedCenter === 'all') {
-      return 'All Centers Overview'
+    if (!selectedCenter) {
+      return 'Select Center'
     }
     const center = centers.find(c => c.id === selectedCenter)
     return center ? `${center.location} Center` : 'Center Dashboard'

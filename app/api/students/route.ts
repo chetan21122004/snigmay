@@ -7,47 +7,52 @@ export async function GET(request: NextRequest) {
     const centerId = searchParams.get('center')
     const batchId = searchParams.get('batch')
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    let query = supabase
+      .from('students')
+      .select(`
+        id,
+        name,
+        age,
+        contact_info,
+        batch_id,
+        center_id,
+        parent_name,
+        parent_phone,
+        parent_email,
+        address,
+        emergency_contact,
+        medical_conditions,
+        batches(id, name),
+        centers(id, name, location)
+      `)
+      .order('name')
 
-    const headers = {
-      'apikey': supabaseKey,
-      'Authorization': `Bearer ${supabaseKey}`,
-      'Content-Type': 'application/json'
+    // Filter by center if specified
+    if (centerId && centerId !== '') {
+      query = query.eq('center_id', centerId)
     }
-
-    // Build students query with batch and center information
-    let studentsQuery = `${supabaseUrl}/rest/v1/students?select=id,name,age,contact_info,batch_id,parent_name,parent_phone,parent_email,address,emergency_contact,medical_conditions,batches(id,name,center_id,centers(id,name,location))&order=name`
 
     // Filter by batch if specified
-    if (batchId && batchId !== 'all') {
-      studentsQuery += `&batch_id=eq.${batchId}`
+    if (batchId && batchId !== '') {
+      query = query.eq('batch_id', batchId)
     }
 
-    const studentsRes = await fetch(studentsQuery, { headers })
-    
-    if (!studentsRes.ok) {
-      throw new Error('Failed to fetch students data')
-    }
+    const { data: studentsData, error } = await query
 
-    let studentsData = await studentsRes.json()
-
-    // Filter by center if specified and not 'all'
-    if (centerId && centerId !== 'all') {
-      studentsData = studentsData.filter((student: any) => 
-        student.batches && student.batches.center_id === centerId
-      )
+    if (error) {
+      throw new Error(`Failed to fetch students: ${error.message}`)
     }
 
     // Transform data for frontend
-    const transformedData = studentsData.map((student: any) => ({
+    const transformedData = (studentsData || []).map((student: any) => ({
       id: student.id,
       name: student.name,
       age: student.age,
       contact_info: student.contact_info,
       batch_id: student.batch_id,
+      center_id: student.center_id,
       batch_name: student.batches?.name || 'No Batch Assigned',
-      center_name: student.batches?.centers?.location || 'Unknown Center',
+      center_name: student.centers?.location || 'Unknown Center',
       parent_name: student.parent_name,
       parent_phone: student.parent_phone,
       parent_email: student.parent_email,

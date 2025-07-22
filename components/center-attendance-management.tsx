@@ -50,7 +50,7 @@ export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceP
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [selectedBatch, setSelectedBatch] = useState<string>("all")
+  const [selectedBatch, setSelectedBatch] = useState<string>("")
   const [searchTerm, setSearchTerm] = useState("")
   const [markingMode, setMarkingMode] = useState(false)
 
@@ -94,7 +94,7 @@ export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceP
         date: format(selectedDate, 'yyyy-MM-dd')
       })
       
-      if (selectedBatch !== 'all') {
+      if (selectedBatch !== '') {
         params.append('batch', selectedBatch)
       }
 
@@ -138,7 +138,7 @@ export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceP
         center: selectedCenter
       })
       
-      if (selectedBatch !== 'all') {
+      if (selectedBatch !== '') {
         params.append('batch', selectedBatch)
       }
 
@@ -198,27 +198,21 @@ export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceP
   }
 
   const filteredRecords = attendanceRecords.filter(record => {
-    const matchesCenter = selectedCenter === 'all' || record.center_name.toLowerCase().includes(selectedCenter.toLowerCase())
-    const matchesBatch = selectedBatch === 'all' || record.batch_name === selectedBatch
+    const matchesBatch = selectedBatch === '' || record.batch_name === selectedBatch
     const matchesSearch = record.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          record.batch_name.toLowerCase().includes(searchTerm.toLowerCase())
     
-    return matchesCenter && matchesBatch && matchesSearch
+    return matchesBatch && matchesSearch
   })
 
   const getFilteredBatches = () => {
-    if (selectedCenter === 'all') return batches
-    return batches.filter(batch => batch.center_id === selectedCenter)
+    return batches
   }
 
   const getFilteredStudents = () => {
     let filtered = students
     
-    if (selectedCenter !== 'all') {
-      filtered = filtered.filter(student => student.center_name.toLowerCase().includes(selectedCenter.toLowerCase()))
-    }
-    
-    if (selectedBatch !== 'all') {
+    if (selectedBatch !== '') {
       filtered = filtered.filter(student => student.batch_name === selectedBatch)
     }
     
@@ -240,7 +234,7 @@ export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceP
         <div>
           <h2 className="text-2xl font-bold">Attendance Management</h2>
           <p className="text-gray-600">
-            {selectedCenter === 'all' ? 'All Centers' : `${selectedCenter} Center`}
+            {selectedCenter ? `${selectedCenter} Center` : 'Select Center'}
           </p>
         </div>
         
@@ -291,7 +285,6 @@ export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceP
                   <SelectValue placeholder="Select batch" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Batches</SelectItem>
                   {getFilteredBatches().map(batch => (
                     <SelectItem key={batch.id} value={batch.name}>
                       {batch.name}
@@ -317,7 +310,7 @@ export function CenterAttendanceManagement({ selectedCenter }: CenterAttendanceP
 
             <div className="flex items-end">
               <Button variant="outline" onClick={() => {
-                setSelectedBatch("all")
+                setSelectedBatch("")
                 setSearchTerm("")
               }}>
                 <Filter className="h-4 w-4 mr-2" />

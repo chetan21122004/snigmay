@@ -111,21 +111,16 @@ const CenterSelector = () => {
 
   return (
     <Select 
-      value={selectedCenter?.id || "all"} 
+      value={selectedCenter?.id || ""} 
       onValueChange={(value) => {
-        if (value === "all") {
-          setSelectedCenter(null)
-        } else {
-          const center = centers.find(c => c.id === value)
-          setSelectedCenter(center || null)
-        }
+        const center = centers.find(c => c.id === value)
+        setSelectedCenter(center || null)
       }}
     >
       <SelectTrigger className="w-full">
         <SelectValue placeholder="Select Center" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">All Centers</SelectItem>
         {centers.map((center) => (
           <SelectItem key={center.id} value={center.id}>
             <div className="flex items-center gap-2">

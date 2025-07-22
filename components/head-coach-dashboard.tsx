@@ -187,11 +187,11 @@ export function HeadCoachDashboard() {
             { data: attendance },
             { data: feePayments }
           ] = await Promise.all([
-            supabase.from('students').select('id, batches!inner(center_id)').eq('batches.center_id', center.id),
+            supabase.from('students').select('id').eq('center_id', center.id),
             supabase.from('batches').select('id').eq('center_id', center.id),
             supabase.from('users').select('id').eq('role', 'coach').eq('center_id', center.id),
-            supabase.from('attendance').select('status, batches!inner(center_id)').eq('batches.center_id', center.id).eq('date', new Date().toISOString().split('T')[0]),
-            supabase.from('fee_payments').select('amount, status, students!inner(batches!inner(center_id))').eq('students.batches.center_id', center.id)
+            supabase.from('attendance').select('status, students!inner(center_id)').eq('students.center_id', center.id).eq('date', new Date().toISOString().split('T')[0]),
+            supabase.from('fee_payments').select('amount, status, students!inner(center_id)').eq('students.center_id', center.id)
           ])
 
           const centerStudents = students?.length || 0
