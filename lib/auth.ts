@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import bcrypt from 'bcryptjs'
 
 export interface User {
   id: string
@@ -24,13 +25,24 @@ export interface SignupData {
 
 const AUTH_STORAGE_KEY = 'snigmay_auth_user'
 
+// Hash password function
+const hashPassword = async (password: string): Promise<string> => {
+  const saltRounds = 12
+  return await bcrypt.hash(password, saltRounds)
+}
+
+// Verify password function
+const verifyPassword = async (password: string, hashedPassword: string): Promise<boolean> => {
+  return await bcrypt.compare(password, hashedPassword)
+}
+
 export const signIn = async (credentials: LoginCredentials): Promise<{ user: User }> => {
   try {
     // Query the users table to find the user
     const { data: users, error: queryError } = await supabase
       .from('users')
       .select('*')
-      .eq('email', credentials.email)
+      .eq('email', credentials.email.toLowerCase().trim())
       .limit(1)
 
     if (queryError) {
@@ -42,19 +54,10 @@ export const signIn = async (credentials: LoginCredentials): Promise<{ user: Use
     }
 
     const user = users[0]
-
-    // For demo purposes, we'll use simple password comparison
-    // In production, you would use proper password hashing
-    const demoPasswords: Record<string, string> = {
-      'admin@snigmay.com': 'admin123',
-      'club@snigmay.com': 'club123',
-      'headcoach@snigmay.com': 'coach123',
-      'coach.kharadi@snigmay.com': 'coach123',
-      'manager.kharadi@snigmay.com': 'manager123'
-    }
-
-    const expectedPassword = demoPasswords[credentials.email] || 'password123'
-    if (credentials.password !== expectedPassword) {
+    
+    // Verify password
+    const isPasswordValid = await verifyPassword(credentials.password, user.password_hash)
+    if (!isPasswordValid) {
       throw new Error('Invalid email or password')
     }
 
@@ -72,17 +75,29 @@ export const signIn = async (credentials: LoginCredentials): Promise<{ user: Use
     
     return { user: userSession }
   } catch (error: any) {
+    console.error('Sign in error:', error)
     throw new Error(error.message || 'Login failed')
   }
 }
 
 export const signUp = async (signupData: SignupData): Promise<{ user: User }> => {
   try {
+    // Validate input
+    if (!signupData.email || !signupData.password || !signupData.full_name || !signupData.role) {
+      throw new Error('All fields are required')
+    }
+
+    if (signupData.password.length < 6) {
+      throw new Error('Password must be at least 6 characters long')
+    }
+
+    const email = signupData.email.toLowerCase().trim()
+
     // Check if user already exists
     const { data: existingUsers, error: checkError } = await supabase
       .from('users')
       .select('email')
-      .eq('email', signupData.email)
+      .eq('email', email)
       .limit(1)
 
     if (checkError) {
@@ -92,14 +107,17 @@ export const signUp = async (signupData: SignupData): Promise<{ user: User }> =>
     if (existingUsers && existingUsers.length > 0) {
       throw new Error('User already exists with this email')
     }
+    
+    // Hash password
+    const hashedPassword = await hashPassword(signupData.password)
 
     // Insert new user
     const { data: newUsers, error: insertError } = await supabase
       .from('users')
       .insert([{
-        email: signupData.email,
-        password_hash: signupData.password, // In production, hash this properly
-        full_name: signupData.full_name,
+        email: email,
+        password_hash: hashedPassword,
+        full_name: signupData.full_name.trim(),
         role: signupData.role,
         center_id: signupData.center_id || null
       }])
@@ -127,6 +145,7 @@ export const signUp = async (signupData: SignupData): Promise<{ user: User }> =>
     
     return { user: userSession }
   } catch (error: any) {
+    console.error('Sign up error:', error)
     throw new Error(error.message || 'Signup failed')
   }
 }
@@ -219,26 +238,39 @@ export const changePassword = async (currentPassword: string, newPassword: strin
     
     const currentUser = JSON.parse(currentUserString)
     
-    // For demo purposes, we'll use simple password validation
-    const demoPasswords: Record<string, string> = {
-      'admin@snigmay.com': 'admin123',
-      'club@snigmay.com': 'club123',
-      'headcoach@snigmay.com': 'coach123',
-      'coach.kharadi@snigmay.com': 'coach123',
-      'manager.kharadi@snigmay.com': 'manager123'
+    // Get current user from database
+    const { data: users, error: queryError } = await supabase
+      .from('users')
+      .select('password_hash')
+      .eq('id', currentUser.id)
+      .limit(1)
+
+    if (queryError) {
+      throw new Error(`Database error: ${queryError.message}`)
     }
 
-    const expectedCurrentPassword = demoPasswords[currentUser.email] || 'password123'
-    if (currentPassword !== expectedCurrentPassword) {
+    if (!users || users.length === 0) {
+      throw new Error('User not found')
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await verifyPassword(currentPassword, users[0].password_hash)
+    if (!isCurrentPasswordValid) {
       throw new Error('Current password is incorrect')
     }
 
-    // In production, you would update the password_hash in the database
-    // For demo purposes, we'll just simulate success
-    console.log('Password would be updated in production')
+    // Hash new password
+    const hashedNewPassword = await hashPassword(newPassword)
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // Update password in database
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ password_hash: hashedNewPassword })
+      .eq('id', currentUser.id)
+
+    if (updateError) {
+      throw new Error(`Failed to update password: ${updateError.message}`)
+    }
   } catch (error: any) {
     throw new Error(error.message || 'Password change failed')
   }
@@ -254,11 +286,11 @@ export const canAccessAllCenters = (userRole: string): boolean => {
 }
 
 export const canManageUsers = (userRole: string): boolean => {
-  return ['super_admin', 'club_manager', 'head_coach'].includes(userRole)
+  return ['super_admin', 'club_manager'].includes(userRole)
 }
 
 export const canManageFinances = (userRole: string): boolean => {
-  return ['super_admin', 'club_manager', 'head_coach'].includes(userRole)
+  return ['super_admin', 'club_manager', 'center_manager'].includes(userRole)
 }
 
 export const canMarkAttendance = (userRole: string): boolean => {
@@ -267,4 +299,18 @@ export const canMarkAttendance = (userRole: string): boolean => {
 
 export const canViewReports = (userRole: string): boolean => {
   return ['super_admin', 'club_manager', 'head_coach'].includes(userRole)
+}
+
+export const getUserCenterAccess = (userRole: string, userCenterId: string | null): 'all' | 'single' | 'none' => {
+  switch (userRole) {
+    case 'super_admin':
+    case 'club_manager':
+    case 'head_coach':
+      return 'all'
+    case 'coach':
+    case 'center_manager':
+      return userCenterId ? 'single' : 'none'
+    default:
+      return 'none'
+  }
 }

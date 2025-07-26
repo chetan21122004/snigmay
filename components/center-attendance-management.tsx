@@ -1,20 +1,22 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo } from "react"
+import { supabase } from "@/lib/supabase"
+import { useCenterContext } from "@/context/center-context"
+import { getCurrentUser } from "@/lib/auth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Users, CheckCircle, XCircle, Clock, Filter, Download, Search, CalendarIcon, UserCheck } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Label } from "@/components/ui/label"
+import { CalendarDays, CheckCircle, XCircle, AlertCircle, Users, Clock, CalendarIcon, Download, Filter, Search, UserCheck } from "lucide-react"
 import { format } from "date-fns"
-import { getCurrentUser } from "@/lib/auth"
-import { useCenterContext } from "@/context/center-context"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { Input } from "@/components/ui/input"
 
 interface AttendanceRecord {
   id: string
@@ -45,128 +47,154 @@ interface CenterAttendanceProps {
   selectedCenter: string
 }
 
-export function CenterAttendanceManagement() {
-  const { selectedCenter } = useCenterContext()
-  const [user, setUser] = useState<any>(null)
+export default function CenterAttendanceManagement() {
+  const { selectedCenter, user, getStudentsByCenter, getBatchesByCenter } = useCenterContext()
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([])
   const [batches, setBatches] = useState<Batch[]>([])
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
-  const [selectedBatch, setSelectedBatch] = useState("")
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [selectedBatch, setSelectedBatch] = useState<string>("")
+  const [attendanceData, setAttendanceData] = useState<{[key: string]: 'present' | 'absent'}>({})
   const [searchTerm, setSearchTerm] = useState("")
   const [markingMode, setMarkingMode] = useState(false)
-  const [attendanceData, setAttendanceData] = useState<{ [key: string]: boolean }>({})
 
-  useEffect(() => {
-    loadUser()
-  }, [])
+  // Get center-specific data
+  const centerBatches = user?.role === 'super_admin' || user?.role === 'club_manager' || user?.role === 'head_coach'
+    ? getBatchesByCenter(selectedCenter?.id || '')
+    : (user?.center_id ? getBatchesByCenter(user.center_id) : [])
 
+  const centerStudents = user?.role === 'super_admin' || user?.role === 'club_manager' || user?.role === 'head_coach'
+    ? getStudentsByCenter(selectedCenter?.id || '')
+    : (user?.center_id ? getStudentsByCenter(user.center_id) : [])
+
+  // MOVED BEFORE CONDITIONAL RETURNS
   useEffect(() => {
     if (user && selectedCenter) {
-      loadBatches()
       loadAttendanceRecords()
     }
-  }, [user, selectedCenter])
+  }, [user, selectedCenter, selectedDate])
 
   useEffect(() => {
     if (user && selectedCenter && selectedBatch) {
-      loadStudents()
+      loadBatchStudents()
     }
   }, [user, selectedCenter, selectedBatch])
-
-  const loadUser = async () => {
-    try {
-      const currentUser = await getCurrentUser()
-      setUser(currentUser)
-    } catch (error) {
-      console.error('Error loading user:', error)
-    }
-  }
-
-  const loadBatches = async () => {
-    if (!selectedCenter?.id) return
-    
-    try {
-      const response = await fetch(`/api/batches?centerId=${selectedCenter.id}`)
-      const data = await response.json()
-      setBatches(data)
-    } catch (error) {
-      console.error('Error loading batches:', error)
-    }
-  }
 
   const loadAttendanceRecords = async () => {
     if (!selectedCenter?.id) return
     
     try {
-      setLoading(true)
-      let url = `/api/attendance?centerId=${selectedCenter.id}&date=${selectedDate}`
-      if (selectedBatch !== '') {
-        url += `&batch=${selectedBatch}`
-      }
-
-      const response = await fetch(url)
-      const data = await response.json()
-      setAttendanceRecords(data)
+      const dateStr = format(selectedDate, 'yyyy-MM-dd')
+      const { data, error } = await supabase
+        .from('attendance')
+        .select('*')
+        .eq('center_id', selectedCenter.id)
+        .eq('date', dateStr)
+      
+      if (error) throw error
+      
+      // Convert to attendance data format
+      const attendanceMap: {[key: string]: 'present' | 'absent'} = {}
+      data?.forEach((record: any) => {
+        attendanceMap[record.student_id] = record.status
+      })
+      setAttendanceData(attendanceMap)
     } catch (error) {
       console.error('Error loading attendance records:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
-  const loadStudents = async () => {
-    if (!selectedCenter?.id) return
+  const loadBatchStudents = async () => {
+    if (!selectedBatch) return
     
     try {
-      let url = `/api/students?centerId=${selectedCenter.id}`
-      if (selectedBatch !== '') {
-        url += `&batch=${selectedBatch}`
-      }
-
-      const response = await fetch(url)
-      const data = await response.json()
-      setStudents(data)
+      const { data, error } = await supabase
+        .from('students')
+        .select('*')
+        .eq('batch_id', selectedBatch)
+        .order('full_name')
+      
+      if (error) throw error
+      setStudents(data || [])
     } catch (error) {
       console.error('Error loading students:', error)
     }
   }
 
   const markAttendance = async (studentId: string, status: 'present' | 'absent') => {
+    if (!selectedCenter || !selectedBatch) return
+
     try {
-      const student = students.find(s => s.id === studentId)
-      if (!student) {
-        throw new Error('Student not found')
+      const currentUser = await getCurrentUser()
+      if (!currentUser) {
+        console.error('No user logged in')
+        return
       }
 
-      const response = await fetch('/api/attendance', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          student_id: studentId,
-          batch_id: student.batch_id,
-          date: selectedDate,
-          status,
-          marked_by: user?.id
-        })
-      })
+      const dateStr = format(selectedDate, 'yyyy-MM-dd')
+      
+      // Check if attendance record exists
+      const { data: existing } = await supabase
+        .from('attendance')
+        .select('id')
+        .eq('student_id', studentId)
+        .eq('date', dateStr)
+        .single()
 
-      if (!response.ok) {
-        throw new Error('Failed to mark attendance')
+      if (existing) {
+        // Update existing record
+        const { error } = await supabase
+          .from('attendance')
+          .update({ 
+            status,
+            marked_by: currentUser.id,
+            batch_id: selectedBatch,
+            center_id: selectedCenter.id
+          })
+          .eq('id', existing.id)
+        
+        if (error) throw error
+      } else {
+        // Create new record
+        const { error } = await supabase
+          .from('attendance')
+          .insert([{
+            student_id: studentId,
+            batch_id: selectedBatch,
+            date: dateStr,
+            status,
+            marked_by: currentUser.id,
+            center_id: selectedCenter.id
+          }])
+        
+        if (error) throw error
       }
 
-      const result = await response.json()
-      console.log(result.message)
-
-      // Reload attendance records to reflect the change
-      await loadAttendanceRecords()
+      // Update local state
+      setAttendanceData(prev => ({
+        ...prev,
+        [studentId]: status
+      }))
     } catch (error) {
       console.error('Error marking attendance:', error)
-      // You might want to show a toast notification here
     }
+  }
+
+  // Show message if no center is selected
+  if (!selectedCenter) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center">No Center Selected</CardTitle>
+            <CardDescription className="text-center">
+              Please select a center from the sidebar to manage attendance.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    )
   }
 
   const exportAttendance = () => {
@@ -194,16 +222,6 @@ export function CenterAttendanceManagement() {
 
   const canMarkAttendance = () => {
     return user && ['super_admin', 'club_manager', 'head_coach', 'coach', 'center_manager'].includes(user.role)
-  }
-
-  if (!selectedCenter) {
-    return (
-      <div className="text-center py-12">
-        <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Select a Center</h3>
-        <p className="text-gray-600">Please select a center from the sidebar to manage attendance.</p>
-      </div>
-    )
   }
 
   if (loading) {
@@ -244,8 +262,8 @@ export function CenterAttendanceManagement() {
                 <PopoverContent className="w-auto p-0">
                     <CalendarComponent
                     mode="single"
-                      selected={new Date(selectedDate)}
-                      onSelect={(date: Date | undefined) => date && setSelectedDate(date.toISOString().split('T')[0])}
+                      selected={selectedDate}
+                      onSelect={(date: Date | undefined) => date && setSelectedDate(date)}
                     initialFocus
                   />
                 </PopoverContent>

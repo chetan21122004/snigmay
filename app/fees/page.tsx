@@ -1,24 +1,30 @@
 "use client"
 
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { CenterProviderWrapper } from "@/components/center-provider-wrapper"
-import { FeeManagement } from "@/components/fee-management"
+import DashboardLayout from "@/components/dashboard-layout"
+import FeeManagement from "@/components/fee-management"
+import { FinanceManagement } from "@/components/finance-management"
+import CenterProviderWrapper from "@/components/center-provider-wrapper"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function FeesPage() {
   return (
     <CenterProviderWrapper>
       <DashboardLayout>
-        <div className="space-y-4 sm:space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Fee Management</h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Comprehensive student fee tracking and payment management
-              </p>
-            </div>
+        <div className="p-6">
+          <div className="max-w-7xl mx-auto">
+            <Tabs defaultValue="fees" className="space-y-6">
+              <TabsList>
+                <TabsTrigger value="fees">Fee Collection</TabsTrigger>
+                <TabsTrigger value="finance">Finance Management</TabsTrigger>
+              </TabsList>
+              <TabsContent value="fees">
+                <FeeManagement />
+              </TabsContent>
+              <TabsContent value="finance">
+                <FinanceManagement />
+              </TabsContent>
+            </Tabs>
           </div>
-          
-          <FeeManagement />
         </div>
       </DashboardLayout>
     </CenterProviderWrapper>

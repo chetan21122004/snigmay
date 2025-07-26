@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BatchManagement } from "@/components/batch-management"
 import { CoachManagement } from "@/components/coach-management"
-import { StudentManagement } from "@/components/student-management"
+import StudentManagement from "@/components/student-management"
+import BatchManagement from "@/components/batch-management"
 import { AttendanceReports } from "@/components/attendance-reports"
 import { 
   LogOut, 

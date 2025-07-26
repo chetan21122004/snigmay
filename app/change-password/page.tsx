@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { CenterProviderWrapper } from "@/components/center-provider-wrapper"
+import DashboardLayout from "@/components/dashboard-layout"
+import CenterProviderWrapper from "@/components/center-provider-wrapper"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"

@@ -13,6 +13,9 @@ import { toast } from "@/components/ui/use-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CreditCard, DollarSign, AlertCircle, CheckCircle, Plus, Search, Filter, IndianRupee, Receipt, Calendar, Users } from "lucide-react"
 import { useCenterContext } from "@/context/center-context"
+import { supabase } from "@/lib/supabase"
+import { getCurrentUser } from "@/lib/auth"
+import { useToast } from "@/hooks/use-toast"
 
 interface FeePayment {
   id: string
@@ -39,9 +42,11 @@ interface FeeStats {
   overdueCount: number
 }
 
-export function FeeManagement() {
-  const { selectedCenter } = useCenterContext()
+export default function FeeManagement() {
+  const { selectedCenter, user } = useCenterContext()
+  const { toast } = useToast()
   const [payments, setPayments] = useState<FeePayment[]>([])
+  const [students, setStudents] = useState<any[]>([])
   const [stats, setStats] = useState<FeeStats>({
     totalCollected: 0,
     totalPending: 0,
@@ -52,19 +57,27 @@ export function FeeManagement() {
     overdueCount: 0
   })
   const [loading, setLoading] = useState(true)
-  const [showPaymentDialog, setShowPaymentDialog] = useState(false)
-  const [selectedStudent, setSelectedStudent] = useState<any>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingPayment, setEditingPayment] = useState<FeePayment | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [paymentForm, setPaymentForm] = useState({
+  const [formData, setFormData] = useState({
+    student_id: "",
     amount: "",
     payment_mode: "cash",
-    receipt_number: ""
+    receipt_number: "",
+    status: "paid",
+    due_date: "",
   })
+  const [error, setError] = useState("")
+
+  // Check if user can collect fees
+  const canCollectFees = user?.role === 'super_admin' || user?.role === 'club_manager' || user?.role === 'center_manager'
 
   useEffect(() => {
     if (selectedCenter?.id) {
     loadPayments()
+    loadStudents()
     }
   }, [selectedCenter])
 
@@ -73,101 +86,131 @@ export function FeeManagement() {
     
     try {
       setLoading(true)
-      const response = await fetch(`/api/fees?centerId=${selectedCenter.id}`)
+      const { data, error } = await supabase
+        .from('fee_payments')
+        .select(`
+          *,
+          students (
+            id,
+            full_name,
+            batches (
+              id,
+              name,
+              centers (
+                id,
+                name,
+                location
+              )
+            )
+          )
+        `)
+        .eq('center_id', selectedCenter.id)
+        .order('payment_date', { ascending: false })
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      setPayments(data)
-      calculateStats(data)
+      if (error) throw error
+
+      // Transform the data to match our interface
+      const transformedPayments = (data || []).map(payment => ({
+        ...payment,
+        student_name: payment.students?.full_name || 'Unknown Student',
+        batch_name: payment.students?.batches?.name || 'Unknown Batch',
+        center_name: payment.students?.batches?.centers?.name || 'Unknown Center',
+        center_location: payment.students?.batches?.centers?.location || 'Unknown Location'
+      }))
+
+      setPayments(transformedPayments)
+      calculateStats(transformedPayments)
     } catch (error) {
-      console.error("Error loading payments:", error)
-      toast({
-        title: "Error loading payments",
-        description: "Failed to load fee payment data. Please try again.",
-        variant: "destructive"
-      })
+      console.error('Error loading payments:', error)
+      setError('Failed to load fee payments')
     } finally {
       setLoading(false)
     }
   }
 
+  const loadStudents = async () => {
+    if (!selectedCenter?.id) return
+    
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .select('*')
+        .eq('center_id', selectedCenter.id)
+        .order('full_name')
+      
+      if (error) throw error
+      setStudents(data || [])
+    } catch (error) {
+      console.error('Error loading students:', error)
+    }
+  }
+
   const calculateStats = (paymentsData: FeePayment[]) => {
+    const total = paymentsData.reduce((sum, payment) => sum + payment.amount, 0)
     const paidPayments = paymentsData.filter(p => p.status === 'paid')
     const duePayments = paymentsData.filter(p => p.status === 'due')
     const overduePayments = paymentsData.filter(p => p.status === 'overdue')
-
-    const totalCollected = paidPayments.reduce((sum, p) => sum + p.amount, 0)
-    const totalPending = duePayments.reduce((sum, p) => sum + p.amount, 0)
-    const totalOverdue = overduePayments.reduce((sum, p) => sum + p.amount, 0)
-
-    const collectionRate = paymentsData.length > 0 
-      ? Math.round((paidPayments.length / paymentsData.length) * 100)
-      : 0
-
+    
+    const totalCollected = paidPayments.reduce((sum, payment) => sum + payment.amount, 0)
+    const totalPending = duePayments.reduce((sum, payment) => sum + payment.amount, 0)
+    const totalOverdue = overduePayments.reduce((sum, payment) => sum + payment.amount, 0)
+    
     setStats({
       totalCollected,
       totalPending,
       totalOverdue,
-      collectionRate,
+      collectionRate: total > 0 ? (totalCollected / total) * 100 : 0,
       paidCount: paidPayments.length,
       dueCount: duePayments.length,
       overdueCount: overduePayments.length
     })
   }
 
-  const handlePaymentSubmit = async () => {
-    if (!selectedStudent || !paymentForm.amount) {
-      toast({ 
-        title: "Please fill all required fields", 
-        variant: "destructive" 
-      })
+  const handleEdit = (payment: FeePayment) => {
+    setEditingPayment(payment)
+    setFormData({
+      student_id: payment.student_id || "",
+      amount: payment.amount.toString(),
+      payment_mode: payment.payment_mode,
+      receipt_number: payment.receipt_number || "",
+      status: payment.status,
+      due_date: payment.due_date || "",
+    })
+    setDialogOpen(true)
+  }
+
+  const resetForm = () => {
+    setFormData({
+      student_id: "",
+      amount: "",
+      payment_mode: "cash",
+      receipt_number: "",
+      status: "paid",
+      due_date: "",
+    })
+    setEditingPayment(null)
+    setError("")
+  }
+
+  const handleDelete = async (payment: FeePayment) => {
+    if (!confirm(`Are you sure you want to delete this payment record?`)) {
       return
     }
 
     try {
-      const response = await fetch("/api/fees/collect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          student_id: selectedStudent.id,
-          amount: parseFloat(paymentForm.amount),
-          payment_mode: paymentForm.payment_mode,
-          receipt_number: paymentForm.receipt_number || `RCP-${Date.now()}`
-        })
-      })
+      const { error } = await supabase
+        .from('fee_payments')
+        .delete()
+        .eq('id', payment.id)
 
-      if (response.ok) {
-        const result = await response.json()
-        toast({ 
-          title: "Payment collected successfully",
-          description: `₹${paymentForm.amount} collected from ${selectedStudent.name}`
-        })
-        setShowPaymentDialog(false)
-        resetForm()
-        loadPayments()
-      } else {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to collect payment")
-      }
+      if (error) throw error
+
+      // Refresh data
+      await loadPayments()
     } catch (error: any) {
-      toast({ 
-        title: "Error collecting payment", 
-        description: error.message,
-        variant: "destructive" 
-      })
+      console.error('Error deleting payment:', error)
+      setError(error.message || "Failed to delete payment")
     }
-  }
-
-  const resetForm = () => {
-    setPaymentForm({
-      amount: "",
-      payment_mode: "cash",
-      receipt_number: ""
-    })
-    setSelectedStudent(null)
   }
 
   const getStatusBadge = (status: string) => {
@@ -198,24 +241,14 @@ export function FeeManagement() {
   }
 
   const filteredPayments = payments.filter(payment => {
-    const matchesSearch = payment.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         payment.batch_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         payment.center_name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = (payment.student_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (payment.batch_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (payment.center_name || '').toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesStatus = statusFilter === "all" || payment.status === statusFilter
     
     return matchesSearch && matchesStatus
   })
-
-  if (!selectedCenter) {
-    return (
-      <div className="text-center py-12">
-        <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Select a Center</h3>
-        <p className="text-gray-600">Please select a center from the sidebar to manage fees.</p>
-      </div>
-    )
-  }
 
   if (loading) {
     return (
@@ -367,13 +400,29 @@ export function FeeManagement() {
                             <Button
                               size="sm"
                               onClick={() => {
-                                setSelectedStudent({ id: payment.student_id, name: payment.student_name })
-                                setShowPaymentDialog(true)
+                                setEditingPayment(payment)
+                                setFormData({
+                                  student_id: payment.student_id || "",
+                                  amount: payment.amount.toString(),
+                                  payment_mode: payment.payment_mode,
+                                  receipt_number: payment.receipt_number || "",
+                                  status: payment.status,
+                                  due_date: payment.due_date || "",
+                                })
+                                setDialogOpen(true)
                               }}
                             >
-                              Collect
+                              Edit
                             </Button>
                           )}
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDelete(payment)}
+                            className="ml-2"
+                          >
+                            Delete
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
@@ -413,13 +462,29 @@ export function FeeManagement() {
                         <Button
                           size="sm"
                           onClick={() => {
-                            setSelectedStudent({ id: payment.student_id, name: payment.student_name })
-                            setShowPaymentDialog(true)
+                            setEditingPayment(payment)
+                            setFormData({
+                              student_id: payment.student_id || "",
+                              amount: payment.amount.toString(),
+                              payment_mode: payment.payment_mode,
+                              receipt_number: payment.receipt_number || "",
+                              status: payment.status,
+                              due_date: payment.due_date || "",
+                            })
+                            setDialogOpen(true)
                           }}
                         >
-                          Collect
+                          Edit
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDelete(payment)}
+                        className="ml-2"
+                      >
+                        Delete
+                      </Button>
                     </div>
                   </Card>
                 ))
@@ -430,30 +495,44 @@ export function FeeManagement() {
       </Card>
 
       {/* Payment Collection Dialog */}
-      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Collect Fee Payment</DialogTitle>
+            <DialogTitle>{editingPayment ? "Edit Fee Payment" : "Collect Fee Payment"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <Label>Student</Label>
-              <Input value={selectedStudent?.name || ""} disabled />
+              <Select
+                value={formData.student_id}
+                onValueChange={(value) => setFormData({ ...formData, student_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select student" />
+                </SelectTrigger>
+                <SelectContent>
+                  {students.map((student) => (
+                    <SelectItem key={student.id} value={student.id}>
+                      {student.full_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Amount *</Label>
               <Input
                 type="number"
-                value={paymentForm.amount}
-                onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                 placeholder="Enter amount"
               />
             </div>
             <div>
               <Label>Payment Mode *</Label>
               <Select
-                value={paymentForm.payment_mode}
-                onValueChange={(value) => setPaymentForm({ ...paymentForm, payment_mode: value })}
+                value={formData.payment_mode}
+                onValueChange={(value) => setFormData({ ...formData, payment_mode: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -469,18 +548,91 @@ export function FeeManagement() {
             <div>
               <Label>Receipt Number (Optional)</Label>
               <Input
-                value={paymentForm.receipt_number}
-                onChange={(e) => setPaymentForm({ ...paymentForm, receipt_number: e.target.value })}
+                value={formData.receipt_number}
+                onChange={(e) => setFormData({ ...formData, receipt_number: e.target.value })}
                 placeholder="Auto-generated if empty"
               />
             </div>
+            <div>
+              <Label>Due Date (Optional)</Label>
+              <Input
+                type="date"
+                value={formData.due_date}
+                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                placeholder="Select due date"
+              />
+            </div>
+            <div>
+              <Label>Status</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => setFormData({ ...formData, status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="due">Due</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handlePaymentSubmit}>
-              Collect Payment
+            <Button onClick={async () => {
+              if (!formData.student_id || !formData.amount) {
+                toast({ 
+                  title: "Please fill all required fields", 
+                  variant: "destructive" 
+                })
+                return
+              }
+
+              try {
+                const currentUser = await getCurrentUser()
+                if (!currentUser) {
+                  setError("You must be logged in to manage fees")
+                  return
+                }
+
+                const paymentData = {
+                  id: editingPayment?.id || null, // Use existing ID for update
+                  student_id: formData.student_id,
+                  amount: parseFloat(formData.amount),
+                  payment_date: editingPayment?.payment_date || new Date().toISOString().split('T')[0],
+                  payment_mode: formData.payment_mode as 'cash' | 'upi' | 'bank_transfer' | 'check' | 'card' | 'online',
+                  receipt_number: formData.receipt_number || null,
+                  status: formData.status,
+                  due_date: formData.due_date || null,
+                  created_by: currentUser.id,
+                  center_id: selectedCenter?.id || null,
+                }
+
+                const { error } = await supabase
+                  .from('fee_payments')
+                  .upsert(paymentData)
+                  .select()
+                  .single()
+
+                if (error) throw error
+
+                toast({ 
+                  title: editingPayment ? "Payment updated successfully" : "Payment collected successfully",
+                  description: editingPayment ? `₹${formData.amount} updated for ${students.find(s => s.id === formData.student_id)?.full_name}` : `₹${formData.amount} collected from ${students.find(s => s.id === formData.student_id)?.full_name}`
+                })
+                setDialogOpen(false)
+                resetForm()
+                loadPayments()
+              } catch (error: any) {
+                console.error('Error saving payment:', error)
+                setError(error.message || "Failed to save payment")
+              }
+            }}>
+              {editingPayment ? "Update Payment" : "Collect Payment"}
             </Button>
           </DialogFooter>
         </DialogContent>

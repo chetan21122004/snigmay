@@ -1,9 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { getCurrentUser } from "@/lib/auth"
-import { DashboardLayout } from "@/components/dashboard-layout"
+import DashboardLayout from "@/components/dashboard-layout"
+import CenterProviderWrapper from "@/components/center-provider-wrapper"
 import { HeadCoachDashboard } from "@/components/head-coach-dashboard"
 
 export default function HeadCoachPage() {

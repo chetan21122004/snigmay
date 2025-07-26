@@ -1,52 +1,62 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo } from "react"
+import { supabase } from "@/lib/supabase"
+import { useCenterContext } from "@/context/center-context"
+import { getCurrentUser } from "@/lib/auth"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Plus, Edit, Trash2 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Plus, Edit, Trash2, User, Phone, Mail, MapPin, AlertCircle, Users } from "lucide-react"
 
 interface Student {
   id: string
-  name: string
+  full_name: string
   age: number
   contact_info: string | null
   batch_id: string | null
-  batch_name?: string
-  center_name?: string
+  center_id: string | null
+  parent_name: string | null
+  parent_phone: string | null
+  parent_email: string | null
+  address: string | null
+  emergency_contact: string | null
+  medical_conditions: string | null
 }
 
 interface Batch {
   id: string
   name: string
-  center_name?: string
+  center_id: string | null
 }
 
-export function StudentManagement() {
-  const [students, setStudents] = useState<Student[]>([])
-  const [batches, setBatches] = useState<Batch[]>([])
-  const [loading, setLoading] = useState(true)
+export default function StudentManagement() {
+  const { 
+    selectedCenter, 
+    students: allStudents,
+    batches: allBatches,
+    getStudentsByCenter,
+    getBatchesByCenter,
+    user,
+    loading: contextLoading,
+    refreshData
+  } = useCenterContext()
+  
+  const [loading, setLoading] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
   const [formData, setFormData] = useState({
-    name: "",
+    full_name: "",
     age: "",
     contact_info: "",
-    batch_id: "none",
+    batch_id: "",
     parent_name: "",
     parent_phone: "",
     parent_email: "",
@@ -56,36 +66,70 @@ export function StudentManagement() {
   })
   const [error, setError] = useState("")
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      
-      // Load students using API endpoint
-      const studentsResponse = await fetch('/api/students')
-      if (!studentsResponse.ok) {
-        throw new Error('Failed to fetch students')
-      }
-      const studentsData = await studentsResponse.json()
-      setStudents(studentsData)
-
-      // Load batches using API endpoint
-      const batchesResponse = await fetch('/api/batches')
-      if (!batchesResponse.ok) {
-        throw new Error('Failed to fetch batches')
-      }
-      const batchesData = await batchesResponse.json()
-      setBatches(batchesData)
-
-    } catch (error: any) {
-      console.error("Error loading data:", error)
-      setError("Failed to load data: " + error.message)
-    } finally {
-      setLoading(false)
+  // Filter students and batches based on selected center and user role
+  const students = useMemo(() => {
+    if (!selectedCenter) return []
+    
+    if (user?.role === 'super_admin' || user?.role === 'club_manager' || user?.role === 'head_coach') {
+      return getStudentsByCenter(selectedCenter.id)
+    } else if ((user?.role === 'coach' || user?.role === 'center_manager') && user.center_id) {
+      return getStudentsByCenter(user.center_id)
     }
+    
+    return []
+  }, [selectedCenter, user, allStudents, getStudentsByCenter])
+
+  const batches = useMemo(() => {
+    if (!selectedCenter) return []
+    
+    if (user?.role === 'super_admin' || user?.role === 'club_manager' || user?.role === 'head_coach') {
+      return getBatchesByCenter(selectedCenter.id)
+    } else if ((user?.role === 'coach' || user?.role === 'center_manager') && user.center_id) {
+      return getBatchesByCenter(user.center_id)
+    }
+    
+    return []
+  }, [selectedCenter, user, allBatches, getBatchesByCenter])
+
+  // Reset form when dialog closes - MOVED BEFORE CONDITIONAL RETURNS
+  useEffect(() => {
+    if (!dialogOpen) {
+      setFormData({
+        full_name: "",
+        age: "",
+        contact_info: "",
+        batch_id: "",
+        parent_name: "",
+        parent_phone: "",
+        parent_email: "",
+        address: "",
+        emergency_contact: "",
+        medical_conditions: "",
+      })
+      setEditingStudent(null)
+      setError("")
+    }
+  }, [dialogOpen])
+
+  // Helper function to get batch name
+  const getBatchName = (batchId: string | null) => {
+    if (!batchId) return "No batch assigned"
+    const batch = batches.find(b => b.id === batchId)
+    return batch ? batch.name : "Unknown batch"
+  }
+
+  // Show message if no center is selected
+  if (!selectedCenter) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Alert className="max-w-md">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Please select a center from the sidebar to manage students.
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,11 +137,18 @@ export function StudentManagement() {
     setError("")
 
     try {
+      const currentUser = await getCurrentUser()
+      if (!currentUser) {
+        setError("You must be logged in to manage students")
+        return
+      }
+
       const studentData = {
-        name: formData.name,
+        full_name: formData.full_name,
         age: parseInt(formData.age),
         contact_info: formData.contact_info || null,
-        batch_id: formData.batch_id === "none" ? null : formData.batch_id,
+        batch_id: formData.batch_id || null,
+        center_id: selectedCenter?.id || null,
         parent_name: formData.parent_name || null,
         parent_phone: formData.parent_phone || null,
         parent_email: formData.parent_email || null,
@@ -106,82 +157,83 @@ export function StudentManagement() {
         medical_conditions: formData.medical_conditions || null,
       }
 
-      const url = editingStudent ? `/api/students/${editingStudent.id}` : '/api/students'
-      const method = editingStudent ? 'PUT' : 'POST'
+      if (editingStudent) {
+        // Update existing student
+        const { error } = await supabase
+          .from('students')
+          .update(studentData)
+          .eq('id', editingStudent.id)
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(studentData),
-      })
+        if (error) throw error
+      } else {
+        // Create new student
+        const { error } = await supabase
+          .from('students')
+          .insert([studentData])
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to save student')
+        if (error) throw error
       }
 
+      // Refresh data
+      await refreshData()
+      
+      // Reset form
       setDialogOpen(false)
       setEditingStudent(null)
-      resetForm()
-      loadData()
+      setFormData({
+        full_name: "",
+        age: "",
+        contact_info: "",
+        batch_id: "",
+        parent_name: "",
+        parent_phone: "",
+        parent_email: "",
+        address: "",
+        emergency_contact: "",
+        medical_conditions: "",
+      })
     } catch (error: any) {
-      setError(error.message)
+      console.error('Error saving student:', error)
+      setError(error.message || "Failed to save student")
     }
   }
 
   const handleEdit = (student: Student) => {
     setEditingStudent(student)
     setFormData({
-      name: student.name,
+      full_name: student.full_name,
       age: student.age.toString(),
       contact_info: student.contact_info || "",
-      batch_id: student.batch_id || "none",
-      parent_name: "",
-      parent_phone: "",
-      parent_email: "",
-      address: "",
-      emergency_contact: "",
-      medical_conditions: "",
+      batch_id: student.batch_id || "",
+      parent_name: student.parent_name || "",
+      parent_phone: student.parent_phone || "",
+      parent_email: student.parent_email || "",
+      address: student.address || "",
+      emergency_contact: student.emergency_contact || "",
+      medical_conditions: student.medical_conditions || "",
     })
     setDialogOpen(true)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this student?")) return
+  const handleDelete = async (student: Student) => {
+    if (!confirm(`Are you sure you want to delete "${student.full_name}"?`)) {
+      return
+    }
 
     try {
-      const response = await fetch(`/api/students/${id}`, {
-        method: 'DELETE',
-      })
+      const { error } = await supabase
+        .from('students')
+        .delete()
+        .eq('id', student.id)
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to delete student')
-      }
+      if (error) throw error
 
-      loadData()
+      // Refresh data
+      await refreshData()
     } catch (error: any) {
-      setError(error.message)
+      console.error('Error deleting student:', error)
+      setError(error.message || "Failed to delete student")
     }
-  }
-
-  const resetForm = () => {
-    setEditingStudent(null)
-    setFormData({
-      name: "",
-      age: "",
-      contact_info: "",
-      batch_id: "none",
-      parent_name: "",
-      parent_phone: "",
-      parent_email: "",
-      address: "",
-      emergency_contact: "",
-      medical_conditions: "",
-    })
-    setError("")
   }
 
   if (loading) {
@@ -208,7 +260,22 @@ export function StudentManagement() {
               open={dialogOpen}
               onOpenChange={(open) => {
                 setDialogOpen(open)
-                if (!open) resetForm()
+                if (!open) {
+                  setFormData({
+                    full_name: "",
+                    age: "",
+                    contact_info: "",
+                    batch_id: "",
+                    parent_name: "",
+                    parent_phone: "",
+                    parent_email: "",
+                    address: "",
+                    emergency_contact: "",
+                    medical_conditions: "",
+                  })
+                  setEditingStudent(null)
+                  setError("")
+                }
               }}
             >
               <DialogTrigger asChild>
@@ -230,8 +297,8 @@ export function StudentManagement() {
                       <Label htmlFor="name">Student Name *</Label>
                       <Input
                         id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        value={formData.full_name}
+                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                         required
                       />
                     </div>
@@ -261,18 +328,15 @@ export function StudentManagement() {
                   
                   <div>
                     <Label htmlFor="batch">Assign to Batch</Label>
-                    <Select
-                      value={formData.batch_id}
-                      onValueChange={(value) => setFormData({ ...formData, batch_id: value })}
-                    >
+                    <Select value={formData.batch_id} onValueChange={(value) => setFormData({ ...formData, batch_id: value })}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a batch" />
+                        <SelectValue placeholder="Select batch" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">No batch assigned</SelectItem>
                         {batches.map((batch) => (
                           <SelectItem key={batch.id} value={batch.id}>
-                            {batch.name} {batch.center_name && `(${batch.center_name})`}
+                            {batch.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -368,17 +432,17 @@ export function StudentManagement() {
               ) : (
                 students.map((student) => (
                   <TableRow key={student.id}>
-                    <TableCell className="font-medium">{student.name}</TableCell>
+                    <TableCell className="font-medium">{student.full_name}</TableCell>
                     <TableCell>{student.age}</TableCell>
                     <TableCell>{student.contact_info || "No contact info"}</TableCell>
-                    <TableCell>{student.batch_name || "No batch assigned"}</TableCell>
-                    <TableCell>{student.center_name || "Unknown Center"}</TableCell>
+                    <TableCell>{getBatchName(student.batch_id)}</TableCell>
+                    <TableCell>{selectedCenter?.name || "Unknown Center"}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button variant="outline" size="sm" onClick={() => handleEdit(student)}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleDelete(student.id)}>
+                        <Button variant="outline" size="sm" onClick={() => handleDelete(student)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

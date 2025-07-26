@@ -1,9 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import DashboardLayout from "@/components/dashboard-layout"
+import CenterProviderWrapper from "@/components/center-provider-wrapper"
 import { useRouter } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth"
-import { DashboardLayout } from "@/components/dashboard-layout"
 import { SuperAdminDashboard } from "@/components/super-admin-dashboard"
 
 export default function SuperAdminPage() {

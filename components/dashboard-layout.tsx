@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useCenterContext } from "@/context/center-context"
-import { signOut } from "@/lib/auth"
-import { useRouter } from "next/navigation"
+import { getCurrentUser, signOut } from "@/lib/auth"
 import {
   LayoutDashboard,
   Users,
@@ -15,14 +15,13 @@ import {
   CreditCard,
   UserCog,
   MapPin,
-  ChevronLeft,
-  ChevronRight,
   LogOut,
   Settings,
   Bell,
-  Search,
-  Menu,
-  X
+  Database,
+  Layers,
+  Wallet,
+  CalendarCheck
 } from "lucide-react"
 import {
   Select,
@@ -33,7 +32,6 @@ import {
 } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -45,258 +43,209 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-// Role-based menu items according to context.md specifications
-const menuItems = [
+interface User {
+  id: string
+  email: string
+  full_name: string
+  role: string
+  center_id?: string | null
+}
+
+// Optimized menu configuration with proper role-based access
+const getMenuItems = (userRole: string) => [
+  {
+    section: "Dashboard",
+    items: [
   {
     title: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
-    description: "Overview and analytics",
-    roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
+        description: "Overview and analytics",
+        roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
+      }
+    ]
   },
+  {
+    section: "Training Management",
+    items: [
   {
     title: "Students",
     href: "/students",
     icon: Users,
-    description: "Manage student records",
-    roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
+        description: "Manage student profiles",
+        roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
   },
   {
     title: "Batches",
     href: "/batches",
-    icon: ClipboardList,
-    description: "Training groups",
-    roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
+        icon: Layers,
+        description: "Training batch schedules",
+        roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
   },
   {
     title: "Attendance",
     href: "/attendance",
-    icon: Calendar,
-    description: "Track attendance",
-    roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
+        icon: CalendarCheck,
+        description: "Mark and track attendance",
+        roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
+      }
+    ]
   },
   {
-    title: "Fees",
+    section: "Financial Management",
+    items: [
+  {
+        title: "Fee Collection",
     href: "/fees",
-    icon: CreditCard,
-    description: "Payment management",
-    roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
+        icon: Wallet,
+        description: "Manage fee payments",
+        roles: ["super_admin", "club_manager", "center_manager"]
+      }
+    ]
   },
   {
-    title: "Staff Management",
+    section: "Administration",
+    items: [
+  {
+        title: "User Management",
     href: "/user-management",
     icon: UserCog,
-    description: "Manage coaches & staff",
-    roles: ["super_admin", "club_manager", "head_coach"], // Only higher-level roles can manage users
-  },
-]
+        description: "Manage staff accounts",
+        roles: ["super_admin", "club_manager"]
+  }
+    ]
+  }
+].map(section => ({
+  ...section,
+  items: section.items.filter(item => item.roles.includes(userRole))
+})).filter(section => section.items.length > 0)
 
-// Professional center selector component
-const CenterSelector = () => {
+// Optimized Center Selector Component
+const CenterSelector = ({ user }: { user: User | null }) => {
   const { selectedCenter, setSelectedCenter, availableCenters, loading } = useCenterContext()
+
+  const handleCenterChange = useCallback((centerId: string) => {
+    const center = availableCenters.find(c => c.id === centerId)
+    if (center) {
+      setSelectedCenter(center)
+    }
+  }, [availableCenters, setSelectedCenter])
 
   if (loading) {
     return (
       <div className="p-4 border-b border-gray-100">
-        <div className="space-y-2">
-          <Skeleton className="h-3 w-16" />
-          <Skeleton className="h-9 w-full" />
-        </div>
+        <Skeleton className="h-10 w-full" />
       </div>
     )
   }
 
-  if (availableCenters.length === 0) {
-    return (
-      <div className="p-4 border-b border-gray-100">
-        <div className="text-center py-4">
-          <MapPin className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-          <p className="text-sm text-gray-500">No centers available</p>
-        </div>
-      </div>
-    )
+  if (!user || availableCenters.length === 0) {
+    return null
   }
 
-  // Show selector if user has access to multiple centers
-  if (availableCenters.length > 1) {
-    return (
-      <div className="p-4 border-b border-gray-100 bg-burgundy-50/30">
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-burgundy-600 uppercase tracking-wide">
-            Select Training Center
-          </label>
-          <Select 
-            value={selectedCenter?.id || ""} 
-            onValueChange={(value) => {
-              const center = availableCenters.find(c => c.id === value)
-              setSelectedCenter(center || null)
-            }}
-          >
-            <SelectTrigger className="w-full h-10 bg-white border-burgundy-200 shadow-sm hover:border-burgundy-300 focus:border-burgundy-500 focus:ring-burgundy-500/20">
-              <SelectValue placeholder="Select center" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableCenters.map((center) => (
-                <SelectItem key={center.id} value={center.id} className="py-2">
-                  <div className="flex items-center gap-3">
-                    <div className="h-2 w-2 rounded-full bg-burgundy-500" />
-                    <div>
-                      <span className="font-medium">{center.name}</span>
-                      <p className="text-xs text-gray-500">{center.location}</p>
-                    </div>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-    )
-  }
-
-  // Show current center display if user has access to only one center
+  // For users with access to multiple centers (super admin, club manager, head coach)
+  if (['super_admin', 'club_manager', 'head_coach'].includes(user.role)) {
   return (
-    <div className="p-4 border-b border-gray-100 bg-burgundy-50/50">
-      <div className="space-y-2">
-        <label className="text-xs font-semibold text-burgundy-600 uppercase tracking-wide">
-          Current Center
-        </label>
-        <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-burgundy-200 shadow-sm">
-          <div className="h-3 w-3 rounded-full bg-burgundy-500" />
-          <div>
-            <p className="font-semibold text-burgundy-900">{selectedCenter?.name}</p>
-            <p className="text-xs text-burgundy-600">{selectedCenter?.location}</p>
-          </div>
+      <div className="p-4 border-b border-gray-100">
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Training Center
+          </label>
+    <Select 
+            value={selectedCenter?.id || ""} 
+            onValueChange={handleCenterChange}
+    >
+      <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a center">
+                {selectedCenter ? (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-gray-500" />
+                    <span>{selectedCenter.name}</span>
+                  </div>
+                ) : (
+                  "Select a center"
+                )}
+              </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+              {availableCenters.map((center) => (
+          <SelectItem key={center.id} value={center.id}>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{center.name}</span>
+                    <span className="text-xs text-gray-500">{center.location}</span>
+            </div>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
         </div>
       </div>
-    </div>
   )
 }
 
-// Professional sidebar component
-const Sidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) => {
-  const { user } = useCenterContext()
+  // For restricted users (coach, center manager) - show their assigned center
+  if (availableCenters.length === 1 && selectedCenter) {
+    return (
+      <div className="p-4 border-b border-gray-100">
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Your Center
+          </label>
+          <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-md">
+            <MapPin className="h-4 w-4 text-gray-500" />
+            <div>
+              <span className="font-medium text-gray-900">{selectedCenter.name}</span>
+              <p className="text-xs text-gray-500">{selectedCenter.location}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return null
+}
+
+// Optimized User Dropdown Component
+const UserDropdown = ({ user }: { user: User | null }) => {
   const router = useRouter()
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     try {
       await signOut()
       router.push('/login')
     } catch (error) {
       console.error('Error signing out:', error)
     }
+  }, [router])
+
+  const formatRole = useCallback((role: string) => {
+    return role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+  }, [])
+
+  if (!user) {
+    return <Skeleton className="h-16 w-full" />
   }
 
-  // Filter menu items based on user role
-  const filteredMenuItems = menuItems.filter(item => {
-    if (!item.roles) return true
-    if (!user) return false
-    return item.roles.includes(user.role)
-  })
-
     return (
-    <div className={cn(
-      "fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 transition-all duration-300 shadow-lg",
-      collapsed ? "w-16" : "w-72"
-    )}>
-      <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className={cn(
-          "flex items-center justify-between p-4 border-b border-gray-100",
-          collapsed ? "px-3" : "px-4"
-        )}>
-          {!collapsed && (
-            <div className="flex items-center gap-3">
-              <Image
-                src="/snigmay_logo.png"
-                alt="Snigmay Pune FC"
-                width={32}
-                height={32}
-                className="h-8 w-8"
-                priority
-              />
-              <div>
-                <h2 className="font-bold text-gray-900 text-sm">Snigmay Pune FC</h2>
-                <p className="text-xs text-gray-500">Management System</p>
-      </div>
-        </div>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onToggle}
-            className="h-8 w-8 p-0 hover:bg-gray-100"
-          >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
-      </div>
-
-      {/* Center Selector */}
-        {!collapsed && <CenterSelector />}
-
-      {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {filteredMenuItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-                "group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
-                "text-gray-700 hover:text-burgundy-900 hover:bg-burgundy-50",
-                "focus:outline-none focus:ring-2 focus:ring-burgundy-500/20",
-                collapsed ? "justify-center" : ""
-              )}
-              title={collapsed ? item.title : undefined}
-          >
-              <item.icon className={cn(
-                "h-5 w-5 transition-colors",
-                "text-gray-500 group-hover:text-burgundy-600"
-              )} />
-              {!collapsed && (
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium">{item.title}</div>
-                  <div className="text-xs text-gray-500 truncate">{item.description}</div>
-                </div>
-              )}
-          </Link>
-        ))}
-      </nav>
-
-      {/* User Profile */}
-        <div className={cn(
-          "p-4 border-t border-gray-100 bg-gray-50/50",
-          collapsed ? "px-3" : "px-4"
-        )}>
-          {collapsed ? (
-            <div className="flex justify-center">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder-user.jpg" />
-                <AvatarFallback className="bg-burgundy-100 text-burgundy-700 font-semibold">
-                  {user?.full_name?.charAt(0) || 'U'}
-                </AvatarFallback>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="w-full p-2 h-auto hover:bg-gray-100 rounded-lg">
+          <div className="flex items-center gap-3 w-full">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src="/placeholder-user.jpg" />
+              <AvatarFallback className="bg-burgundy-100 text-burgundy-700 font-semibold">
+                {user.full_name?.charAt(0) || 'U'}
+              </AvatarFallback>
               </Avatar>
+            <div className="flex-1 text-left min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {user.full_name}
+              </p>
+              <Badge variant="secondary" className="text-xs bg-burgundy-100 text-burgundy-700">
+                {formatRole(user.role)}
+              </Badge>
             </div>
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="w-full p-0 h-auto hover:bg-gray-100 rounded-lg">
-                  <div className="flex items-center gap-3 p-2 w-full">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src="/placeholder-user.jpg" />
-                      <AvatarFallback className="bg-burgundy-100 text-burgundy-700 font-semibold">
-                        {user?.full_name?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 text-left min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">
-                        {user?.full_name || 'Loading...'}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs bg-burgundy-100 text-burgundy-700">
-                          {user?.role ? user.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Loading...'}
-                        </Badge>
-                      </div>
-                    </div>
               </div>
             </Button>
           </DropdownMenuTrigger>
@@ -304,112 +253,166 @@ const Sidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/change-password">
-                    <Settings className="mr-2 h-4 w-4" />
+          <Link href="/change-password" className="flex items-center">
+            <Settings className="mr-2 h-4 w-4" />
                 Change Password
               </Link>
             </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Bell className="mr-2 h-4 w-4" />
-                  Notifications
-                </DropdownMenuItem>
+        <DropdownMenuItem>
+          <Bell className="mr-2 h-4 w-4" />
+          Notifications
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+        <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
               <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
+          Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-          )}
-        </div>
-      </div>
-    </div>
   )
 }
 
-// Professional header component
-const Header = ({ collapsed, onMenuToggle }: { collapsed: boolean; onMenuToggle: () => void }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+// Optimized Sidebar Component
+const Sidebar = ({ user }: { user: User | null }) => {
+  const pathname = usePathname()
+  
+  const isActive = useCallback((path: string) => pathname === path, [pathname])
+  
+  const menuItems = useMemo(() => 
+    user ? getMenuItems(user.role) : [], 
+    [user]
+  )
 
   return (
-    <>
-      {/* Desktop Header */}
-      <header className={cn(
-        "sticky top-0 z-40 bg-white border-b border-gray-200 transition-all duration-300",
-        collapsed ? "ml-16" : "ml-72"
-      )}>
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onMenuToggle}
-              className="lg:hidden h-9 w-9 p-0"
-            >
-              <Menu className="h-4 w-4" />
-            </Button>
-            
-            <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search..."
-                className="pl-10 w-64 bg-gray-50 border-gray-200 focus:bg-white"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-              <Bell className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-              <Settings className="h-4 w-4" />
-            </Button>
-          </div>
-          </div>
-        </header>
-
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
-          <div className="fixed left-0 top-0 h-full w-72 bg-white">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="font-semibold">Menu</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setMobileMenuOpen(false)}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <Sidebar collapsed={false} onToggle={() => {}} />
+    <aside className="hidden lg:flex h-screen w-72 flex-col fixed left-0 top-0 bottom-0 bg-white border-r border-gray-200 z-50">
+      {/* Logo Section */}
+      <div className="h-16 flex items-center gap-2 px-6 border-b border-gray-100">
+        <Image
+          src="/snigmay_logo.png"
+          alt="Snigmay Pune FC"
+          width={32}
+          height={32}
+          className="h-8 w-auto"
+        />
+        <span className="font-semibold text-lg text-burgundy-900">
+          Snigmay Pune FC
+        </span>
       </div>
-    </div>
-      )}
-    </>
+
+      {/* Center Selection */}
+      <CenterSelector user={user} />
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-4">
+        <div className="space-y-6 px-4">
+          {menuItems.map((section, idx) => (
+            <div key={idx} className="space-y-2">
+              {section.section && (
+                <h3 className="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  {section.section}
+                </h3>
+              )}
+              <div className="space-y-1">
+                {section.items.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+                      isActive(item.href)
+                        ? "bg-burgundy-50 text-burgundy-900"
+                        : "text-gray-700 hover:bg-burgundy-50/50 hover:text-burgundy-900"
+                    )}
+                  >
+                    <div className={cn(
+                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-all",
+                      isActive(item.href)
+                        ? "border-burgundy-200 bg-burgundy-100 text-burgundy-900"
+                        : "border-transparent bg-gray-50 text-gray-500 group-hover:border-burgundy-100 group-hover:bg-burgundy-50 group-hover:text-burgundy-900"
+                    )}>
+                      <item.icon className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span>{item.title}</span>
+                        {isActive(item.href) && (
+                          <div className="h-1.5 w-1.5 rounded-full bg-burgundy-500" />
+                        )}
+                      </div>
+                      <p className={cn(
+                        "text-xs font-normal",
+                        isActive(item.href)
+                          ? "text-burgundy-700"
+                          : "text-gray-500 group-hover:text-burgundy-700"
+                      )}>
+                        {item.description}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+          </div>
+      </nav>
+
+      {/* User Section */}
+      <div className="mt-auto border-t border-gray-100 p-4">
+        <UserDropdown user={user} />
+      </div>
+    </aside>
   )
 }
 
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false)
+// Main Dashboard Layout Component
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const currentUser = await getCurrentUser()
+        if (!currentUser) {
+          router.push('/login')
+          return
+        }
+        setUser(currentUser)
+      } catch (error) {
+        console.error('Auth initialization error:', error)
+        router.push('/login')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    initializeAuth()
+  }, [router])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-600"></div>
+          <p className="text-sm text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      <Sidebar user={user} />
       
-      {/* Header */}
-      <Header collapsed={collapsed} onMenuToggle={() => setCollapsed(!collapsed)} />
-
       {/* Main Content */}
-      <main className={cn(
-        "transition-all duration-300 min-h-screen",
-        collapsed ? "ml-16" : "ml-72"
-      )}>
-        <div className="p-6">
+      <main className="lg:pl-72">
+        <div className="min-h-screen">
           {children}
         </div>
       </main>

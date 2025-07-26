@@ -1,28 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
+import { supabase } from "@/lib/supabase"
 import { getCurrentUser } from "@/lib/auth"
 import { useCenterContext } from "@/context/center-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { 
-  Users, 
-  Calendar, 
-  CreditCard, 
-  Building, 
-  GraduationCap,
-  ClipboardList,
-  UserCheck,
-  Clock,
-  CalendarDays,
-  ArrowRight,
-  Plus,
-  Eye,
-  IndianRupee,
-  UserPlus,
-  Check
-} from "lucide-react"
+import { Progress } from "@/components/ui/progress"
+import { CalendarDays, Users, GraduationCap, CreditCard, BarChart3, Clock, MapPin, UserCheck, Target, Trophy, ArrowUpRight, TrendingUp, AlertCircle, CheckCircle, Activity, IndianRupee, UserPlus, ClipboardList, Plus, Eye } from "lucide-react"
 import Image from "next/image"
 
 interface User {
@@ -63,16 +49,16 @@ export default function MainDashboard() {
   } = useCenterContext()
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const currentUser = await getCurrentUser()
-        setUser(currentUser)
-      } catch (error) {
+  const loadUser = async () => {
+    try {
+      const currentUser = await getCurrentUser()
+      setUser(currentUser)
+    } catch (error) {
         console.error('Error loading user:', error)
-      } finally {
-        setLoading(false)
-      }
+    } finally {
+      setLoading(false)
     }
+  }
     loadUser()
   }, [])
 
@@ -136,7 +122,7 @@ export default function MainDashboard() {
         activities.push({
           id: fee.id,
           type: 'payment',
-          description: `Fee payment received from ${student?.name || 'Student'} - ₹${fee.amount}`,
+          description: `Fee payment received from ${student?.full_name || 'Student'} - ₹${fee.amount}`,
           timestamp: fee.payment_date,
           amount: Number(fee.amount)
         })
@@ -150,7 +136,7 @@ export default function MainDashboard() {
         activities.push({
           id: record.id,
           type: 'attendance',
-          description: `${student?.name || 'Student'} marked ${record.status}`,
+          description: `${student?.full_name || 'Student'} marked ${record.status}`,
           timestamp: record.created_at
         })
       })
@@ -219,14 +205,14 @@ export default function MainDashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
+          <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             {getGreeting()}, {user?.full_name || 'User'}!
           </h1>
           <p className="text-gray-600 mt-1">
             {selectedCenter ? `Managing ${selectedCenter.name}` : 'Welcome to your dashboard'}
           </p>
-        </div>
+          </div>
         <div className="flex items-center gap-3">
           <Button className="bg-burgundy-600 hover:bg-burgundy-700">
             <Plus className="h-4 w-4 mr-2" />
@@ -254,7 +240,7 @@ export default function MainDashboard() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-gray-600">Active Batches</CardTitle>
-              <ClipboardList className="h-5 w-5 text-green-500" />
+            <ClipboardList className="h-5 w-5 text-green-500" />
             </div>
           </CardHeader>
           <CardContent>
@@ -290,28 +276,28 @@ export default function MainDashboard() {
         </Card>
       </div>
 
-      {/* Recent Activities */}
+        {/* Recent Activities */}
       <Card>
-        <CardHeader>
+          <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Recent Activities</CardTitle>
               <CardDescription>Latest updates from {selectedCenter?.name || 'your center'}</CardDescription>
             </div>
-            <Button variant="outline" size="sm">
-              <Eye className="h-4 w-4 mr-2" />
-              View All
-            </Button>
+              <Button variant="outline" size="sm">
+                <Eye className="h-4 w-4 mr-2" />
+                View All
+              </Button>
           </div>
-        </CardHeader>
-        <CardContent>
+          </CardHeader>
+          <CardContent>
           {recentActivities.length > 0 ? (
             <div className="space-y-4">
               {recentActivities.map((activity) => (
                 <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="mt-0.5">
-                    {getActivityIcon(activity.type)}
-                  </div>
+                    <div className="mt-0.5">
+                      {getActivityIcon(activity.type)}
+                    </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">{activity.description}</p>
                     <p className="text-xs text-gray-500 mt-1">{formatTimeAgo(activity.timestamp)}</p>
@@ -331,8 +317,8 @@ export default function MainDashboard() {
               <p className="text-sm text-gray-400 mt-1">Activities will appear here as they happen</p>
             </div>
           )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
     </div>
   )
 } 

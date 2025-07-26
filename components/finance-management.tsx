@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { toast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
 import { 
   IndianRupee, 
@@ -34,6 +34,7 @@ import {
   Users,
   BarChart3
 } from "lucide-react"
+import { getCurrentUser } from "@/lib/auth"
 
 interface Student {
   id: string
@@ -44,8 +45,6 @@ interface Student {
   total_paid: number
   total_outstanding: number
   overdue_count: number
-  parent_name: string
-  parent_phone: string
 }
 
 interface FeePayment {
@@ -71,8 +70,68 @@ interface FinanceStats {
   collectionRate: number
 }
 
+interface StudentData {
+  id: string
+  full_name: string
+  monthly_fee: number
+  batches: {
+    id: string
+    name: string
+    centers: {
+      id: string
+      name: string
+      location: string
+    }
+  }
+  fee_payments: {
+    id: string
+    amount: number
+    status: string
+    payment_date: string
+  }[]
+}
+
+interface PaymentData {
+  id: string
+  amount: number
+  payment_date: string
+  payment_mode: string
+  status: string
+  receipt_number: string
+  students: {
+    id: string
+    full_name: string
+    batches: {
+      id: string
+      name: string
+      centers: {
+        id: string
+        name: string
+        location: string
+      }
+    }
+  }
+}
+
+interface PaymentStatsData {
+  id: string
+  amount: number
+  status: string
+  payment_date: string
+  students: {
+    id: string
+    batches: {
+      id: string
+      centers: {
+        id: string
+      }
+    }
+  }
+}
+
 export function FinanceManagement() {
   const { selectedCenter } = useCenterContext()
+  const { toast } = useToast()
   const [students, setStudents] = useState<Student[]>([])
   const [payments, setPayments] = useState<FeePayment[]>([])
   const [stats, setStats] = useState<FinanceStats>({
@@ -113,32 +172,61 @@ export function FinanceManagement() {
   const loadStudentBalances = async () => {
     try {
       let query = supabase
-        .from('student_outstanding_balances')
-        .select('*')
-        .order('total_outstanding', { ascending: false })
+        .from('students')
+        .select(`
+          id,
+          full_name,
+          monthly_fee,
+          batches!inner (
+            id,
+            name,
+            centers!inner (
+              id,
+              name,
+              location
+            )
+          ),
+          fee_payments (
+            id,
+            amount,
+            status,
+            payment_date
+          )
+        `)
+        .order('full_name')
 
       if (selectedCenter) {
-        query = query.eq('center_location', selectedCenter.location)
+        query = query.eq('batches.centers.id', selectedCenter.id)
       }
 
       const { data, error } = await query
 
       if (error) throw error
 
-      // Get additional student details
-      const studentIds = data?.map(s => s.student_id) || []
-      const { data: studentDetails } = await supabase
-        .from('students')
-        .select('id, parent_name, parent_phone')
-        .in('id', studentIds)
+      // Transform the data
+      const studentsWithBalances = (data as StudentData[] || []).map(student => {
+        const payments = student.fee_payments || []
+        const totalPaid = payments
+          .filter(p => p.status === 'paid')
+          .reduce((sum, p) => sum + Number(p.amount), 0)
+        const totalOutstanding = payments
+          .filter(p => p.status === 'due' || p.status === 'overdue')
+          .reduce((sum, p) => sum + Number(p.amount), 0)
+        const overdueCount = payments.filter(p => p.status === 'overdue').length
 
-      const studentsWithDetails = data?.map(student => ({
-        ...student,
-        parent_name: studentDetails?.find(d => d.id === student.student_id)?.parent_name || 'N/A',
-        parent_phone: studentDetails?.find(d => d.id === student.student_id)?.parent_phone || 'N/A'
-      })) || []
+        return {
+          id: student.id,
+          name: student.full_name,
+          batch_name: student.batches?.name || 'Unknown Batch',
+          center_location: student.batches?.centers?.location || 'Unknown Location',
+          monthly_fee: student.monthly_fee || 0,
+          total_paid: totalPaid,
+          total_outstanding: totalOutstanding,
+          overdue_count: overdueCount
+        }
+      })
 
-      setStudents(studentsWithDetails)
+      setStudents(studentsWithBalances)
     } catch (error) {
       console.error('Error loading student balances:', error)
     }
@@ -155,30 +243,42 @@ export function FinanceManagement() {
           payment_mode,
           status,
           receipt_number,
-          students!inner(name, batches!inner(name, centers!inner(location)))
+          students!inner (
+            id,
+            full_name,
+            batches!inner (
+              id,
+              name,
+              centers!inner (
+                id,
+                name,
+                location
+              )
+            )
+          )
         `)
         .order('payment_date', { ascending: false })
         .limit(50)
 
       if (selectedCenter) {
-        query = query.eq('students.batches.centers.location', selectedCenter.location)
+        query = query.eq('students.batches.centers.id', selectedCenter.id)
       }
 
       const { data, error } = await query
 
       if (error) throw error
 
-      const formattedPayments = data?.map((payment: any) => ({
+      const formattedPayments = (data as PaymentData[] || []).map(payment => ({
         id: payment.id,
-        student_name: payment.students.name,
+        student_name: payment.students?.full_name || 'Unknown Student',
         amount: Number(payment.amount),
         payment_date: payment.payment_date,
         payment_mode: payment.payment_mode,
         status: payment.status,
         receipt_number: payment.receipt_number,
-        batch_name: payment.students.batches.name,
-        center_location: payment.students.batches.centers.location
-      })) || []
+        batch_name: payment.students?.batches?.name || 'Unknown Batch',
+        center_location: payment.students?.batches?.centers?.location || 'Unknown Location'
+      }))
 
       setPayments(formattedPayments)
     } catch (error) {
@@ -188,21 +288,36 @@ export function FinanceManagement() {
 
   const loadFinanceStats = async () => {
     try {
-      let paymentsQuery = supabase
+      let query = supabase
         .from('fee_payments')
-        .select('amount, status, payment_date, students!inner(batches!inner(centers!inner(location)))')
+        .select(`
+          id,
+          amount,
+          status,
+          payment_date,
+          students!inner (
+            id,
+            batches!inner (
+              id,
+              centers!inner (
+                id
+              )
+            )
+          )
+        `)
 
       if (selectedCenter) {
-        paymentsQuery = paymentsQuery.eq('students.batches.centers.location', selectedCenter.location)
+        query = query.eq('students.batches.centers.id', selectedCenter.id)
       }
 
-      const { data: paymentsData, error } = await paymentsQuery
+      const { data: paymentsData, error } = await query
 
       if (error) throw error
 
-      const paidPayments = paymentsData?.filter(p => p.status === 'paid') || []
-      const duePayments = paymentsData?.filter(p => p.status === 'due') || []
-      const overduePayments = paymentsData?.filter(p => p.status === 'overdue') || []
+      const payments = paymentsData as PaymentStatsData[] || []
+      const paidPayments = payments.filter(p => p.status === 'paid')
+      const duePayments = payments.filter(p => p.status === 'due')
+      const overduePayments = payments.filter(p => p.status === 'overdue')
 
       const totalRevenue = paidPayments.reduce((sum, p) => sum + Number(p.amount), 0)
       const outstandingAmount = [...duePayments, ...overduePayments].reduce((sum, p) => sum + Number(p.amount), 0)
@@ -214,7 +329,7 @@ export function FinanceManagement() {
         .filter(p => p.payment_date?.startsWith(currentMonth))
         .reduce((sum, p) => sum + Number(p.amount), 0)
 
-      const totalPayments = paymentsData?.length || 0
+      const totalPayments = payments.length
       const collectionRate = totalPayments > 0 ? Math.round((paidPayments.length / totalPayments) * 100) : 0
 
       setStats({
@@ -234,6 +349,25 @@ export function FinanceManagement() {
 
   const handlePaymentRecord = async (studentId: string, amount: number, paymentMode: string) => {
     try {
+      const currentUser = await getCurrentUser()
+      if (!currentUser) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to record payments",
+          variant: "destructive"
+        })
+        return
+      }
+
+      if (!selectedCenter?.id) {
+        toast({
+          title: "Error",
+          description: "Please select a center first",
+          variant: "destructive"
+        })
+        return
+      }
+
       const { error } = await supabase
         .from('fee_payments')
         .insert([
@@ -244,7 +378,9 @@ export function FinanceManagement() {
             payment_mode: paymentMode,
             status: 'paid',
             receipt_number: `RCP-${Date.now()}`,
-            due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+            due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            center_id: selectedCenter.id,
+            created_by: currentUser.id
           }
         ])
 

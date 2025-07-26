@@ -29,8 +29,7 @@ import {
   Activity,
   TrendingUp,
   Zap,
-  Medal,
-  ChartBar
+  Medal
 } from "lucide-react"
 
 
@@ -291,9 +290,9 @@ export function HeadCoachDashboard() {
         { data: students },
         { data: batches }
       ] = await Promise.all([
-        supabase.from('fee_payments').select('id, amount, created_at, students(name, batches(name, centers(location)))').eq('status', 'paid').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
+        supabase.from('fee_payments').select('id, amount, created_at, students(full_name, batches(name, centers(location)))').eq('status', 'paid').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
         supabase.from('attendance').select('id, created_at, batches(name, centers(location))').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
-        supabase.from('students').select('id, name, created_at, batches(name, centers(location))').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
+        supabase.from('students').select('id, full_name, created_at, batches(name, centers(location))').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
         supabase.from('batches').select('id, name, created_at, centers(location)').gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
       ])
 
@@ -304,7 +303,7 @@ export function HeadCoachDashboard() {
         activities.push({
           id: `payment-${payment.id}`,
           type: 'payment',
-          description: `Fee payment from ${payment.students?.name || 'Unknown Student'}`,
+          description: `Fee payment from ${payment.students?.full_name || 'Unknown Student'}`,
           timestamp: payment.created_at,
           amount: Number(payment.amount),
           centerName: payment.students?.batches?.centers?.location || 'Unknown',
@@ -329,7 +328,7 @@ export function HeadCoachDashboard() {
         activities.push({
           id: `registration-${student.id}`,
           type: 'registration',
-          description: `New student joined - ${student.name}`,
+          description: `New student joined - ${student.full_name}`,
           timestamp: student.created_at,
           centerName: student.batches?.centers?.location || 'Unknown',
           batchName: student.batches?.name || 'Unknown'
@@ -636,7 +635,7 @@ export function HeadCoachDashboard() {
             </CardContent>
                 <CardFooter>
                   <Button variant="outline" size="sm" className="w-full">
-                    <ChartBar className="mr-2 h-4 w-4" />
+                    <BarChart3 className="mr-2 h-4 w-4" />
                     View Detailed Performance
                   </Button>
                 </CardFooter>

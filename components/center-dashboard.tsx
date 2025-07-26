@@ -1,36 +1,19 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { getCurrentUser } from "@/lib/auth"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import React, { useState, useEffect } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { 
-  Users, 
-  Calendar, 
-  CreditCard, 
-  BarChart3, 
-  Building, 
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  UserCheck,
-  UserX,
-  Clock,
-  Target,
-  Trophy,
-  CalendarDays,
-  ArrowUpRight,
-  ArrowDownRight,
-  Layers,
-  User,
-  AlertCircle,
-  CheckCircle2
-} from "lucide-react"
-import { CenterAttendanceManagement } from "@/components/center-attendance-management"
+import { CalendarDays, Users, GraduationCap, CreditCard, BarChart3, Clock, MapPin, UserCheck, Target, Trophy, ArrowUpRight, TrendingUp, AlertCircle, CheckCircle, Activity } from "lucide-react"
+import { supabase } from "@/lib/supabase"
+import { getCurrentUser } from "@/lib/auth"
+import { useCenterContext } from "@/context/center-context"
+import StudentManagement from "@/components/student-management"
+import BatchManagement from "@/components/batch-management"
+import CenterAttendanceManagement from "@/components/center-attendance-management"
+import FeeManagement from "@/components/fee-management"
 
 interface Center {
   id: string

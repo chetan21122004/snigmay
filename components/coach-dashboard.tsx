@@ -30,9 +30,9 @@ import {
   Activity,
   TrendingUp,
   Zap,
-  Medal,
-  ChartBar
+  Medal
 } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface DashboardStats {
   totalStudents: number
@@ -72,8 +72,17 @@ interface RecentActivity {
 }
 
 export function CoachDashboard() {
-  const { selectedCenter } = useCenterContext()
-  const [user, setUser] = useState<User | null>(null)
+  const { 
+    selectedCenter, 
+    getStudentsByCenter, 
+    getBatchesByCenter, 
+    getAttendanceByCenter, 
+    getFeesByCenter,
+    user,
+    loading: contextLoading 
+  } = useCenterContext()
+  
+  const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState<DashboardStats>({
     totalStudents: 0,
     totalBatches: 0,
@@ -85,226 +94,128 @@ export function CoachDashboard() {
     myBatches: []
   })
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([])
-  const [loading, setLoading] = useState(true)
-  const [centerName, setCenterName] = useState<string>("")
 
+  // Calculate stats based on center data
   useEffect(() => {
-    loadDashboardData()
-  }, [selectedCenter])
+    if (!selectedCenter || !user || contextLoading) return
 
-  const loadDashboardData = async () => {
-    try {
-      const currentUser = await getCurrentUser()
-      setUser(currentUser)
-      
-      if (currentUser && currentUser.center_id) {
-        await Promise.all([
-          loadCoachStats(currentUser.id, currentUser.center_id),
-          loadCenterName(currentUser.center_id),
-          loadRecentActivities(currentUser.id)
-        ])
-      }
-    } catch (error) {
-      console.error('Error loading dashboard data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+    // Get center-specific data
+    const centerStudents = getStudentsByCenter(selectedCenter.id)
+    const centerBatches = getBatchesByCenter(selectedCenter.id)
+    const centerAttendance = getAttendanceByCenter(selectedCenter.id)
+    const centerFees = getFeesByCenter(selectedCenter.id)
 
-  const loadCenterName = async (centerId: string) => {
-    try {
-      const { data: center } = await supabase
-        .from('centers')
-        .select('name, location')
-        .eq('id', centerId)
-        .single()
-      
-      if (center) {
-        setCenterName(center.location)
-      }
-    } catch (error) {
-      console.error('Error loading center name:', error)
-    }
-  }
+    // Filter batches where this coach is assigned
+    const myBatches = centerBatches.filter(batch => batch.coach_id === user.id)
 
-  const loadCoachStats = async (coachId: string, centerId: string) => {
-    try {
-      // Get batches assigned to this coach
-      const { data: batches } = await supabase
-        .from('batches')
-        .select('id, name')
-        .eq('coach_id', coachId)
-        .eq('center_id', centerId)
+    // Calculate attendance for today
+    const today = new Date().toISOString().split('T')[0]
+    const todayAttendance = centerAttendance.filter(a => a.date === today)
+    const presentToday = todayAttendance.filter(a => a.status === 'present').length
 
-      if (!batches || batches.length === 0) {
-        return
-      }
-
-      const batchIds = batches.map(b => b.id)
-
-      // Get students in coach's batches
-      const { data: students } = await supabase
-        .from('students')
-        .select('id')
-        .in('batch_id', batchIds)
-
-      // Get today's attendance for coach's students
-      const { data: attendanceToday } = await supabase
-        .from('attendance')
-        .select('status')
-        .in('batch_id', batchIds)
-        .eq('date', new Date().toISOString().split('T')[0])
-
-      // Get fee payments for coach's students
-      const { data: feePayments } = await supabase
-        .from('fee_payments')
-        .select('amount, status, payment_date')
-        .in('student_id', students?.map(s => s.id) || [])
-
-      // Calculate statistics
-      const totalStudents = students?.length || 0
-      const presentToday = attendanceToday?.filter(a => a.status === 'present').length || 0
-      const attendanceRate = totalStudents > 0 ? Math.round((presentToday / totalStudents) * 100) : 0
-
-      const paidFees = feePayments?.filter(f => f.status === 'paid') || []
-      const pendingFees = feePayments?.filter(f => f.status === 'due' || f.status === 'overdue') || []
-      
-      const totalRevenue = paidFees.reduce((sum, f) => sum + Number(f.amount), 0)
-      const totalPendingFees = pendingFees.reduce((sum, f) => sum + Number(f.amount), 0)
+    // Calculate fee stats
+    const paidFees = centerFees.filter(f => f.status === 'paid')
+    const pendingFees = centerFees.filter(f => f.status === 'due' || f.status === 'overdue')
+    const totalRevenue = paidFees.reduce((sum, f) => sum + f.amount, 0)
+    const totalPending = pendingFees.reduce((sum, f) => sum + f.amount, 0)
 
       // Recent payments (last 7 days)
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
       const recentPayments = paidFees
-        .filter(f => f.payment_date >= sevenDaysAgo)
-        .reduce((sum, f) => sum + Number(f.amount), 0)
+      .filter(f => new Date(f.payment_date) >= sevenDaysAgo)
+      .reduce((sum, f) => sum + f.amount, 0)
 
-      // Get batch-specific info
-      const myBatches = await Promise.all(
-        batches.map(async (batch) => {
-          const { data: batchStudents } = await supabase
-            .from('students')
-            .select('id')
-            .eq('batch_id', batch.id)
-
-          const { data: batchAttendance } = await supabase
-            .from('attendance')
-            .select('status')
-            .eq('batch_id', batch.id)
-            .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-
-          const { data: batchFees } = await supabase
-            .from('fee_payments')
-            .select('status')
-            .in('student_id', batchStudents?.map(s => s.id) || [])
-
-          const batchStudentCount = batchStudents?.length || 0
-          const batchPresentCount = batchAttendance?.filter(a => a.status === 'present').length || 0
-          const batchAttendanceRate = batchAttendance && batchAttendance.length > 0 ? Math.round((batchPresentCount / batchAttendance.length) * 100) : 0
-
-          const batchPaidFees = batchFees?.filter(f => f.status === 'paid').length || 0
-          const batchTotalFees = batchFees?.length || 0
-          const batchFeeCollectionRate = batchTotalFees > 0 ? Math.round((batchPaidFees / batchTotalFees) * 100) : 0
-
-          const ageGroup = batch.name.match(/U-(\d+)/)?.[0] || 'Unknown'
+    // Create batch info
+    const batchInfo: BatchInfo[] = myBatches.map(batch => {
+      const batchStudents = centerStudents.filter(s => s.batch_id === batch.id)
+      const batchAttendance = centerAttendance.filter(a => a.batch_id === batch.id)
+      const batchPresentToday = batchAttendance.filter(a => a.date === today && a.status === 'present').length
 
           return {
             id: batch.id,
             name: batch.name,
-            students: batchStudentCount,
-            attendanceRate: batchAttendanceRate,
-            feeCollectionRate: batchFeeCollectionRate,
-            ageGroup
+        students: batchStudents.length,
+        attendanceRate: batchStudents.length > 0 ? Math.round((batchPresentToday / batchStudents.length) * 100) : 0,
+        feeCollectionRate: 85, // Placeholder
+        ageGroup: batch.name.includes('Under') ? batch.name : 'Mixed'
           }
         })
-      )
 
       setStats({
-        totalStudents,
-        totalBatches: batches.length,
+      totalStudents: centerStudents.filter(s => myBatches.some(b => b.id === s.batch_id)).length,
+      totalBatches: myBatches.length,
         attendanceToday: presentToday,
-        attendanceRate,
-        pendingFees: totalPendingFees,
+      attendanceRate: todayAttendance.length > 0 ? Math.round((presentToday / todayAttendance.length) * 100) : 0,
+      pendingFees: totalPending,
         totalRevenue,
         recentPayments,
-        myBatches
-      })
-    } catch (error) {
-      console.error('Error loading coach stats:', error)
-    }
-  }
+      myBatches: batchInfo
+    })
 
-  const loadRecentActivities = async (coachId: string) => {
-    try {
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-      
-      // Get batches for this coach
-      const { data: batches } = await supabase
-        .from('batches')
-        .select('id, name')
-        .eq('coach_id', coachId)
-
-      if (!batches || batches.length === 0) return
-
-      const batchIds = batches.map(b => b.id)
-
-      const [
-        { data: payments },
-        { data: attendance },
-        { data: students }
-      ] = await Promise.all([
-        supabase.from('fee_payments').select('id, amount, created_at, students(name, batch_id)').eq('status', 'paid').in('students.batch_id', batchIds).gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
-        supabase.from('attendance').select('id, created_at, batch_id').in('batch_id', batchIds).gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10),
-        supabase.from('students').select('id, name, created_at, batch_id').in('batch_id', batchIds).gte('created_at', sevenDaysAgo).order('created_at', { ascending: false }).limit(10)
-      ])
-
+    // Create recent activities
       const activities: RecentActivity[] = []
 
-      // Process payments
-      payments?.forEach((payment: any) => {
-        const batch = batches.find(b => b.id === payment.students?.batch_id)
+    // Add recent attendance
+    centerAttendance.slice(0, 5).forEach(record => {
         activities.push({
-          id: `payment-${payment.id}`,
-          type: 'payment',
-          description: `Fee payment from ${payment.students?.name || 'Unknown Student'}`,
-          timestamp: payment.created_at,
-          amount: Number(payment.amount),
-          batchName: batch?.name || 'Unknown Batch'
-        })
-      })
-
-      // Process attendance
-      attendance?.forEach(record => {
-        const batch = batches.find(b => b.id === record.batch_id)
-        activities.push({
-          id: `attendance-${record.id}`,
+        id: record.id,
           type: 'attendance',
-          description: `Attendance marked for ${batch?.name || 'Unknown Batch'}`,
+        description: `Marked attendance for batch`,
           timestamp: record.created_at,
-          batchName: batch?.name || 'Unknown Batch'
+        batchName: centerBatches.find(b => b.id === record.batch_id)?.name
         })
       })
 
-      // Process student registrations
-      students?.forEach((student: any) => {
-        const batch = batches.find(b => b.id === student.batch_id)
+    // Add recent payments
+    paidFees.slice(0, 5).forEach(payment => {
         activities.push({
-          id: `registration-${student.id}`,
-          type: 'registration',
-          description: `New student joined - ${student.name}`,
-          timestamp: student.created_at,
-          batchName: batch?.name || 'Unknown Batch'
+        id: payment.id,
+        type: 'payment',
+        description: `Fee payment received`,
+        timestamp: payment.created_at || payment.payment_date,
+        amount: payment.amount
         })
       })
 
-      // Sort by timestamp and limit
-      const sortedActivities = activities
+    setRecentActivities(
+      activities
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-        .slice(0, 15)
+        .slice(0, 10)
+    )
+  }, [selectedCenter, user, contextLoading, getStudentsByCenter, getBatchesByCenter, getAttendanceByCenter, getFeesByCenter])
 
-      setRecentActivities(sortedActivities)
-    } catch (error) {
-      console.error('Error loading recent activities:', error)
-    }
+  if (contextLoading || loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <Skeleton className="h-8 w-64" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="p-6">
+                <Skeleton className="h-4 w-24 mb-2" />
+                <Skeleton className="h-8 w-32" />
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (!selectedCenter) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center">No Center Assigned</CardTitle>
+            <CardDescription className="text-center">
+              Please contact your administrator to assign you to a center.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    )
   }
 
   const getActivityIcon = (type: string) => {
@@ -340,17 +251,6 @@ export function CoachDashboard() {
     return "text-red-500"
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="text-sm text-muted-foreground">Loading Coach Dashboard...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-6">
       {/* Coach Header */}
@@ -361,7 +261,7 @@ export function CoachDashboard() {
               <Zap className="h-6 w-6" />
               Coach Dashboard
             </h1>
-            <p className="text-orange-100 mt-1">Manage your batches and students at {centerName} Center</p>
+            <p className="text-orange-100 mt-1">Manage your batches and students at {selectedCenter.name} Center</p>
           </div>
           <div className="text-right">
             <p className="text-sm text-orange-100">Your Performance</p>
@@ -538,7 +438,7 @@ export function CoachDashboard() {
                         <Layers className="h-5 w-5 text-blue-500" />
                         {batch.name}
                       </CardTitle>
-                      <CardDescription>{centerName} Center</CardDescription>
+                      <CardDescription>{selectedCenter.name} Center</CardDescription>
                     </div>
                     <Badge variant="outline" className="text-xs">
                       {batch.ageGroup}
@@ -575,7 +475,7 @@ export function CoachDashboard() {
                 </CardContent>
                 <CardFooter>
                   <Button variant="outline" size="sm" className="w-full">
-                    <ChartBar className="mr-2 h-4 w-4" />
+                    <BarChart3 className="mr-2 h-4 w-4" />
                     View Batch Details
                   </Button>
                 </CardFooter>

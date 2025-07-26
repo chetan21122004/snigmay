@@ -1,64 +1,46 @@
-"use client"
+'use client'
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { CenterProvider } from "@/context/center-context"
-import { getCurrentUser } from "@/lib/auth"
-import { Skeleton } from "@/components/ui/skeleton"
+import { useEffect, useState } from 'react'
+import { CenterProvider } from '@/context/center-context'
+import { getCurrentUser } from '@/lib/auth'
 
 interface User {
   id: string
   email: string
   full_name: string
   role: string
-  center_id: string | null
+  center_id?: string | null
 }
 
 interface CenterProviderWrapperProps {
   children: React.ReactNode
 }
 
-export function CenterProviderWrapper({ children }: CenterProviderWrapperProps) {
+export default function CenterProviderWrapper({ children }: CenterProviderWrapperProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
 
   useEffect(() => {
-    const loadUser = async () => {
+    const initializeUser = async () => {
       try {
         const currentUser = await getCurrentUser()
-        if (!currentUser) {
-          router.push('/login')
-          return
-        }
         setUser(currentUser)
       } catch (error) {
-        console.error('Error loading user:', error)
-        router.push('/login')
+        console.error('Error initializing user:', error)
       } finally {
         setLoading(false)
       }
     }
-    loadUser()
-  }, [router])
+
+    initializeUser()
+  }, [])
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="space-y-6 w-full max-w-4xl mx-auto p-6">
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-4 w-40" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg p-6 space-y-4">
-                <Skeleton className="h-6 w-24" />
-                <Skeleton className="h-10 w-32" />
-                <Skeleton className="h-4 w-20" />
-              </div>
-            ))}
-          </div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-600"></div>
+          <p className="text-sm text-gray-600">Initializing...</p>
         </div>
       </div>
     )

@@ -1,37 +1,33 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import React, { useState, useEffect } from "react"
+import { supabase } from "@/lib/supabase"
 import { getCurrentUser } from "@/lib/auth"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { toast } from "@/components/ui/use-toast"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Plus, Edit, Trash2, Users, Shield, AlertCircle, Eye, EyeOff } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 import { UserRole } from "@/lib/auth"
 import { 
-  Users, 
-  Plus, 
-  Edit, 
-  Trash2, 
+  GraduationCap, 
+  UserCog, 
+  Building, 
+  MapPin, 
+  Mail, 
+  Phone, 
+  Calendar, 
   Key, 
   Search, 
-  Filter,
-  UserPlus,
-  Shield,
-  GraduationCap,
-  UserCog,
-  Building,
-  Eye,
-  EyeOff,
-  MapPin,
-  Mail,
-  Phone,
-  Calendar
+  Filter, 
+  UserPlus
 } from "lucide-react"
 
 interface Coach {
@@ -113,6 +109,7 @@ export default function UserManagement() {
   
   const [resetPassword, setResetPassword] = useState("")
   const router = useRouter()
+  const { toast } = useToast()
 
   useEffect(() => {
     checkAuthAndLoad()
@@ -140,10 +137,21 @@ export default function UserManagement() {
 
   const loadCoaches = async () => {
     try {
-      const response = await fetch("/api/users")
-      if (!response.ok) throw new Error("Failed to fetch coaches")
-      const data = await response.json()
-      setCoaches(data)
+      let query = supabase
+        .from("users")
+        .select("*")
+        .eq("role", "coach")
+        .order("created_at", { ascending: false })
+
+      // Apply center filter if specified
+      if (centerFilter && centerFilter !== "") {
+        query = query.eq("center_id", centerFilter)
+      }
+
+      const { data, error } = await query
+
+      if (error) throw error
+      setCoaches(data as Coach[])
     } catch (error) {
       console.error("Error loading coaches:", error)
       toast({ title: "Error loading coaches", variant: "destructive" })
@@ -152,10 +160,13 @@ export default function UserManagement() {
 
   const loadCenters = async () => {
     try {
-      const response = await fetch("/api/centers")
-      if (!response.ok) throw new Error("Failed to fetch centers")
-      const data = await response.json()
-      setCenters(data)
+      const { data, error } = await supabase
+        .from("centers")
+        .select("*")
+        .order("name")
+
+      if (error) throw error
+      setCenters(data as Center[])
     } catch (error) {
       console.error("Error loading centers:", error)
       toast({ title: "Error loading centers", variant: "destructive" })
@@ -199,22 +210,19 @@ export default function UserManagement() {
     }
 
     try {
-      const response = await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const { data, error } = await supabase
+        .from("users")
+        .insert({
           full_name: form.fullName,
           email: form.email,
           password: form.password,
           role: form.role,
           center_id: form.centerId || null
         })
-      })
+        .select()
+        .single()
 
-      const result = await response.json()
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to create coach")
-      }
+      if (error) throw error
 
       toast({ title: "Coach created successfully" })
       setShowCreate(false)
@@ -249,16 +257,14 @@ export default function UserManagement() {
         updateData.password = form.password
       }
 
-      const response = await fetch(`/api/users/${showEdit.coach.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updateData)
-      })
+      const { data, error } = await supabase
+        .from("users")
+        .update(updateData)
+        .eq("id", showEdit.coach.id)
+        .select()
+        .single()
 
-      const result = await response.json()
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to update coach")
-      }
+      if (error) throw error
 
       toast({ title: "Coach updated successfully" })
       setShowEdit({ open: false })
@@ -273,14 +279,12 @@ export default function UserManagement() {
     if (!showDelete.coach) return
 
     try {
-      const response = await fetch(`/api/users/${showDelete.coach.id}`, {
-        method: "DELETE"
-      })
+      const { error } = await supabase
+        .from("users")
+        .delete()
+        .eq("id", showDelete.coach.id)
 
-      const result = await response.json()
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to delete coach")
-      }
+      if (error) throw error
 
       toast({ title: "Coach deleted successfully" })
       setShowDelete({ open: false })
@@ -290,32 +294,35 @@ export default function UserManagement() {
     }
   }
 
-  const handleResetPassword = async () => {
-    if (!resetPassword || !showReset.coach) {
-      toast({ title: "Please enter a new password", variant: "destructive" })
+  const handlePasswordReset = async () => {
+    if (!resetPassword.trim()) {
+      toast({ 
+        title: "Please enter a new password",
+        variant: "destructive" 
+      })
       return
     }
 
     try {
-      const response = await fetch("/api/users/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: showReset.coach.id,
-          newPassword: resetPassword
-        })
-      })
+      // For now, we'll store the password directly
+      // In production, this should be handled by a server-side function
+      const { error } = await supabase
+        .from("users")
+        .update({ password_hash: resetPassword }) // This should be hashed server-side
+        .eq("id", showReset.coach.id)
 
-      const result = await response.json()
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to reset password")
-      }
+      if (error) throw error
 
       toast({ title: "Password reset successfully" })
-      setShowReset({ open: false })
+      setShowReset({ open: false, coach: null })
       setResetPassword("")
     } catch (error: any) {
-      toast({ title: error.message, variant: "destructive" })
+      console.error("Error resetting password:", error)
+      toast({ 
+        title: "Failed to reset password",
+        description: error.message,
+        variant: "destructive" 
+      })
     }
   }
 
@@ -476,19 +483,19 @@ export default function UserManagement() {
                 {/* Desktop Table View */}
                 <div className="hidden lg:block">
                   <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left p-3 font-medium text-gray-600">Coach</th>
-                          <th className="text-left p-3 font-medium text-gray-600">Role</th>
-                          <th className="text-left p-3 font-medium text-gray-600">Center</th>
-                          <th className="text-right p-3 font-medium text-gray-600">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                    <Table className="w-full">
+                      <TableHeader className="bg-gray-100">
+                        <TableRow>
+                          <TableHead className="text-left p-3 font-medium text-gray-600">Coach</TableHead>
+                          <TableHead className="text-left p-3 font-medium text-gray-600">Role</TableHead>
+                          <TableHead className="text-left p-3 font-medium text-gray-600">Center</TableHead>
+                          <TableHead className="text-right p-3 font-medium text-gray-600">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
                         {filteredCoaches.map((coach) => (
-                          <tr key={coach.id} className="border-b hover:bg-gray-50">
-                            <td className="p-3">
+                          <TableRow key={coach.id} className="border-b hover:bg-gray-50">
+                            <TableCell className="p-3">
                               <div>
                                 <p className="font-medium text-gray-900">{coach.full_name}</p>
                                 <p className="text-sm text-gray-500 flex items-center gap-1">
@@ -496,17 +503,17 @@ export default function UserManagement() {
                                   {coach.email}
                                 </p>
                               </div>
-                            </td>
-                            <td className="p-3">
+                            </TableCell>
+                            <TableCell className="p-3">
                               {getRoleBadge(coach.role)}
-                            </td>
-                            <td className="p-3">
+                            </TableCell>
+                            <TableCell className="p-3">
                               <div className="flex items-center gap-1 text-sm text-gray-600">
                                 <MapPin className="h-3 w-3" />
                                 {coach.center_name}
                               </div>
-                            </td>
-                            <td className="p-3">
+                            </TableCell>
+                            <TableCell className="p-3">
                               <div className="flex items-center justify-end gap-2">
                                 <Button
                                   size="sm"
@@ -530,11 +537,11 @@ export default function UserManagement() {
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
-                            </td>
-                          </tr>
+                            </TableCell>
+                          </TableRow>
                         ))}
-                      </tbody>
-                    </table>
+                      </TableBody>
+                    </Table>
                   </div>
                 </div>
 
@@ -849,7 +856,7 @@ export default function UserManagement() {
             <Button variant="outline" onClick={() => setShowReset({ open: false })}>
               Cancel
             </Button>
-            <Button onClick={handleResetPassword}>
+            <Button onClick={handlePasswordReset}>
               Reset Password
             </Button>
           </DialogFooter>

@@ -1,319 +1,441 @@
-'use client';
+'use client'
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '@/lib/supabase';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { supabase } from '@/lib/supabase'
 
+// Types
 export interface Center {
-  id: string;
-  name: string;
-  location: string;
-  description?: string;
+  id: string
+  name: string
+  location: string
+  description: string | null
 }
 
-export interface User {
-  id: string;
-  email: string;
-  full_name: string;
-  role: string;
-  center_id?: string | null;
-}
-
-// Database interfaces matching the Supabase schema
 export interface Student {
-  id: string;
-  name: string;
-  age: number;
-  contact_info: string | null;
-  batch_id: string | null;
-  center_id: string | null;
-  parent_name: string | null;
-  parent_phone: string | null;
-  parent_email: string | null;
-  address: string | null;
-  emergency_contact: string | null;
-  medical_conditions: string | null;
-  created_at: string;
-  updated_at: string;
+  id: string
+  full_name: string
+  age: number
+  contact_info: string | null
+  batch_id: string | null
+  center_id: string | null
+  parent_name: string | null
+  parent_phone: string | null
+  parent_email: string | null
+  address: string | null
+  emergency_contact: string | null
+  medical_conditions: string | null
 }
 
 export interface Batch {
-  id: string;
-  name: string;
-  description: string | null;
-  coach_id: string | null;
-  center_id: string | null;
-  created_at: string;
-  updated_at: string;
+  id: string
+  name: string
+  description: string | null
+  coach_id: string | null
+  center_id: string | null
+  start_time: string | null
+  end_time: string | null
 }
 
 export interface AttendanceRecord {
-  id: string;
-  student_id: string;
-  batch_id: string;
-  date: string;
-  status: 'present' | 'absent';
-  marked_by: string | null;
-  created_at: string;
+  id: string
+  student_id: string
+  batch_id: string
+  date: string
+  status: 'present' | 'absent'
+  marked_by: string | null
+  center_id: string | null
+  created_at: string
 }
 
 export interface FeeRecord {
-  id: string;
-  student_id: string | null;
-  amount: number;
-  payment_date: string;
-  payment_mode: string;
-  receipt_number: string | null;
-  status: 'paid' | 'due' | 'overdue';
-  due_date: string | null;
-  created_by: string | null;
-  created_at: string;
-  updated_at: string;
+  id: string
+  student_id: string | null
+  amount: number
+  payment_date: string
+  payment_mode: string
+  receipt_number: string | null
+  status: string
+  due_date: string | null
+  created_by: string | null
+  center_id: string | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+interface User {
+  id: string
+  email: string
+  full_name: string
+  role: 'super_admin' | 'club_manager' | 'head_coach' | 'coach' | 'center_manager'
+  center_id: string | null
 }
 
 interface CenterContextType {
-  centers: Center[];
-  selectedCenter: Center | null;
-  setSelectedCenter: (center: Center | null) => void;
-  user: User | null;
-  availableCenters: Center[];
-  loading: boolean;
-  // Center-specific data
-  students: Student[];
-  batches: Batch[];
-  attendanceRecords: AttendanceRecord[];
-  feeRecords: FeeRecord[];
-  // Helper functions
-  getStudentsByCenter: (centerId: string) => Student[];
-  getBatchesByCenter: (centerId: string) => Batch[];
-  getAttendanceByCenter: (centerId: string) => AttendanceRecord[];
-  getFeesByCenter: (centerId: string) => FeeRecord[];
-  // Refresh functions
-  refreshData: () => Promise<void>;
+  centers: Center[]
+  selectedCenter: Center | null
+  setSelectedCenter: (center: Center | null) => void
+  availableCenters: Center[]
+  students: Student[]
+  batches: Batch[]
+  attendanceRecords: AttendanceRecord[]
+  feeRecords: FeeRecord[]
+  loading: boolean
+  error: string | null
+  refreshData: () => Promise<void>
+  refreshCenterData: (centerId: string) => Promise<void>
+  getStudentsByCenter: (centerId: string) => Student[]
+  getBatchesByCenter: (centerId: string) => Batch[]
+  getAttendanceByCenter: (centerId: string) => AttendanceRecord[]
+  getFeesByCenter: (centerId: string) => FeeRecord[]
+  user: User | null
 }
 
-const CenterContext = createContext<CenterContextType | undefined>(undefined);
+const CenterContext = createContext<CenterContextType | undefined>(undefined)
 
 export const useCenterContext = () => {
-  const context = useContext(CenterContext);
+  const context = useContext(CenterContext)
   if (!context) {
-    throw new Error('useCenterContext must be used within a CenterProvider');
+    throw new Error('useCenterContext must be used within a CenterProvider')
   }
-  return context;
-};
-
-interface CenterProviderProps {
-  children: ReactNode;
-  user: User | null;
+  return context
 }
 
-export const CenterProvider: React.FC<CenterProviderProps> = ({ children, user }) => {
-  const [centers, setCenters] = useState<Center[]>([]);
-  const [selectedCenter, setSelectedCenter] = useState<Center | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [students, setStudents] = useState<Student[]>([]);
-  const [batches, setBatches] = useState<Batch[]>([]);
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
-  const [feeRecords, setFeeRecords] = useState<FeeRecord[]>([]);
+interface CenterProviderProps {
+  children: React.ReactNode
+  user: User | null
+}
 
-  // Get available centers based on user role according to context.md
-  const getAvailableCenters = (userRole: string, userCenterId?: string | null): Center[] => {
-    switch (userRole) {
-      case 'super_admin':
-        // Super Admin: Full access to all modules and data across all centers
-        return centers;
-      case 'club_manager':
-        // Club Manager: Access to view and manage attendance and financials across all centers
-        return centers;
-      case 'head_coach':
-        // Head Coach: Can view and manage attendance and fee data across all centers
-        return centers;
-      case 'coach':
-        // Coach: Access limited to their assigned center(s) only
-        if (userCenterId) {
-          return centers.filter(center => center.id === userCenterId);
-        }
-        return [];
-      case 'center_manager':
-        // Center Manager: Access limited to their own center
-        if (userCenterId) {
-          return centers.filter(center => center.id === userCenterId);
-        }
-        return [];
-      default:
-        return [];
+export function CenterProvider({ children, user }: CenterProviderProps) {
+  const [centers, setCenters] = useState<Center[]>([])
+  const [selectedCenter, setSelectedCenter] = useState<Center | null>(null)
+  const [students, setStudents] = useState<Student[]>([])
+  const [batches, setBatches] = useState<Batch[]>([])
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([])
+  const [feeRecords, setFeeRecords] = useState<FeeRecord[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const initialFetchDone = useRef(false)
+  const lastSelectedCenterId = useRef<string | null>(null)
+
+  // Get available centers based on user role
+  const getAvailableCenters = useCallback((role: string, userCenterId: string | null): Center[] => {
+    if (['super_admin', 'club_manager', 'head_coach'].includes(role)) {
+      return centers
+    } else if (['coach', 'center_manager'].includes(role) && userCenterId) {
+      return centers.filter(c => c.id === userCenterId)
     }
-  };
+    return []
+  }, [centers])
 
-  const availableCenters = user ? getAvailableCenters(user.role, user.center_id) : [];
+  const availableCenters = useMemo(() => {
+    if (!user) return []
+    return getAvailableCenters(user.role, user.center_id)
+  }, [user, getAvailableCenters])
 
-  // Helper functions to get center-specific data
-  const getStudentsByCenter = (centerId: string): Student[] => {
-    return students.filter(student => student.center_id === centerId);
-  };
+  // Filter functions for center-specific data
+  const getStudentsByCenter = useCallback((centerId: string) => {
+    return students.filter(s => s.center_id === centerId)
+  }, [students])
 
-  const getBatchesByCenter = (centerId: string): Batch[] => {
-    return batches.filter(batch => batch.center_id === centerId);
-  };
+  const getBatchesByCenter = useCallback((centerId: string) => {
+    return batches.filter(b => b.center_id === centerId)
+  }, [batches])
 
-  const getAttendanceByCenter = (centerId: string): AttendanceRecord[] => {
-    const centerStudentIds = students
-      .filter(student => student.center_id === centerId)
-      .map(student => student.id);
-    return attendanceRecords.filter(record => centerStudentIds.includes(record.student_id));
-  };
+  const getAttendanceByCenter = useCallback((centerId: string) => {
+    return attendanceRecords.filter(a => a.center_id === centerId)
+  }, [attendanceRecords])
 
-  const getFeesByCenter = (centerId: string): FeeRecord[] => {
-    const centerStudentIds = students
-      .filter(student => student.center_id === centerId)
-      .map(student => student.id);
-    return feeRecords.filter(fee => fee.student_id && centerStudentIds.includes(fee.student_id));
-  };
+  const getFeesByCenter = useCallback((centerId: string) => {
+    return feeRecords.filter(f => f.center_id === centerId)
+  }, [feeRecords])
 
-  // Fetch all data from Supabase
-  const fetchData = async () => {
+  // Fetch centers
+  const fetchCenters = useCallback(async () => {
     try {
-      setLoading(true);
-
-      // Fetch centers
-      const { data: centersData, error: centersError } = await supabase
+      const { data, error } = await supabase
         .from('centers')
         .select('*')
-        .order('name');
+        .order('name')
 
-      if (centersError) {
-        console.error('Error fetching centers:', centersError);
-        return;
-      }
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching centers:', error)
+      setError('Failed to load centers')
+      return []
+    }
+  }, [])
 
-      setCenters(centersData || []);
+  // Fetch data for a specific center
+  const fetchCenterSpecificData = useCallback(async (centerId: string) => {
+    try {
+      // Direct Supabase queries instead of API calls
+      const [studentsRes, batchesRes, attendanceRes, feesRes] = await Promise.all([
+        supabase
+          .from('students')
+          .select('*')
+          .eq('center_id', centerId)
+          .order('full_name'),
+        supabase
+          .from('batches')
+          .select('*, centers(*), users(*)')
+          .eq('center_id', centerId)
+          .order('name'),
+        supabase
+          .from('attendance')
+          .select('*')
+          .eq('center_id', centerId)
+          .order('date', { ascending: false })
+          .limit(500),
+        supabase
+          .from('fee_payments')
+          .select('*, students(*)')
+          .eq('center_id', centerId)
+          .order('payment_date', { ascending: false })
+          .limit(500)
+      ])
 
-      // Fetch students
-      const { data: studentsData, error: studentsError } = await supabase
-        .from('students')
-        .select('*')
-        .order('name');
+      if (studentsRes.error) throw studentsRes.error
+      if (batchesRes.error) throw batchesRes.error
+      if (attendanceRes.error) throw attendanceRes.error
+      if (feesRes.error) throw feesRes.error
 
-      if (studentsError) {
-        console.error('Error fetching students:', studentsError);
-      } else {
-        setStudents(studentsData || []);
-      }
-
-      // Fetch batches
-      const { data: batchesData, error: batchesError } = await supabase
-        .from('batches')
-        .select('*')
-        .order('name');
-
-      if (batchesError) {
-        console.error('Error fetching batches:', batchesError);
-      } else {
-        setBatches(batchesData || []);
-      }
-
-      // Fetch recent attendance (last 30 days)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const { data: attendanceData, error: attendanceError } = await supabase
-        .from('attendance')
-        .select('*')
-        .gte('date', thirtyDaysAgo.toISOString().split('T')[0])
-        .order('date', { ascending: false });
-
-      if (attendanceError) {
-        console.error('Error fetching attendance:', attendanceError);
-      } else {
-        setAttendanceRecords(attendanceData || []);
-      }
-
-      // Fetch fee payments (last 90 days)
-      const ninetyDaysAgo = new Date();
-      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-      
-      const { data: feeData, error: feeError } = await supabase
-        .from('fee_payments')
-        .select('*')
-        .gte('payment_date', ninetyDaysAgo.toISOString().split('T')[0])
-        .order('payment_date', { ascending: false });
-
-      if (feeError) {
-        console.error('Error fetching fees:', feeError);
-      } else {
-        setFeeRecords(feeData || []);
-      }
-
-      // Set default selected center
-      if (user && centersData && centersData.length > 0) {
-        const userAvailableCenters = getAvailableCenters(user.role, user.center_id);
-        
-        if (userAvailableCenters.length > 0) {
-          // For restricted roles (coach, center_manager), set their assigned center
-          if (user.role === 'coach' || user.role === 'center_manager') {
-            const userCenter = user.center_id ? userAvailableCenters.find(c => c.id === user.center_id) : undefined;
-            setSelectedCenter(userCenter || userAvailableCenters[0] || null);
-          } else {
-            // For unrestricted roles, default to Kharadi if available, otherwise first center
-            const kharadiCenter = userAvailableCenters.find(c => c.name.includes('Kharadi'));
-            setSelectedCenter(kharadiCenter || userAvailableCenters[0] || null);
-          }
-        }
-      } else if (centersData && centersData.length > 0) {
-        // If no user, default to Kharadi or first center
-        const kharadiCenter = centersData.find(c => c.name.includes('Kharadi'));
-        setSelectedCenter(kharadiCenter || centersData[0] || null);
+      return {
+        students: studentsRes.data || [],
+        batches: batchesRes.data || [],
+        attendance: attendanceRes.data || [],
+        fees: feesRes.data || []
       }
     } catch (error) {
-      console.error('Error in fetchData:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching center data:', error)
+      throw error
     }
-  };
+  }, [])
 
-  const refreshData = async () => {
-    await fetchData();
-  };
+  // Fetch all data (for super admin, club manager, head coach)
+  const fetchAllCentersData = useCallback(async () => {
+    try {
+      const [studentsRes, batchesRes, attendanceRes, feesRes] = await Promise.all([
+        supabase
+          .from('students')
+          .select('*')
+          .order('full_name'),
+        supabase
+          .from('batches')
+          .select('*, centers(*), users(*)')
+          .order('name'),
+        supabase
+          .from('attendance')
+          .select('*')
+          .order('date', { ascending: false })
+          .limit(500),
+        supabase
+          .from('fee_payments')
+          .select('*, students(*)')
+          .order('payment_date', { ascending: false })
+          .limit(500)
+      ])
 
-  useEffect(() => {
-    fetchData();
-  }, [user]);
+      if (studentsRes.error) throw studentsRes.error
+      if (batchesRes.error) throw batchesRes.error
+      if (attendanceRes.error) throw attendanceRes.error
+      if (feesRes.error) throw feesRes.error
 
-  const handleSetSelectedCenter = (center: Center | null) => {
-    // Validate that the user can access this center based on role permissions
-    if (center && user) {
-      const userAvailableCenters = getAvailableCenters(user.role, user.center_id);
-      const canAccess = userAvailableCenters.some(c => c.id === center.id);
-      if (canAccess) {
-        setSelectedCenter(center);
-      } else {
-        console.warn(`User with role ${user.role} does not have access to center: ${center.name}`);
+      return {
+        students: studentsRes.data || [],
+        batches: batchesRes.data || [],
+        attendance: attendanceRes.data || [],
+        fees: feesRes.data || []
       }
-    } else {
-      setSelectedCenter(center);
+    } catch (error) {
+      console.error('Error fetching all data:', error)
+      throw error
     }
-  };
+  }, [])
 
-  return (
-    <CenterContext.Provider
-      value={{
-        centers,
-        selectedCenter,
-        setSelectedCenter: handleSetSelectedCenter,
-        user,
-        availableCenters,
-        loading,
-        students,
-        batches,
-        attendanceRecords,
-        feeRecords,
-        getStudentsByCenter,
-        getBatchesByCenter,
-        getAttendanceByCenter,
-        getFeesByCenter,
-        refreshData,
-      }}
-    >
-      {children}
-    </CenterContext.Provider>
-  );
-}; 
+  // Main data fetching function
+  const fetchData = useCallback(async () => {
+    if (!user) {
+      setLoading(false)
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Fetch centers first
+      const centersData = await fetchCenters()
+      setCenters(centersData)
+
+      // Determine which center to load data for
+      let targetCenterId: string | null = null
+
+      if (user.role === 'coach' || user.role === 'center_manager') {
+        // For restricted roles, use their assigned center
+        targetCenterId = user.center_id
+      } else if (selectedCenter) {
+        // For unrestricted roles, use the selected center
+        targetCenterId = selectedCenter.id
+      } else if (centersData.length > 0) {
+        // Try to restore from localStorage for unrestricted roles
+        const savedCenterId = localStorage.getItem('selectedCenterId')
+        const savedCenter = savedCenterId ? centersData.find(c => c.id === savedCenterId) : null
+        
+        if (savedCenter) {
+          targetCenterId = savedCenter.id
+        } else {
+          // Default to Kharadi center if available, otherwise first center
+          const kharadiCenter = centersData.find(c => c.name.includes('Kharadi'))
+          const defaultCenter = kharadiCenter || centersData[0]
+          targetCenterId = defaultCenter.id
+        }
+      }
+
+      // Fetch data based on user role and target center
+      if (targetCenterId) {
+        const data = await fetchCenterSpecificData(targetCenterId)
+        setStudents(data.students)
+        setBatches(data.batches)
+        setAttendanceRecords(data.attendance)
+        setFeeRecords(data.fees)
+      }
+
+      // Set selected center if not already set
+      if (!selectedCenter && centersData.length > 0) {
+        const userAvailableCenters = getAvailableCenters(user.role, user.center_id)
+        
+        if (userAvailableCenters.length > 0) {
+          if (user.role === 'coach' || user.role === 'center_manager') {
+            // For restricted roles, always set their assigned center
+            const userCenter = userAvailableCenters.find(c => c.id === user.center_id)
+            if (userCenter) {
+              setSelectedCenter(userCenter)
+              lastSelectedCenterId.current = userCenter.id
+            }
+          } else {
+            // For unrestricted roles, try to restore from localStorage first
+            const savedCenterId = localStorage.getItem('selectedCenterId')
+            const savedCenter = savedCenterId ? userAvailableCenters.find(c => c.id === savedCenterId) : null
+            
+            if (savedCenter) {
+              setSelectedCenter(savedCenter)
+              lastSelectedCenterId.current = savedCenter.id
+            } else {
+              // Default to Kharadi center if available, otherwise first center
+              const kharadiCenter = userAvailableCenters.find(c => c.name.includes('Kharadi'))
+              const defaultCenter = kharadiCenter || userAvailableCenters[0]
+              setSelectedCenter(defaultCenter)
+              lastSelectedCenterId.current = defaultCenter.id
+              // Save to localStorage
+              localStorage.setItem('selectedCenterId', defaultCenter.id)
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error in fetchData:', error)
+      setError('Failed to load data')
+    } finally {
+      setLoading(false)
+    }
+  }, [user, selectedCenter, fetchCenters, fetchCenterSpecificData, getAvailableCenters])
+
+  // Effect to handle selected center changes
+  useEffect(() => {
+    if (selectedCenter && selectedCenter.id !== lastSelectedCenterId.current && user) {
+      lastSelectedCenterId.current = selectedCenter.id
+      
+      // Save to localStorage for unrestricted roles
+      if (['super_admin', 'club_manager', 'head_coach'].includes(user.role)) {
+        localStorage.setItem('selectedCenterId', selectedCenter.id)
+      }
+      
+      // Load data for the newly selected center
+      const loadCenterData = async () => {
+        try {
+          setLoading(true)
+          const data = await fetchCenterSpecificData(selectedCenter.id)
+          setStudents(data.students)
+          setBatches(data.batches)
+          setAttendanceRecords(data.attendance)
+          setFeeRecords(data.fees)
+        } catch (error) {
+          console.error('Error loading center data:', error)
+          setError('Failed to load center data')
+        } finally {
+          setLoading(false)
+        }
+      }
+      
+      loadCenterData()
+    }
+  }, [selectedCenter, user, fetchCenterSpecificData])
+
+  // Initial data fetch
+  useEffect(() => {
+    if (!initialFetchDone.current && user) {
+      initialFetchDone.current = true
+      fetchData()
+    }
+  }, [user, fetchData])
+
+  // Refresh functions
+  const refreshData = useCallback(async () => {
+    await fetchData()
+  }, [fetchData])
+
+  const refreshCenterData = useCallback(async (centerId: string) => {
+    try {
+      setLoading(true)
+      const data = await fetchCenterSpecificData(centerId)
+      setStudents(data.students)
+      setBatches(data.batches)
+      setAttendanceRecords(data.attendance)
+      setFeeRecords(data.fees)
+    } catch (error) {
+      console.error('Error refreshing center data:', error)
+      setError('Failed to refresh data')
+    } finally {
+      setLoading(false)
+    }
+  }, [fetchCenterSpecificData])
+
+  // Wrapper for setSelectedCenter that handles localStorage
+  const handleSetSelectedCenter = useCallback((center: Center | null) => {
+    setSelectedCenter(center)
+    
+    // Save to localStorage for unrestricted roles
+    if (user && ['super_admin', 'club_manager', 'head_coach'].includes(user.role)) {
+      if (center) {
+        localStorage.setItem('selectedCenterId', center.id)
+        lastSelectedCenterId.current = center.id
+      } else {
+        localStorage.removeItem('selectedCenterId')
+        lastSelectedCenterId.current = null
+      }
+    }
+  }, [user])
+
+  const value = {
+    centers,
+    selectedCenter,
+    setSelectedCenter: handleSetSelectedCenter,
+    availableCenters,
+    students,
+    batches,
+    attendanceRecords,
+    feeRecords,
+    loading,
+    error,
+    refreshData,
+    refreshCenterData,
+    getStudentsByCenter,
+    getBatchesByCenter,
+    getAttendanceByCenter,
+    getFeesByCenter,
+    user
+  }
+
+  return <CenterContext.Provider value={value}>{children}</CenterContext.Provider>
+} 

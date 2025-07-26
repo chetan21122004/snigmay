@@ -1,10 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { getCurrentUser } from "@/lib/auth"
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { CenterManagerDashboard } from "@/components/center-manager-dashboard"
+import DashboardLayout from "@/components/dashboard-layout"
+import CenterProviderWrapper from "@/components/center-provider-wrapper"
 
 export default function CenterManagerPage() {
   const [user, setUser] = useState<any>(null)

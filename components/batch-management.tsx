@@ -1,185 +1,210 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo } from "react"
+import { supabase } from "@/lib/supabase"
+import { useCenterContext } from "@/context/center-context"
+import { getCurrentUser } from "@/lib/auth"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Plus, Edit, Trash2 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Plus, Edit2, Trash2, AlertCircle, Users, Clock, Edit } from "lucide-react"
 
 interface Batch {
   id: string
   name: string
   description: string | null
+  start_time: string | null
+  end_time: string | null
   coach_id: string | null
-  coach_name?: string
-  center_id?: string
-  center_name?: string
+  center_id: string | null
 }
 
-interface Coach {
-  id: string
-  full_name: string
-}
-
-interface Center {
-  id: string
-  name: string
-  location: string
-}
-
-export function BatchManagement() {
-  const [batches, setBatches] = useState<Batch[]>([])
-  const [coaches, setCoaches] = useState<Coach[]>([])
-  const [centers, setCenters] = useState<Center[]>([])
-  const [loading, setLoading] = useState(true)
+export default function BatchManagement() {
+  const { 
+    selectedCenter, 
+    batches: allBatches,
+    getBatchesByCenter,
+    centers,
+    availableCenters,
+    user,
+    loading: contextLoading,
+    refreshData
+  } = useCenterContext()
+  
+  const [loading, setLoading] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingBatch, setEditingBatch] = useState<Batch | null>(null)
+  const [coaches, setCoaches] = useState<any[]>([])
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    start_time: "",
+    end_time: "",
     coach_id: "none",
-    center_id: "",
+    center_id: selectedCenter?.id || "",
   })
   const [error, setError] = useState("")
 
+  // Update form center_id when selectedCenter changes
   useEffect(() => {
-    loadData()
+    if (selectedCenter && !editingBatch) {
+      setFormData(prev => ({
+        ...prev,
+        center_id: selectedCenter.id
+      }))
+    }
+  }, [selectedCenter, editingBatch])
+      
+  // Load coaches
+  useEffect(() => {
+    const loadCoaches = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .in('role', ['coach', 'head_coach'])
+          .order('full_name')
+        
+        if (error) throw error
+        setCoaches(data || [])
+      } catch (error) {
+        console.error('Error loading coaches:', error)
+      }
+    }
+    
+    loadCoaches()
   }, [])
 
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      
-      // Load batches using API endpoint
-      const batchesResponse = await fetch('/api/batches')
-      if (!batchesResponse.ok) {
-        throw new Error('Failed to fetch batches')
-      }
-      const batchesData = await batchesResponse.json()
-      setBatches(batchesData)
-
-      // Load centers using API endpoint
-      const centersResponse = await fetch('/api/centers')
-      if (!centersResponse.ok) {
-        throw new Error('Failed to fetch centers')
-      }
-      const centersData = await centersResponse.json()
-      setCenters(centersData)
-
-      // Load coaches - we'll need to create this endpoint or use a direct query
-      const coachesResponse = await fetch('/api/users?role=coach')
-      if (coachesResponse.ok) {
-        const coachesData = await coachesResponse.json()
-        setCoaches(coachesData)
-      } else {
-        // Fallback to empty array if endpoint doesn't exist
-        setCoaches([])
-      }
-
-    } catch (error: any) {
-      console.error("Error loading data:", error)
-      setError("Failed to load data: " + error.message)
-    } finally {
-      setLoading(false)
+  // Filter batches based on selected center and user role
+  const batches = useMemo(() => {
+    if (!selectedCenter) return []
+    
+    if (user?.role === 'super_admin' || user?.role === 'club_manager' || user?.role === 'head_coach') {
+      // These roles can see batches from the selected center
+      return getBatchesByCenter(selectedCenter.id)
+    } else if ((user?.role === 'coach' || user?.role === 'center_manager') && user.center_id) {
+      // These roles can only see batches from their assigned center
+      return getBatchesByCenter(user.center_id)
     }
-  }
+    
+    return []
+  }, [selectedCenter, user, allBatches, getBatchesByCenter])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      description: "",
+      start_time: "",
+      end_time: "",
+      coach_id: "none",
+      center_id: selectedCenter?.id || "",
+    })
     setError("")
-
-    if (!formData.center_id) {
-      setError("Please select a center")
-      return
-    }
-
-    try {
-      const batchData = {
-        name: formData.name,
-        description: formData.description || null,
-        coach_id: formData.coach_id === "none" ? null : formData.coach_id,
-        center_id: formData.center_id,
       }
-
-      const url = editingBatch ? `/api/batches/${editingBatch.id}` : '/api/batches'
-      const method = editingBatch ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(batchData),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to save batch')
-      }
-
-      setDialogOpen(false)
-      setEditingBatch(null)
-      resetForm()
-      loadData()
-    } catch (error: any) {
-      setError(error.message)
-    }
-  }
 
   const handleEdit = (batch: Batch) => {
     setEditingBatch(batch)
     setFormData({
       name: batch.name,
       description: batch.description || "",
+      start_time: batch.start_time || "",
+      end_time: batch.end_time || "",
       coach_id: batch.coach_id || "none",
       center_id: batch.center_id || "",
     })
     setDialogOpen(true)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this batch?")) return
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
 
     try {
-      const response = await fetch(`/api/batches/${id}`, {
-        method: 'DELETE',
-      })
+      const currentUser = await getCurrentUser()
+      if (!currentUser) {
+        setError("You must be logged in to manage batches")
+      return
+    }
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to delete batch')
+      const batchData = {
+        name: formData.name,
+        description: formData.description || null,
+        start_time: formData.start_time || null,
+        end_time: formData.end_time || null,
+        coach_id: formData.coach_id === "none" ? null : formData.coach_id,
+        center_id: formData.center_id || selectedCenter?.id || null,
       }
 
-      loadData()
+      if (editingBatch) {
+        // Update existing batch
+        const { error } = await supabase
+          .from('batches')
+          .update(batchData)
+          .eq('id', editingBatch.id)
+
+        if (error) throw error
+      } else {
+        // Create new batch
+        const { error } = await supabase
+          .from('batches')
+          .insert([batchData])
+
+        if (error) throw error
+      }
+
+      // Refresh data
+      await refreshData()
+      
+      // Reset form
+      setDialogOpen(false)
+      setEditingBatch(null)
+      resetForm()
     } catch (error: any) {
-      setError(error.message)
+      console.error('Error saving batch:', error)
+      setError(error.message || "Failed to save batch")
     }
   }
 
-  const resetForm = () => {
-    setEditingBatch(null)
-    setFormData({
-      name: "",
-      description: "",
-      coach_id: "none",
-      center_id: "",
-    })
-    setError("")
+  const handleDelete = async (batch: Batch) => {
+    if (!confirm(`Are you sure you want to delete "${batch.name}"?`)) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('batches')
+        .delete()
+        .eq('id', batch.id)
+
+      if (error) throw error
+
+      // Refresh data
+      await refreshData()
+    } catch (error: any) {
+      console.error('Error deleting batch:', error)
+      setError(error.message || "Failed to delete batch")
+    }
+  }
+
+  // Show message if no center is selected
+  if (!selectedCenter) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Alert className="max-w-md">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Please select a center from the sidebar to manage batches.
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
   }
 
   if (loading) {
@@ -255,7 +280,7 @@ export function BatchManagement() {
                           <SelectValue placeholder="Select a center" />
                         </SelectTrigger>
                         <SelectContent>
-                          {centers.map((center) => (
+                          {availableCenters.map((center) => (
                             <SelectItem key={center.id} value={center.id}>
                               {center.location}
                             </SelectItem>
@@ -265,13 +290,13 @@ export function BatchManagement() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="coach">Assign Coach</Label>
+                      <Label htmlFor="coach">Coach</Label>
                       <Select
                         value={formData.coach_id}
                         onValueChange={(value) => setFormData({ ...formData, coach_id: value })}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a coach (optional)" />
+                          <SelectValue placeholder="Select a coach" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">No coach assigned</SelectItem>
@@ -326,7 +351,7 @@ export function BatchManagement() {
                         <Button variant="outline" size="sm" onClick={() => handleEdit(batch)}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleDelete(batch.id)}>
+                        <Button variant="outline" size="sm" onClick={() => handleDelete(batch)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
