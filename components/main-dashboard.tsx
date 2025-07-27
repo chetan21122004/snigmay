@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { CalendarDays, Users, GraduationCap, CreditCard, BarChart3, Clock, MapPin, UserCheck, Target, Trophy, ArrowUpRight, TrendingUp, AlertCircle, CheckCircle, Activity, IndianRupee, UserPlus, ClipboardList, Plus, Eye } from "lucide-react"
+import { CalendarDays, Users, GraduationCap, CreditCard, BarChart3, Clock, MapPin, UserCheck, Target, Trophy, ArrowUpRight, TrendingUp, AlertCircle, CheckCircle, Activity, IndianRupee, UserPlus, ClipboardList, Plus, Eye, Zap, CheckCircle2 } from "lucide-react"
 import Image from "next/image"
 
 interface User {
@@ -35,6 +35,7 @@ interface RecentActivity {
   description: string
   timestamp: string
   amount?: number
+  centerName?: string // Added for enhanced activity display
 }
 
 export default function MainDashboard() {
@@ -124,7 +125,8 @@ export default function MainDashboard() {
           type: 'payment',
           description: `Fee payment received from ${student?.full_name || 'Student'} - ₹${fee.amount}`,
           timestamp: fee.payment_date,
-          amount: Number(fee.amount)
+          amount: Number(fee.amount),
+          centerName: selectedCenter.name // Add center name for enhanced display
         })
       })
 
@@ -137,7 +139,8 @@ export default function MainDashboard() {
           id: record.id,
           type: 'attendance',
           description: `${student?.full_name || 'Student'} marked ${record.status}`,
-          timestamp: record.created_at
+          timestamp: record.created_at,
+          centerName: selectedCenter.name // Add center name for enhanced display
         })
       })
 
@@ -203,122 +206,212 @@ export default function MainDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            {getGreeting()}, {user?.full_name || 'User'}!
-          </h1>
-          <p className="text-gray-600 mt-1">
-            {selectedCenter ? `Managing ${selectedCenter.name}` : 'Welcome to your dashboard'}
-          </p>
+      {/* Modern Header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-burgundy-600 via-burgundy-700 to-burgundy-800 rounded-2xl p-8 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-r from-burgundy-600/90 to-burgundy-800/90"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gold-400/10 rounded-full -translate-y-32 translate-x-32"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gold-300/10 rounded-full translate-y-24 -translate-x-24"></div>
+        
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
+                <Users className="h-8 w-8 text-gold-300" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">{getGreeting()}, {user?.full_name || 'User'}!</h1>
+                <p className="text-burgundy-100 text-lg">
+                  {selectedCenter ? `Managing ${selectedCenter.name}` : 'Welcome to your dashboard'}
+                </p>
+              </div>
+            </div>
           </div>
-        <div className="flex items-center gap-3">
-          <Button className="bg-burgundy-600 hover:bg-burgundy-700">
-            <Plus className="h-4 w-4 mr-2" />
-            Quick Add
-          </Button>
+          <div className="text-right space-y-2">
+            <div className="flex items-center gap-2 justify-end">
+              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium">System Status</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-300" />
+              <span className="text-xl font-bold">All Systems Online</span>
+            </div>
+            <p className="text-burgundy-100 text-sm">Last updated: {new Date().toLocaleTimeString()}</p>
+          </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Enhanced Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Students</CardTitle>
-              <Users className="h-5 w-5 text-blue-500" />
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Total Students</CardTitle>
+            <div className="p-2 bg-burgundy-50 rounded-lg group-hover:bg-burgundy-100 transition-colors">
+              <Users className="h-5 w-5 text-burgundy-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.totalStudents}</div>
-            <p className="text-xs text-gray-500 mt-1">Active enrollments</p>
+            <div className="text-3xl font-bold text-burgundy-700 mb-2">{stats.totalStudents}</div>
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-burgundy-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalStudents / 500) * 100, 100)}%` }}></div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Active enrollments</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-green-500">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-gray-600">Active Batches</CardTitle>
-            <ClipboardList className="h-5 w-5 text-green-500" />
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Active Batches</CardTitle>
+            <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+              <ClipboardList className="h-5 w-5 text-blue-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.totalBatches}</div>
-            <p className="text-xs text-gray-500 mt-1">Training groups</p>
+            <div className="text-3xl font-bold text-blue-700 mb-2">{stats.totalBatches}</div>
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalBatches / 50) * 100, 100)}%` }}></div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Training groups</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-yellow-500">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-gray-600">Today's Attendance</CardTitle>
-              <UserCheck className="h-5 w-5 text-yellow-500" />
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Today's Attendance</CardTitle>
+            <div className="p-2 bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
+              <UserCheck className="h-5 w-5 text-green-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.attendanceRate}%</div>
-            <p className="text-xs text-gray-500 mt-1">{stats.attendanceToday} present today</p>
+            <div className="text-3xl font-bold text-green-700 mb-2">{stats.attendanceRate}%</div>
+            <div className="mt-2">
+              <Progress value={stats.attendanceRate} className="h-2 bg-gray-200" />
+            </div>
+            <p className="text-xs text-gray-500 mt-2">{stats.attendanceToday} present today</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-red-500">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-gray-600">Pending Fees</CardTitle>
-              <CreditCard className="h-5 w-5 text-red-500" />
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Pending Fees</CardTitle>
+            <div className="p-2 bg-red-50 rounded-lg group-hover:bg-red-100 transition-colors">
+              <CreditCard className="h-5 w-5 text-red-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.pendingFees}</div>
-            <p className="text-xs text-gray-500 mt-1">Outstanding payments</p>
+            <div className="text-3xl font-bold text-red-700 mb-2">{stats.pendingFees}</div>
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-red-500 h-2 rounded-full" style={{ width: `${Math.min((stats.pendingFees / 100) * 100, 100)}%` }}></div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Outstanding payments</p>
           </CardContent>
         </Card>
       </div>
 
-        {/* Recent Activities */}
-      <Card>
-          <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Recent Activities</CardTitle>
-              <CardDescription>Latest updates from {selectedCenter?.name || 'your center'}</CardDescription>
+      {/* Enhanced Recent Activities */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+          <CardHeader className="border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-burgundy-50 rounded-lg">
+                <Activity className="h-5 w-5 text-burgundy-600" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Recent Activities</CardTitle>
+                <CardDescription>Latest activities and updates</CardDescription>
+              </div>
             </div>
-              <Button variant="outline" size="sm">
-                <Eye className="h-4 w-4 mr-2" />
-                View All
-              </Button>
-          </div>
           </CardHeader>
-          <CardContent>
-          {recentActivities.length > 0 ? (
+          <CardContent className="p-6">
             <div className="space-y-4">
               {recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="mt-0.5">
-                      {getActivityIcon(activity.type)}
-                    </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">{activity.description}</p>
-                    <p className="text-xs text-gray-500 mt-1">{formatTimeAgo(activity.timestamp)}</p>
+                <div key={activity.id} className="flex items-start gap-4 p-4 rounded-xl border border-gray-100 bg-white hover:shadow-md transition-all duration-200 group">
+                  <div className="mt-1 p-2 bg-gray-50 rounded-lg group-hover:bg-gray-100 transition-colors">
+                    {getActivityIcon(activity.type)}
                   </div>
-                  {activity.amount && (
-                    <Badge variant="outline" className="text-green-600 border-green-200">
-                      ₹{activity.amount}
-                    </Badge>
-                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">{activity.description}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      {activity.centerName && (
+                        <Badge variant="outline" className="text-xs bg-burgundy-50 text-burgundy-700 border-burgundy-200">
+                          {activity.centerName}
+                        </Badge>
+                      )}
+                      {activity.amount && (
+                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                          ₹{activity.amount.toLocaleString()}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {formatTimeAgo(activity.timestamp)}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-8">
-              <CalendarDays className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No recent activities</p>
-              <p className="text-sm text-gray-400 mt-1">Activities will appear here as they happen</p>
-            </div>
-          )}
           </CardContent>
         </Card>
+
+        {/* Enhanced Quick Actions */}
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+          <CardHeader className="border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-burgundy-50 rounded-lg">
+                <Zap className="h-5 w-5 text-burgundy-600" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Quick Actions</CardTitle>
+                <CardDescription>Common tasks and shortcuts</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4">
+            <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
+              <a href="/attendance">
+                <UserCheck className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                <div>
+                  <div className="font-semibold">Mark Attendance</div>
+                  <div className="text-xs text-gray-500">Record student attendance</div>
+                </div>
+              </a>
+            </Button>
+            <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
+              <a href="/students">
+                <Users className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                <div>
+                  <div className="font-semibold">Manage Students</div>
+                  <div className="text-xs text-gray-500">Add or edit students</div>
+                </div>
+              </a>
+            </Button>
+            <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
+              <a href="/fees">
+                <CreditCard className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                <div>
+                  <div className="font-semibold">Fee Management</div>
+                  <div className="text-xs text-gray-500">Handle payments</div>
+                </div>
+              </a>
+            </Button>
+            <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
+              <a href="/batches">
+                <ClipboardList className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                <div>
+                  <div className="font-semibold">Batch Management</div>
+                  <div className="text-xs text-gray-500">Manage training batches</div>
+                </div>
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 } 

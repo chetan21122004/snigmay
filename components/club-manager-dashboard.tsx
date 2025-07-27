@@ -28,7 +28,8 @@ import {
   IndianRupee,
   Activity,
   TrendingUp,
-  Briefcase
+  Briefcase,
+  Zap
 } from "lucide-react"
 
 interface DashboardStats {
@@ -325,136 +326,167 @@ export function ClubManagerDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Club Manager Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Briefcase className="h-6 w-6" />
-              Club Manager Dashboard
-            </h1>
-            <p className="text-blue-100 mt-1">Manage attendance and financials across all centers - Strategic oversight</p>
+    <div className="space-y-8">
+      {/* Modern Club Manager Header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-burgundy-600 via-burgundy-700 to-burgundy-800 rounded-2xl p-8 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-r from-burgundy-600/90 to-burgundy-800/90"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gold-400/10 rounded-full -translate-y-32 translate-x-32"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gold-300/10 rounded-full translate-y-24 -translate-x-24"></div>
+        
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
+                <Briefcase className="h-8 w-8 text-gold-300" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Club Manager Dashboard</h1>
+                <p className="text-burgundy-100 text-lg">Manage attendance and financials across all centers</p>
+              </div>
+            </div>
+            {selectedCenter && (
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
+                  <Building className="h-3 w-3 mr-1" />
+                  Viewing: {selectedCenter.location}
+                </Badge>
+              </div>
+            )}
           </div>
-          <div className="text-right">
-            <p className="text-sm text-blue-100">Collection Rate</p>
-            <p className="text-lg font-semibold">{collectionRate}%</p>
+          <div className="text-right space-y-2">
+            <div className="flex items-center gap-2 justify-end">
+              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium">Collection Rate</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-gold-300" />
+              <span className="text-xl font-bold">{collectionRate}%</span>
+            </div>
+            <p className="text-burgundy-100 text-sm">Overall performance</p>
           </div>
         </div>
       </div>
 
-      {/* Key Performance Indicators */}
+      {/* Enhanced Key Performance Indicators */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-            <GraduationCap className="h-5 w-5 text-blue-500" />
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Total Students</CardTitle>
+            <div className="p-2 bg-burgundy-50 rounded-lg group-hover:bg-burgundy-100 transition-colors">
+              <Users className="h-5 w-5 text-burgundy-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalStudents}</div>
-            <div className="flex items-center mt-1">
-              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                <Building className="mr-1 h-3 w-3" />
-                {stats.totalCenters} Centers
-              </Badge>
+            <div className="text-3xl font-bold text-burgundy-700 mb-2">{stats.totalStudents}</div>
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-burgundy-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalStudents / 500) * 100, 100)}%` }}></div>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Across all training centers
-            </p>
+            <p className="text-xs text-gray-500 mt-2">Across all centers</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Training Batches</CardTitle>
-            <Layers className="h-5 w-5 text-green-500" />
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Active Centers</CardTitle>
+            <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+              <Building className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalBatches}</div>
-            <div className="flex items-center mt-1">
-              <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                <Users2 className="mr-1 h-3 w-3" />
-                {Math.round(stats.totalStudents / (stats.totalBatches || 1))} avg. size
-              </Badge>
+            <div className="text-3xl font-bold text-blue-700 mb-2">{stats.totalCenters}</div>
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalCenters / 10) * 100, 100)}%` }}></div>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Active training groups
-            </p>
+            <p className="text-xs text-gray-500 mt-2">Training facilities</p>
           </CardContent>
         </Card>
-        
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-purple-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Attendance</CardTitle>
-            <UserCheck className="h-5 w-5 text-purple-500" />
+
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Today's Attendance</CardTitle>
+            <div className="p-2 bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
+              <UserCheck className="h-5 w-5 text-green-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.attendanceRate}%</div>
+            <div className="text-3xl font-bold text-green-700 mb-2">{stats.attendanceRate}%</div>
             <div className="mt-2">
-              <Progress value={stats.attendanceRate} className="h-2" />
+              <Progress value={stats.attendanceRate} className="h-2 bg-gray-200" />
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              {stats.attendanceToday} students present
-            </p>
+            <p className="text-xs text-gray-500 mt-2">{stats.attendanceToday} students present</p>
           </CardContent>
         </Card>
-        
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-amber-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <IndianRupee className="h-5 w-5 text-amber-500" />
+
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Total Revenue</CardTitle>
+            <div className="p-2 bg-gold-50 rounded-lg group-hover:bg-gold-100 transition-colors">
+              <IndianRupee className="h-5 w-5 text-gold-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{stats.totalRevenue.toLocaleString()}</div>
-            <div className="mt-2">
-              <Progress value={parseFloat(collectionRate)} className="h-2" />
+            <div className="text-3xl font-bold text-gold-700 mb-2">₹{stats.totalRevenue.toLocaleString()}</div>
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-gold-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalRevenue / 1000000) * 100, 100)}%` }}></div>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              ₹{stats.pendingFees.toLocaleString()} pending
-            </p>
+            <p className="text-xs text-gray-500 mt-2">Collected fees</p>
           </CardContent>
         </Card>
       </div>
-      
-      {/* Main Content Tabs */}
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="bg-muted/60">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="centers">Centers</TabsTrigger>
-          <TabsTrigger value="financial">Financial</TabsTrigger>
-          <TabsTrigger value="attendance">Attendance</TabsTrigger>
+
+      {/* Enhanced Main Content Tabs */}
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg p-1 rounded-xl">
+          <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">Overview</TabsTrigger>
+          <TabsTrigger value="centers" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">Centers</TabsTrigger>
+          <TabsTrigger value="financials" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">Financials</TabsTrigger>
+          <TabsTrigger value="reports" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">Reports</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Recent Activities */}
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-lg">Recent Activities</CardTitle>
-                <CardDescription>Latest updates across all centers</CardDescription>
+            {/* Enhanced Recent Activities */}
+            <Card className="lg:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+              <CardHeader className="border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-burgundy-50 rounded-lg">
+                    <Activity className="h-5 w-5 text-burgundy-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Recent Activities</CardTitle>
+                    <CardDescription>Latest activities across all centers</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
                 <div className="space-y-4">
                   {recentActivities.map((activity) => (
-                    <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
-                      <div className="mt-0.5">
+                    <div key={activity.id} className="flex items-start gap-4 p-4 rounded-xl border border-gray-100 bg-white hover:shadow-md transition-all duration-200 group">
+                      <div className="mt-1 p-2 bg-gray-50 rounded-lg group-hover:bg-gray-100 transition-colors">
                         {getActivityIcon(activity.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{activity.description}</p>
-                        <div className="flex items-center gap-2 mt-1">
+                        <p className="text-sm font-semibold text-gray-900">{activity.description}</p>
+                        <div className="flex items-center gap-2 mt-2">
                           {activity.centerName && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs bg-burgundy-50 text-burgundy-700 border-burgundy-200">
                               {activity.centerName}
                             </Badge>
                           )}
                           {activity.amount && (
-                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
+                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
                               ₹{activity.amount.toLocaleString()}
                             </Badge>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
                           {formatTimeAgo(activity.timestamp)}
                         </p>
                       </div>
@@ -464,212 +496,174 @@ export function ClubManagerDashboard() {
               </CardContent>
             </Card>
 
-            {/* Management Actions */}
-          <Card>
-            <CardHeader>
-                <CardTitle className="text-lg">Management Actions</CardTitle>
-                <CardDescription>Key management functions</CardDescription>
-            </CardHeader>
-              <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start" asChild>
+            {/* Enhanced Quick Actions */}
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+              <CardHeader className="border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-burgundy-50 rounded-lg">
+                    <Zap className="h-5 w-5 text-burgundy-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Quick Actions</CardTitle>
+                    <CardDescription>Common management tasks</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
                   <a href="/attendance">
-                    <UserCheck className="mr-2 h-4 w-4" />
-                    Attendance Management
+                    <UserCheck className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                    <div>
+                      <div className="font-semibold">Attendance Report</div>
+                      <div className="text-xs text-gray-500">View attendance data</div>
+                    </div>
                   </a>
                 </Button>
-                <Button variant="outline" className="w-full justify-start" asChild>
+                <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
                   <a href="/fees">
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    Fee Management
+                    <CreditCard className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                    <div>
+                      <div className="font-semibold">Fee Management</div>
+                      <div className="text-xs text-gray-500">Manage payments</div>
+                    </div>
                   </a>
                 </Button>
-                <Button variant="outline" className="w-full justify-start" asChild>
+                <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
                   <a href="/students">
-                    <Users className="mr-2 h-4 w-4" />
-                    Student Management
+                    <Users className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                    <div>
+                      <div className="font-semibold">Student Directory</div>
+                      <div className="text-xs text-gray-500">View all students</div>
+                    </div>
                   </a>
                 </Button>
-                <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="/batches">
-                    <Layers className="mr-2 h-4 w-4" />
-                    Batch Management
-                  </a>
-                </Button>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="centers" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {stats.centerStats.map((center) => (
-              <Card key={center.centerId} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Building className="h-5 w-5 text-blue-500" />
-                    {center.location}
-                  </CardTitle>
-                  <CardDescription>{center.centerName}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Students</span>
-                      <span className="font-medium">{center.students}</span>
+              <Card key={center.centerId} className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+                <CardHeader className="border-b border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                      <Building className="h-5 w-5 text-blue-600" />
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Batches</span>
-                      <span className="font-medium">{center.batches}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Coaches</span>
-                      <span className="font-medium">{center.coaches}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Attendance</span>
-                      <span className="font-medium">{center.attendanceRate}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Revenue</span>
-                      <span className="font-medium text-green-600">₹{center.revenue.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Pending</span>
-                      <span className="font-medium text-red-500">₹{center.pendingFees.toLocaleString()}</span>
+                    <div>
+                      <CardTitle className="text-lg">{center.location}</CardTitle>
+                      <CardDescription>{center.centerName}</CardDescription>
                     </div>
                   </div>
-            </CardContent>
-                <CardFooter>
-                  <Button variant="outline" size="sm" className="w-full">
-                    <BarChart3 className="mr-2 h-4 w-4" />
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-2xl font-bold text-gray-900">{center.students}</div>
+                        <div className="text-xs text-gray-500">Students</div>
+                      </div>
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-2xl font-bold text-gray-900">{center.batches}</div>
+                        <div className="text-xs text-gray-500">Batches</div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-2xl font-bold text-gray-900">{center.coaches}</div>
+                        <div className="text-xs text-gray-500">Coaches</div>
+                      </div>
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-2xl font-bold text-purple-600">{center.attendanceRate}%</div>
+                        <div className="text-xs text-gray-500">Attendance</div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center p-2 bg-green-50 rounded-lg">
+                        <span className="text-sm text-gray-600">Revenue</span>
+                        <span className="font-semibold text-green-600">₹{center.revenue.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 bg-red-50 rounded-lg">
+                        <span className="text-sm text-gray-600">Pending</span>
+                        <span className="font-semibold text-red-600">₹{center.pendingFees.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="border-t border-gray-100">
+                  <Button variant="outline" size="sm" className="w-full group hover:bg-burgundy-50 hover:border-burgundy-200">
+                    <BarChart3 className="mr-2 h-4 w-4 text-burgundy-600 group-hover:text-burgundy-700" />
                     View Details
                   </Button>
                 </CardFooter>
-          </Card>
+              </Card>
             ))}
           </div>
         </TabsContent>
-        
-        <TabsContent value="financial" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Financial Overview</CardTitle>
-                <CardDescription>Revenue and collection summary</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Total Revenue</span>
-                    <span className="font-semibold text-green-600">₹{stats.totalRevenue.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Pending Fees</span>
-                    <span className="font-semibold text-red-500">₹{stats.pendingFees.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Collection Rate</span>
-                    <span className={`font-semibold ${parseFloat(collectionRate) > 85 ? 'text-green-500' : parseFloat(collectionRate) > 70 ? 'text-amber-500' : 'text-red-500'}`}>
-                      {collectionRate}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Recent Payments</span>
-                    <span className="font-semibold text-blue-600">₹{stats.recentPayments.toLocaleString()}</span>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full" asChild>
-                  <a href="/fees">
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    Manage Fees
-                  </a>
-                </Button>
-              </CardFooter>
-            </Card>
 
-          <Card>
-            <CardHeader>
-                <CardTitle className="text-lg">Center-wise Revenue</CardTitle>
-                <CardDescription>Revenue breakdown by center</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-3">
-                  {stats.centerStats.map((center) => (
-                    <div key={center.centerId}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>{center.location}</span>
-                        <span>₹{center.revenue.toLocaleString()}</span>
-                      </div>
-                      <Progress 
-                        value={stats.totalRevenue > 0 ? (center.revenue / stats.totalRevenue) * 100 : 0} 
-                        className="h-2" 
-                      />
-                    </div>
-                  ))}
+        <TabsContent value="financials" className="space-y-6">
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+            <CardHeader className="border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gold-50 rounded-lg">
+                  <IndianRupee className="h-5 w-5 text-gold-600" />
                 </div>
+                <div>
+                  <CardTitle className="text-xl">Financial Overview</CardTitle>
+                  <CardDescription>Revenue and fee collection analysis</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-6 bg-green-50 rounded-xl border border-green-100">
+                  <div className="text-3xl font-bold text-green-600 mb-2">₹{stats.totalRevenue.toLocaleString()}</div>
+                  <div className="text-sm text-green-700 font-medium">Total Revenue</div>
+                  <div className="text-xs text-green-600 mt-1">Collected fees</div>
+                </div>
+                <div className="text-center p-6 bg-red-50 rounded-xl border border-red-100">
+                  <div className="text-3xl font-bold text-red-600 mb-2">₹{stats.pendingFees.toLocaleString()}</div>
+                  <div className="text-sm text-red-700 font-medium">Pending Fees</div>
+                  <div className="text-xs text-red-600 mt-1">Outstanding payments</div>
+                </div>
+                <div className="text-center p-6 bg-gold-50 rounded-xl border border-gold-100">
+                  <div className="text-3xl font-bold text-gold-600 mb-2">{collectionRate}%</div>
+                  <div className="text-sm text-gold-700 font-medium">Collection Rate</div>
+                  <div className="text-xs text-gold-600 mt-1">Success rate</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
-          </div>
         </TabsContent>
-        
-        <TabsContent value="attendance" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-                <CardTitle className="text-lg">Attendance Overview</CardTitle>
-                <CardDescription>Student attendance across centers</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Today's Attendance</span>
-                    <span className="font-semibold">{stats.attendanceToday} / {stats.totalStudents}</span>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Attendance Rate</span>
-                      <span>{stats.attendanceRate}%</span>
-                    </div>
-                    <Progress value={stats.attendanceRate} className="h-2" />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Absent Today</span>
-                    <span className="font-semibold text-red-500">{stats.totalStudents - stats.attendanceToday}</span>
-                  </div>
+
+        <TabsContent value="reports" className="space-y-6">
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+            <CardHeader className="border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-burgundy-50 rounded-lg">
+                  <BarChart3 className="h-5 w-5 text-burgundy-600" />
                 </div>
-            </CardContent>
-              <CardFooter>
-                <Button className="w-full" asChild>
-                  <a href="/attendance">
-                    <UserCheck className="mr-2 h-4 w-4" />
-                    Manage Attendance
-                  </a>
+                <div>
+                  <CardTitle className="text-xl">Reports & Analytics</CardTitle>
+                  <CardDescription>Generate and view detailed reports</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="text-center py-12">
+                <div className="p-4 bg-burgundy-50 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <BarChart3 className="h-10 w-10 text-burgundy-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Advanced Reporting</h3>
+                <p className="text-gray-600 mb-6">Comprehensive reporting and analytics features coming soon...</p>
+                <Button className="bg-burgundy-600 hover:bg-burgundy-700">
+                  <TrendingUp className="mr-2 h-4 w-4" />
+                  Coming Soon
                 </Button>
-              </CardFooter>
-          </Card>
-        
-          <Card>
-            <CardHeader>
-                <CardTitle className="text-lg">Center-wise Attendance</CardTitle>
-                <CardDescription>Attendance rates by center</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-3">
-                  {stats.centerStats.map((center) => (
-                    <div key={center.centerId}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>{center.location}</span>
-                        <span>{center.attendanceRate}%</span>
-                      </div>
-                      <Progress value={center.attendanceRate} className="h-2" />
-                    </div>
-                  ))}
-                </div>
+              </div>
             </CardContent>
           </Card>
-          </div>
         </TabsContent>
       </Tabs>
     </div>

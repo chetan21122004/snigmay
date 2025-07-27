@@ -18,7 +18,11 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
-  Download
+  Download,
+  Building,
+  Layers,
+  UserCheck,
+  Zap
 } from 'lucide-react'
 import { useCenterContext } from '@/context/center-context'
 
@@ -117,268 +121,265 @@ export default function CenterManagerDashboard() {
 
   return (
     <div className="space-y-8 p-8">
-      {/* Center Header */}
-        <div className="flex items-center justify-between">
+      {/* Modern Center Header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-burgundy-600 via-burgundy-700 to-burgundy-800 rounded-2xl p-8 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-r from-burgundy-600/90 to-burgundy-800/90"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gold-400/10 rounded-full -translate-y-32 translate-x-32"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gold-300/10 rounded-full translate-y-24 -translate-x-24"></div>
+        
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
+                <Building className="h-8 w-8 text-gold-300" />
+              </div>
               <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            {selectedCenter.name}
-            </h1>
-          <p className="text-gray-500 mt-1">{selectedCenter.location}</p>
-        </div>
-        <Button className="bg-burgundy-600 hover:bg-burgundy-700">
-          <Download className="h-4 w-4 mr-2" />
-          Download Report
-        </Button>
+                <h1 className="text-3xl font-bold tracking-tight">{selectedCenter.name}</h1>
+                <p className="text-burgundy-100 text-lg">{selectedCenter.location}</p>
+              </div>
             </div>
+          </div>
+          <div className="text-right space-y-2">
+            <div className="flex items-center gap-2 justify-end">
+              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium">Center Status</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-300" />
+              <span className="text-xl font-bold">Active</span>
+            </div>
+            <p className="text-burgundy-100 text-sm">All systems operational</p>
+          </div>
+        </div>
+      </div>
 
-      {/* Stats Overview */}
+      {/* Enhanced Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="hover:shadow-md transition-shadow">
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Students</p>
-                <h3 className="text-3xl font-bold text-gray-900 mt-2">
+                <p className="text-sm font-semibold text-gray-600">Total Students</p>
+                <h3 className="text-3xl font-bold text-burgundy-700 mt-2">
                   {stats.totalStudents}
                 </h3>
               </div>
-              <div className="h-12 w-12 bg-blue-50 rounded-full flex items-center justify-center">
-                <Users className="h-6 w-6 text-blue-500" />
+              <div className="h-12 w-12 bg-burgundy-50 rounded-full flex items-center justify-center group-hover:bg-burgundy-100 transition-colors">
+                <Users className="h-6 w-6 text-burgundy-600" />
               </div>
             </div>
             <div className="mt-4">
-              <Progress value={Math.min((stats.totalStudents / 50) * 100, 100)} className="h-2" />
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-burgundy-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalStudents / 50) * 100, 100)}%` }}></div>
+              </div>
               <p className="text-xs text-gray-500 mt-2">
                 {Math.round((stats.totalStudents / 50) * 100)}% capacity utilized
-            </p>
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Active Batches</p>
-                <h3 className="text-3xl font-bold text-gray-900 mt-2">
+                <p className="text-sm font-semibold text-gray-600">Active Batches</p>
+                <h3 className="text-3xl font-bold text-blue-700 mt-2">
                   {stats.totalBatches}
                 </h3>
               </div>
-              <div className="h-12 w-12 bg-green-50 rounded-full flex items-center justify-center">
-                <Activity className="h-6 w-6 text-green-500" />
+              <div className="h-12 w-12 bg-blue-50 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                <Layers className="h-6 w-6 text-blue-600" />
               </div>
             </div>
             <div className="mt-4">
-              <Progress value={Math.min((stats.totalBatches / 10) * 100, 100)} className="h-2" />
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalBatches / 20) * 100, 100)}%` }}></div>
+              </div>
               <p className="text-xs text-gray-500 mt-2">
-                {Math.round((stats.totalBatches / 10) * 100)}% time slots filled
+                Training groups active
               </p>
-            </div>
-            </CardContent>
-          </Card>
-
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Attendance Rate</p>
-                <h3 className="text-3xl font-bold text-gray-900 mt-2">
-                  {stats.attendanceRate.toFixed(1)}%
-                </h3>
-              </div>
-              <div className="h-12 w-12 bg-purple-50 rounded-full flex items-center justify-center">
-                <CalendarIcon className="h-6 w-6 text-purple-500" />
-              </div>
-        </div>
-            <div className="mt-4">
-              <Progress value={stats.attendanceRate} className="h-2" />
-              <p className="text-xs text-gray-500 mt-2">Last 30 days average</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
           <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                <p className="text-sm font-medium text-gray-500">Fee Collection</p>
-                <h3 className="text-3xl font-bold text-gray-900 mt-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-gray-600">Attendance Rate</p>
+                <h3 className="text-3xl font-bold text-green-700 mt-2">
+                  {stats.attendanceRate}%
+                </h3>
+              </div>
+              <div className="h-12 w-12 bg-green-50 rounded-full flex items-center justify-center group-hover:bg-green-100 transition-colors">
+                <UserCheck className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+            <div className="mt-4">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-green-500 h-2 rounded-full" style={{ width: `${stats.attendanceRate}%` }}></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Today's attendance
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-gray-600">Fee Collection</p>
+                <h3 className="text-3xl font-bold text-gold-700 mt-2">
                   ₹{stats.feeCollection.toLocaleString()}
                 </h3>
-                    </div>
-              <div className="h-12 w-12 bg-yellow-50 rounded-full flex items-center justify-center">
-                <Wallet className="h-6 w-6 text-yellow-500" />
-                    </div>
-                </div>
+              </div>
+              <div className="h-12 w-12 bg-gold-50 rounded-full flex items-center justify-center group-hover:bg-gold-100 transition-colors">
+                <Wallet className="h-6 w-6 text-gold-600" />
+              </div>
+            </div>
             <div className="mt-4">
-              <Progress value={85} className="h-2" />
-              <p className="text-xs text-gray-500 mt-2">85% collection target</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-gold-500 h-2 rounded-full" style={{ width: `${Math.min((stats.feeCollection / 100000) * 100, 100)}%` }}></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                This month's collection
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Main Content */}
+      {/* Enhanced Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Today's Schedule */}
-            <Card>
-              <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Today's Schedule
-              </CardTitle>
-              <CardDescription>Upcoming training sessions</CardDescription>
-              </CardHeader>
-              <CardContent>
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-4">
-                  {stats.upcomingBatches.length > 0 ? (
-                    stats.upcomingBatches.map((batch, index) => (
-                      <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                        <div className="h-12 w-12 bg-burgundy-100 rounded-lg flex items-center justify-center">
-                          <Clock className="h-6 w-6 text-burgundy-600" />
-                  </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900">{batch.name}</h4>
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <span>{batch.start_time || '09:00'}</span>
-                            <span>-</span>
-                            <span>{batch.end_time || '10:30'}</span>
-                          </div>
-                        </div>
-                        <Badge variant="outline" className="ml-auto">
-                          {batch.coach_name}
-                        </Badge>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8">
-                      <Clock className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500">No sessions scheduled for today</p>
-                    </div>
-                  )}
+        {/* Recent Payments */}
+        <Card className="lg:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+          <CardHeader className="border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-50 rounded-lg">
+                  <Wallet className="h-5 w-5 text-green-600" />
                 </div>
-              </ScrollArea>
-              </CardContent>
-            </Card>
-
-          {/* Attendance Overview */}
-            <Card>
-              <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5" />
-                Today's Attendance
-              </CardTitle>
-              <CardDescription>Student attendance status</CardDescription>
-              </CardHeader>
-              <CardContent>
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-4">
-                  {stats.attendanceToday.length > 0 ? (
-                    stats.attendanceToday.map((record, index) => (
-                      <div key={index} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src="/placeholder-user.jpg" />
-                          <AvatarFallback>{record.student_name?.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900">{record.student_name}</h4>
-                          <p className="text-sm text-gray-500">{record.batch_name}</p>
-                  </div>
-                        <div className="flex items-center gap-2">
-                          {record.status === 'present' ? (
-                            <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-                              <CheckCircle2 className="h-4 w-4 mr-1" />
-                              Present
-                            </Badge>
-                          ) : record.status === 'absent' ? (
-                            <Badge variant="destructive" className="bg-red-100 text-red-700 hover:bg-red-100">
-                              <XCircle className="h-4 w-4 mr-1" />
-                              Absent
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="bg-yellow-100 text-yellow-700">
-                              <AlertCircle className="h-4 w-4 mr-1" />
-                              Not Marked
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8">
-                      <CheckCircle2 className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500">No attendance records for today</p>
-                    </div>
-                  )}
+                <div>
+                  <CardTitle className="text-xl">Recent Payments</CardTitle>
+                  <CardDescription>Latest fee payments and transactions</CardDescription>
                 </div>
-              </ScrollArea>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+              <Button className="bg-burgundy-600 hover:bg-burgundy-700">
+                <Download className="h-4 w-4 mr-2" />
+                Download Report
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <ScrollArea className="h-[400px]">
+              <div className="space-y-4">
+                {stats.recentPayments.map((payment, index) => (
+                  <div key={index} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-white hover:shadow-md transition-all duration-200">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={payment.avatar} alt={payment.studentName} />
+                      <AvatarFallback className="bg-burgundy-50 text-burgundy-600">
+                        {payment.studentName.split(' ').map((n: string) => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">{payment.studentName}</p>
+                      <p className="text-xs text-gray-500">{payment.batchName}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-green-600">₹{payment.amount.toLocaleString()}</p>
+                      <p className="text-xs text-gray-500">{payment.date}</p>
+                    </div>
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      {payment.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
 
-        {/* Right Column */}
-        <div className="space-y-8">
-          {/* Calendar */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Calendar</CardTitle>
-              <CardDescription>Schedule overview</CardDescription>
+        {/* Quick Actions & Stats */}
+        <div className="space-y-6">
+          {/* Upcoming Batches */}
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+            <CardHeader className="border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <Calendar className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Upcoming Batches</CardTitle>
+                  <CardDescription>Today's schedule</CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={(date) => date && setDate(date)}
-                className="rounded-md border"
-              />
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                {stats.upcomingBatches.map((batch, index) => (
+                  <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span className="text-xs font-semibold text-blue-600">{batch.time}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">{batch.name}</p>
+                      <p className="text-xs text-gray-500">{batch.coach}</p>
+                    </div>
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      {batch.students} students
+                    </Badge>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
-          {/* Recent Payments */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Recent Payments
-              </CardTitle>
-              <CardDescription>Latest fee collections</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-4">
-                  {stats.recentPayments.length > 0 ? (
-                    stats.recentPayments.map((payment, index) => (
-                      <div key={index} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                        <div className="h-10 w-10 bg-green-50 rounded-full flex items-center justify-center">
-                          <TrendingUp className="h-5 w-5 text-green-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900">₹{payment.amount.toLocaleString()}</h4>
-                          <p className="text-sm text-gray-500">{payment.student_name}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-900">
-                            {new Date(payment.payment_date).toLocaleDateString()}
-                          </p>
-                          <p className="text-xs text-gray-500 capitalize">
-                            {payment.payment_mode}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-              <div className="text-center py-8">
-                      <TrendingUp className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500">No recent payments</p>
-                    </div>
-                  )}
+          {/* Quick Actions */}
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+            <CardHeader className="border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-burgundy-50 rounded-lg">
+                  <Zap className="h-5 w-5 text-burgundy-600" />
                 </div>
-              </ScrollArea>
-              </CardContent>
-            </Card>
+                <div>
+                  <CardTitle className="text-lg">Quick Actions</CardTitle>
+                  <CardDescription>Common management tasks</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
+                <a href="/attendance">
+                  <UserCheck className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                  <div>
+                    <div className="font-semibold">Mark Attendance</div>
+                    <div className="text-xs text-gray-500">Record student attendance</div>
+                  </div>
+                </a>
+              </Button>
+              <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
+                <a href="/students">
+                  <Users className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                  <div>
+                    <div className="font-semibold">Manage Students</div>
+                    <div className="text-xs text-gray-500">Add or edit students</div>
+                  </div>
+                </a>
+              </Button>
+              <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
+                <a href="/fees">
+                  <Wallet className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                  <div>
+                    <div className="font-semibold">Fee Management</div>
+                    <div className="text-xs text-gray-500">Handle payments</div>
+                  </div>
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

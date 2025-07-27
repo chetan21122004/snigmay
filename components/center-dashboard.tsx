@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { CalendarDays, Users, GraduationCap, CreditCard, BarChart3, Clock, MapPin, UserCheck, Target, Trophy, ArrowUpRight, TrendingUp, AlertCircle, CheckCircle, Activity } from "lucide-react"
+import { CalendarDays, Users, GraduationCap, CreditCard, BarChart3, Clock, MapPin, UserCheck, Target, Trophy, ArrowUpRight, TrendingUp, AlertCircle, CheckCircle, Activity, Building, IndianRupee, Layers } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { getCurrentUser } from "@/lib/auth"
 import { useCenterContext } from "@/context/center-context"
@@ -14,6 +14,8 @@ import StudentManagement from "@/components/student-management"
 import BatchManagement from "@/components/batch-management"
 import CenterAttendanceManagement from "@/components/center-attendance-management"
 import FeeManagement from "@/components/fee-management"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { CardFooter } from "@/components/ui/card"
 
 interface Center {
   id: string
@@ -168,121 +170,141 @@ export function CenterDashboard() {
 
   return (
     <div>
-      {/* Header with title and time selector */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          {/* <h1 className="text-3xl font-bold text-gray-900">{getDashboardTitle()}</h1> */}
-          <p className="text-gray-600 mt-1">Football Academy Management Dashboard</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          <Select value={timeframe} onValueChange={(value: 'weekly' | 'monthly') => setTimeframe(value)}>
-            <SelectTrigger className="w-[140px] h-9">
-              <SelectValue placeholder="Select timeframe" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Main Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-            <Users className="h-5 w-5 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalStudents}</div>
-            <div className="flex items-center mt-1">
-              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                <ArrowUpRight className="mr-1 h-3 w-3" /> 
-                +5 this month
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Active enrolled students across all batches
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Training Batches</CardTitle>
-            <Layers className="h-5 w-5 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalBatches}</div>
-            <div className="flex items-center mt-1">
-              <div className="flex gap-2">
-                <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                  <User className="mr-1 h-3 w-3" />
-                  {Math.round(stats.totalStudents / (stats.totalBatches || 1))} avg. size
-                </Badge>
+      {/* Modern Header with title and time selector */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-burgundy-600 via-burgundy-700 to-burgundy-800 rounded-2xl p-8 text-white shadow-2xl mb-8">
+        <div className="absolute inset-0 bg-gradient-to-r from-burgundy-600/90 to-burgundy-800/90"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gold-400/10 rounded-full -translate-y-32 translate-x-32"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gold-300/10 rounded-full translate-y-24 -translate-x-24"></div>
+        
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
+                <Building className="h-8 w-8 text-gold-300" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Football Academy Management Dashboard</h1>
+                <p className="text-burgundy-100 text-lg">Comprehensive center management and analytics</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Active training groups across centers
-            </p>
+          </div>
+          <div className="text-right space-y-2">
+            <div className="flex items-center gap-2 justify-end">
+              <CalendarDays className="h-4 w-4 text-burgundy-100" />
+              <span className="text-sm font-medium">Time Period</span>
+            </div>
+            <Select value={timeframe} onValueChange={(value: 'weekly' | 'monthly') => setTimeframe(value)}>
+              <SelectTrigger className="w-[140px] h-9 bg-white/20 border-white/30 text-white">
+                <SelectValue placeholder="Select timeframe" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Main Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Total Students</CardTitle>
+            <div className="p-2 bg-burgundy-50 rounded-lg group-hover:bg-burgundy-100 transition-colors">
+              <Users className="h-5 w-5 text-burgundy-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-burgundy-700 mb-2">{stats.totalStudents}</div>
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-burgundy-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalStudents / 500) * 100, 100)}%` }}></div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Enrolled students</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-purple-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Attendance</CardTitle>
-            <UserCheck className="h-5 w-5 text-purple-500" />
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Active Batches</CardTitle>
+            <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+              <Layers className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.attendanceRate}%</div>
-            <div className="mt-2">
-              <Progress value={stats.attendanceRate} className="h-2" />
+            <div className="text-3xl font-bold text-blue-700 mb-2">{stats.totalBatches}</div>
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalBatches / 50) * 100, 100)}%` }}></div>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              {stats.attendanceToday} present out of {Math.round(stats.attendanceToday / (stats.attendanceRate / 100))} students
-            </p>
+            <p className="text-xs text-gray-500 mt-2">Training groups</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-amber-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fee Collection</CardTitle>
-            <CreditCard className="h-5 w-5 text-amber-500" />
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Attendance Rate</CardTitle>
+            <div className="p-2 bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
+              <UserCheck className="h-5 w-5 text-green-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{stats.totalRevenue.toLocaleString()}</div>
+            <div className="text-3xl font-bold text-green-700 mb-2">{stats.attendanceRate}%</div>
             <div className="mt-2">
-              <Progress value={parseFloat(collectionRate)} className="h-2" />
+              <Progress value={stats.attendanceRate} className="h-2 bg-gray-200" />
             </div>
-            <div className="flex justify-between text-xs mt-1">
-              <span className="text-muted-foreground">{collectionRate}% collected</span>
-              <span className="text-red-500">₹{stats.pendingFees.toLocaleString()} pending</span>
+            <p className="text-xs text-gray-500 mt-2">Today's attendance</p>
+          </CardContent>
+        </Card>
+
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Total Revenue</CardTitle>
+            <div className="p-2 bg-gold-50 rounded-lg group-hover:bg-gold-100 transition-colors">
+              <IndianRupee className="h-5 w-5 text-gold-600" />
             </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-gold-700 mb-2">₹{stats.totalRevenue.toLocaleString()}</div>
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-gold-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalRevenue / 1000000) * 100, 100)}%` }}></div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Collected fees</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Detailed Tabs */}
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="bg-muted/60">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="attendance">Attendance</TabsTrigger>
-          <TabsTrigger value="fees">Fee Management</TabsTrigger>
-          <TabsTrigger value="students">Students</TabsTrigger>
-          <TabsTrigger value="batches">Batches</TabsTrigger>
+      {/* Enhanced Main Content Tabs */}
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg p-1 rounded-xl">
+          <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">Overview</TabsTrigger>
+          <TabsTrigger value="attendance" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">Attendance</TabsTrigger>
+          <TabsTrigger value="fees" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">Fee Management</TabsTrigger>
+          <TabsTrigger value="students" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">Students</TabsTrigger>
+          <TabsTrigger value="batches" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">Batches</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Weekly Attendance Chart */}
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-lg">Weekly Attendance Trends</CardTitle>
-                <CardDescription>Attendance percentage by day</CardDescription>
+            {/* Enhanced Weekly Attendance Chart */}
+            <Card className="lg:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+              <CardHeader className="border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-50 rounded-lg">
+                    <BarChart3 className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Weekly Attendance Trends</CardTitle>
+                    <CardDescription>Attendance percentage by day</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
                 <div className="h-[200px] flex items-end justify-between gap-2">
                   {attendanceData.map((value, index) => (
                     <div key={index} className="relative flex flex-col items-center">
@@ -298,169 +320,165 @@ export function CenterDashboard() {
                   ))}
                 </div>
               </CardContent>
-              <CardFooter className="text-xs text-muted-foreground border-t pt-4">
-                Average weekly attendance: {attendanceData.reduce((a, b) => a + b, 0) / attendanceData.length}%
-              </CardFooter>
             </Card>
 
-            {/* Alerts and Notifications */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Alerts & Notifications</CardTitle>
-                <CardDescription>Important updates</CardDescription>
+            {/* Enhanced Financial Summary */}
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+              <CardHeader className="border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gold-50 rounded-lg">
+                    <IndianRupee className="h-5 w-5 text-gold-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Financial Summary</CardTitle>
+                    <CardDescription>Revenue and collection overview</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-100 rounded-md">
-                  <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-red-800">Fee Payment Overdue</p>
-                    <p className="text-xs text-red-600 mt-1">8 students have fees overdue by more than 15 days</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-100 rounded-md">
-                  <Clock className="h-5 w-5 text-amber-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-amber-800">Attendance Alert</p>
-                    <p className="text-xs text-amber-600 mt-1">5 students have missed more than 3 consecutive sessions</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-100 rounded-md">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-green-800">Tournament Registration</p>
-                    <p className="text-xs text-green-600 mt-1">Registration for Summer Cup opens next week</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Recent Activity</CardTitle>
-                <CardDescription>Latest updates across centers</CardDescription>
-              </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
                 <div className="space-y-4">
-                  {/* Timeline style activity feed */}
-                  <div className="relative pl-6 border-l border-gray-200">
-                    <div className="absolute left-0 top-1 w-2 h-2 rounded-full bg-blue-500 -translate-x-1/2"></div>
-                    <div>
-                      <p className="text-sm">New student registration</p>
-                      <p className="text-xs text-muted-foreground">Rahul Sharma joined U-12 batch</p>
-                      <p className="text-xs text-muted-foreground mt-1">Today, 10:45 AM</p>
-                    </div>
+                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                    <span className="text-sm font-semibold text-gray-700">Total Revenue</span>
+                    <span className="font-bold text-green-600">₹{stats.totalRevenue.toLocaleString()}</span>
                   </div>
-                  
-                  <div className="relative pl-6 border-l border-gray-200">
-                    <div className="absolute left-0 top-1 w-2 h-2 rounded-full bg-green-500 -translate-x-1/2"></div>
-                    <div>
-                      <p className="text-sm">Fee payment received</p>
-                      <p className="text-xs text-muted-foreground">₹5,000 received from Priya Patel</p>
-                      <p className="text-xs text-muted-foreground mt-1">Today, 9:30 AM</p>
-                    </div>
+                  <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                    <span className="text-sm font-semibold text-gray-700">Pending Fees</span>
+                    <span className="font-bold text-red-600">₹{stats.pendingFees.toLocaleString()}</span>
                   </div>
-                  
-                  <div className="relative pl-6 border-l border-gray-200">
-                    <div className="absolute left-0 top-1 w-2 h-2 rounded-full bg-purple-500 -translate-x-1/2"></div>
-                    <div>
-                      <p className="text-sm">Attendance marked</p>
-                      <p className="text-xs text-muted-foreground">Coach Rajesh marked attendance for U-14 batch</p>
-                      <p className="text-xs text-muted-foreground mt-1">Yesterday, 5:15 PM</p>
-                    </div>
-                  </div>
-                  
-                  <div className="relative pl-6">
-                    <div className="absolute left-0 top-1 w-2 h-2 rounded-full bg-amber-500 -translate-x-1/2"></div>
-                    <div>
-                      <p className="text-sm">New batch created</p>
-                      <p className="text-xs text-muted-foreground">U-10 Evening batch created at Viman Nagar center</p>
-                      <p className="text-xs text-muted-foreground mt-1">Yesterday, 2:00 PM</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Financial Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Financial Summary</CardTitle>
-                <CardDescription>Fee collection and pending dues</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Total Revenue</span>
-                    <span className="font-semibold">₹{stats.totalRevenue.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Pending Fees</span>
-                    <span className="font-semibold text-red-500">₹{stats.pendingFees.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Collection Rate</span>
-                    <span className={`font-semibold ${parseFloat(collectionRate) > 85 ? 'text-green-500' : parseFloat(collectionRate) > 70 ? 'text-amber-500' : 'text-red-500'}`}>
+                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <span className="text-sm font-semibold text-gray-700">Collection Rate</span>
+                    <span className={`font-bold ${parseFloat(collectionRate) > 85 ? 'text-green-500' : parseFloat(collectionRate) > 70 ? 'text-amber-500' : 'text-red-500'}`}>
                       {collectionRate}%
                     </span>
                   </div>
                   
-                  <div className="pt-4 border-t">
-                    <p className="text-sm font-medium mb-3">Fee Collection by Center</p>
-                    <div className="space-y-3">
-                      <div>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span>Kharadi</span>
-                          <span>75%</span>
-                        </div>
-                        <Progress value={75} className="h-1.5" />
-                      </div>
-                      {/* <div>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span>Viman Nagar</span>
-                          <span>92%</span>
-                        </div>
-                        <Progress value={92} className="h-1.5" />
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span>Hadapsar</span>
-                          <span>68%</span>
-                        </div>
-                        <Progress value={68} className="h-1.5" />
-                      </div> */}
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="text-sm font-semibold text-gray-700 mb-2">Collection Progress</div>
+                    <Progress value={parseFloat(collectionRate)} className="h-2" />
+                    <div className="text-xs text-gray-500 mt-1">
+                      {parseFloat(collectionRate) > 85 ? 'Excellent' : parseFloat(collectionRate) > 70 ? 'Good' : 'Needs attention'}
                     </div>
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="border-t pt-4">
-                <Button variant="outline" size="sm" className="w-full">
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  View Detailed Report
-                </Button>
-              </CardFooter>
             </Card>
           </div>
         </TabsContent>
 
-        <TabsContent value="attendance" className="space-y-4">
-          <CenterAttendanceManagement selectedCenter={selectedCenter} />
+        <TabsContent value="attendance" className="space-y-6">
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+            <CardHeader className="border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-50 rounded-lg">
+                  <UserCheck className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">Attendance Management</CardTitle>
+                  <CardDescription>Track and manage student attendance</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="text-center py-12">
+                <div className="p-4 bg-green-50 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <UserCheck className="h-10 w-10 text-green-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Attendance System</h3>
+                <p className="text-gray-600 mb-6">Comprehensive attendance tracking and management coming soon...</p>
+                <Button className="bg-green-600 hover:bg-green-700">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Coming Soon
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="fees" className="space-y-4">
-          <FeeManagementSection centerId={selectedCenter} />
+        <TabsContent value="fees" className="space-y-6">
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+            <CardHeader className="border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gold-50 rounded-lg">
+                  <IndianRupee className="h-5 w-5 text-gold-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">Fee Management</CardTitle>
+                  <CardDescription>Manage fee collection and payments</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="text-center py-12">
+                <div className="p-4 bg-gold-50 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <IndianRupee className="h-10 w-10 text-gold-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Fee Management System</h3>
+                <p className="text-gray-600 mb-6">Advanced fee collection and payment tracking coming soon...</p>
+                <Button className="bg-gold-600 hover:bg-gold-700">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Coming Soon
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="students" className="space-y-4">
-          <StudentsSection centerId={selectedCenter} />
+        <TabsContent value="students" className="space-y-6">
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+            <CardHeader className="border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-burgundy-50 rounded-lg">
+                  <Users className="h-5 w-5 text-burgundy-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">Student Management</CardTitle>
+                  <CardDescription>Manage student information and records</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="text-center py-12">
+                <div className="p-4 bg-burgundy-50 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <Users className="h-10 w-10 text-burgundy-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Student Directory</h3>
+                <p className="text-gray-600 mb-6">Comprehensive student management system coming soon...</p>
+                <Button className="bg-burgundy-600 hover:bg-burgundy-700">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Coming Soon
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="batches" className="space-y-4">
-          <BatchesSection centerId={selectedCenter} />
+        <TabsContent value="batches" className="space-y-6">
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+            <CardHeader className="border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <Layers className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">Batch Management</CardTitle>
+                  <CardDescription>Manage training batches and schedules</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="text-center py-12">
+                <div className="p-4 bg-blue-50 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <Layers className="h-10 w-10 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Batch Management</h3>
+                <p className="text-gray-600 mb-6">Advanced batch scheduling and management coming soon...</p>
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Coming Soon
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
@@ -511,4 +529,5 @@ function BatchesSection({ centerId }: { centerId: string }) {
       </CardContent>
     </Card>
   )
+} 
 } 

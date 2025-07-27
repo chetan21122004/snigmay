@@ -31,7 +31,10 @@ import {
   Database,
   Shield,
   Activity,
-  TrendingUp
+  TrendingUp,
+  Crown,
+  Globe,
+  Zap
 } from "lucide-react"
 
 interface DashboardStats {
@@ -364,146 +367,186 @@ export function SuperAdminDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Super Admin Header */}
-      <div className="bg-gradient-to-r from-red-600 to-orange-600 rounded-lg p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Shield className="h-6 w-6" />
-              Super Admin Dashboard
-            </h1>
-            <p className="text-red-100 mt-1">Complete system control and oversight - Full access to all modules and data</p>
+    <div className="space-y-8">
+      {/* Modern Super Admin Header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-burgundy-600 via-burgundy-700 to-burgundy-800 rounded-2xl p-8 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-r from-burgundy-600/90 to-burgundy-800/90"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gold-400/10 rounded-full -translate-y-32 translate-x-32"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gold-300/10 rounded-full translate-y-24 -translate-x-24"></div>
+        
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
+                <Crown className="h-8 w-8 text-gold-300" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Super Admin Dashboard</h1>
+                <p className="text-burgundy-100 text-lg">Complete system control and oversight</p>
+              </div>
+            </div>
             {selectedCenter && (
-              <div className="flex items-center gap-2 mt-2">
-                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
                   <Building className="h-3 w-3 mr-1" />
                   Viewing: {selectedCenter.location}
                 </Badge>
               </div>
             )}
           </div>
-          <div className="text-right">
-            <p className="text-sm text-red-100">System Status</p>
-            <div className="flex items-center gap-2 mt-1">
-              <CheckCircle2 className="h-4 w-4 text-green-300" />
-              <span className="text-lg font-semibold">All Systems Online</span>
+          <div className="text-right space-y-2">
+            <div className="flex items-center gap-2 justify-end">
+              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium">System Status</span>
             </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-300" />
+              <span className="text-xl font-bold">All Systems Online</span>
+            </div>
+            <p className="text-burgundy-100 text-sm">Last updated: {new Date().toLocaleTimeString()}</p>
           </div>
         </div>
       </div>
 
-      {/* System Overview KPIs */}
+      {/* Enhanced System Overview KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-red-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-5 w-5 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              All system users
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Centers</CardTitle>
-            <Building className="h-5 w-5 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalCenters}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Active training centers
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Students</CardTitle>
-            <GraduationCap className="h-5 w-5 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalStudents}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Enrolled students
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-purple-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Attendance</CardTitle>
-            <UserCheck className="h-5 w-5 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.attendanceRate}%</div>
-            <div className="mt-2">
-              <Progress value={stats.attendanceRate} className="h-2" />
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Total Users</CardTitle>
+            <div className="p-2 bg-burgundy-50 rounded-lg group-hover:bg-burgundy-100 transition-colors">
+              <Users className="h-5 w-5 text-burgundy-600" />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Today's attendance
-            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-burgundy-700 mb-2">{stats.totalUsers}</div>
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-burgundy-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalUsers / 100) * 100, 100)}%` }}></div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">All system users</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-amber-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-            <IndianRupee className="h-5 w-5 text-amber-500" />
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Centers</CardTitle>
+            <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+              <Building className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{stats.totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Total collected
-            </p>
+            <div className="text-3xl font-bold text-blue-700 mb-2">{stats.totalCenters}</div>
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalCenters / 10) * 100, 100)}%` }}></div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Active training centers</p>
+          </CardContent>
+        </Card>
+
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Students</CardTitle>
+            <div className="p-2 bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
+              <GraduationCap className="h-5 w-5 text-green-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-green-700 mb-2">{stats.totalStudents}</div>
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-green-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalStudents / 500) * 100, 100)}%` }}></div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Enrolled students</p>
+          </CardContent>
+        </Card>
+
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Attendance</CardTitle>
+            <div className="p-2 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors">
+              <UserCheck className="h-5 w-5 text-purple-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-purple-700 mb-2">{stats.attendanceRate}%</div>
+            <div className="mt-2">
+              <Progress value={stats.attendanceRate} className="h-2 bg-gray-200" />
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Today's attendance</p>
+          </CardContent>
+        </Card>
+
+        <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-700">Revenue</CardTitle>
+            <div className="p-2 bg-gold-50 rounded-lg group-hover:bg-gold-100 transition-colors">
+              <IndianRupee className="h-5 w-5 text-gold-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-gold-700 mb-2">₹{stats.totalRevenue.toLocaleString()}</div>
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-gold-500 h-2 rounded-full" style={{ width: `${Math.min((stats.totalRevenue / 1000000) * 100, 100)}%` }}></div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Total collected</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Content Tabs */}
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="bg-muted/60">
-          <TabsTrigger value="overview">System Overview</TabsTrigger>
-          <TabsTrigger value="centers">Centers Management</TabsTrigger>
-                      <TabsTrigger value="users">Coach Management</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="system">System Health</TabsTrigger>
+      {/* Enhanced Main Content Tabs */}
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg p-1 rounded-xl">
+          <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">System Overview</TabsTrigger>
+          <TabsTrigger value="centers" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">Centers Management</TabsTrigger>
+          <TabsTrigger value="users" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">Coach Management</TabsTrigger>
+          <TabsTrigger value="analytics" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">Analytics</TabsTrigger>
+          <TabsTrigger value="system" className="rounded-lg data-[state=active]:bg-burgundy-50 data-[state=active]:text-burgundy-700 data-[state=active]:shadow-sm">System Health</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* System Activities */}
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-lg">Recent System Activities</CardTitle>
-                <CardDescription>Latest activities across all centers and modules</CardDescription>
+            {/* Enhanced System Activities */}
+            <Card className="lg:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+              <CardHeader className="border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-burgundy-50 rounded-lg">
+                    <Activity className="h-5 w-5 text-burgundy-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Recent System Activities</CardTitle>
+                    <CardDescription>Latest activities across all centers and modules</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
                 <div className="space-y-4">
                   {recentActivities.map((activity) => (
-                    <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
-                      <div className="mt-0.5">
+                    <div key={activity.id} className="flex items-start gap-4 p-4 rounded-xl border border-gray-100 bg-white hover:shadow-md transition-all duration-200 group">
+                      <div className="mt-1 p-2 bg-gray-50 rounded-lg group-hover:bg-gray-100 transition-colors">
                         {getActivityIcon(activity.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{activity.description}</p>
-                        <div className="flex items-center gap-2 mt-1">
+                        <p className="text-sm font-semibold text-gray-900">{activity.description}</p>
+                        <div className="flex items-center gap-2 mt-2">
                           {activity.centerName && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs bg-burgundy-50 text-burgundy-700 border-burgundy-200">
                               {activity.centerName}
                             </Badge>
                           )}
                           {activity.amount && (
-                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
+                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
                               ₹{activity.amount.toLocaleString()}
                             </Badge>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
                           {formatTimeAgo(activity.timestamp)}
                         </p>
                       </div>
@@ -513,30 +556,46 @@ export function SuperAdminDashboard() {
               </CardContent>
             </Card>
 
-            {/* System Controls */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">System Controls</CardTitle>
-                <CardDescription>Administrative functions</CardDescription>
+            {/* Enhanced System Controls */}
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+              <CardHeader className="border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-burgundy-50 rounded-lg">
+                    <Settings className="h-5 w-5 text-burgundy-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">System Controls</CardTitle>
+                    <CardDescription>Administrative functions</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="p-6 space-y-4">
                 <UserCreationDialog onUserCreated={loadDashboardData} />
-                <Button variant="outline" className="w-full justify-start" asChild>
+                <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
                   <a href="/user-management">
-                    <Users className="mr-2 h-4 w-4" />
-                    Coach Management
+                    <Users className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                    <div>
+                      <div className="font-semibold">Coach Management</div>
+                      <div className="text-xs text-gray-500">Manage all coaches</div>
+                    </div>
                   </a>
                 </Button>
-                <Button variant="outline" className="w-full justify-start" asChild>
+                <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
                   <a href="/centers">
-                    <Building className="mr-2 h-4 w-4" />
-                    Center Management
+                    <Building className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                    <div>
+                      <div className="font-semibold">Center Management</div>
+                      <div className="text-xs text-gray-500">Manage all centers</div>
+                    </div>
                   </a>
                 </Button>
-                <Button variant="outline" className="w-full justify-start" asChild>
+                <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
                   <a href="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    System Settings
+                    <Settings className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                    <div>
+                      <div className="font-semibold">System Settings</div>
+                      <div className="text-xs text-gray-500">Configure system</div>
+                    </div>
                   </a>
                 </Button>
               </CardContent>
@@ -547,45 +606,55 @@ export function SuperAdminDashboard() {
         <TabsContent value="centers" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {stats.centerStats.map((center) => (
-              <Card key={center.centerId} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Building className="h-5 w-5 text-blue-500" />
-                    {center.location}
-                  </CardTitle>
-                  <CardDescription>{center.centerName}</CardDescription>
+              <Card key={center.centerId} className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
+                <CardHeader className="border-b border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                      <Building className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">{center.location}</CardTitle>
+                      <CardDescription>{center.centerName}</CardDescription>
+                    </div>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Students</span>
-                      <span className="font-medium">{center.students}</span>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-2xl font-bold text-gray-900">{center.students}</div>
+                        <div className="text-xs text-gray-500">Students</div>
+                      </div>
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-2xl font-bold text-gray-900">{center.batches}</div>
+                        <div className="text-xs text-gray-500">Batches</div>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Batches</span>
-                      <span className="font-medium">{center.batches}</span>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-2xl font-bold text-gray-900">{center.coaches}</div>
+                        <div className="text-xs text-gray-500">Coaches</div>
+                      </div>
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <div className="text-2xl font-bold text-purple-600">{center.attendanceRate}%</div>
+                        <div className="text-xs text-gray-500">Attendance</div>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Coaches</span>
-                      <span className="font-medium">{center.coaches}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Attendance</span>
-                      <span className="font-medium">{center.attendanceRate}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Revenue</span>
-                      <span className="font-medium text-green-600">₹{center.revenue.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Pending</span>
-                      <span className="font-medium text-red-500">₹{center.pendingFees.toLocaleString()}</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center p-2 bg-green-50 rounded-lg">
+                        <span className="text-sm text-gray-600">Revenue</span>
+                        <span className="font-semibold text-green-600">₹{center.revenue.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 bg-red-50 rounded-lg">
+                        <span className="text-sm text-gray-600">Pending</span>
+                        <span className="font-semibold text-red-600">₹{center.pendingFees.toLocaleString()}</span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter>
-                  <Button variant="outline" size="sm" className="w-full">
-                    <BarChart3 className="mr-2 h-4 w-4" />
+                <CardFooter className="border-t border-gray-100">
+                  <Button variant="outline" size="sm" className="w-full group hover:bg-burgundy-50 hover:border-burgundy-200">
+                    <BarChart3 className="mr-2 h-4 w-4 text-burgundy-600 group-hover:text-burgundy-700" />
                     View Details
                   </Button>
                 </CardFooter>
@@ -595,65 +664,83 @@ export function SuperAdminDashboard() {
         </TabsContent>
 
         <TabsContent value="users" className="space-y-6">
-          <Card>
-            <CardHeader>
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+            <CardHeader className="border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Coach Management</CardTitle>
-                  <CardDescription>Create and manage all coaches and their roles</CardDescription>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-burgundy-50 rounded-lg">
+                    <Users className="h-5 w-5 text-burgundy-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Coach Management</CardTitle>
+                    <CardDescription>Create and manage all coaches and their roles</CardDescription>
+                  </div>
                 </div>
                 <UserCreationDialog onUserCreated={loadDashboardData} />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card className="border-dashed border-2 hover:border-primary/50 transition-colors">
+                <Card className="border-dashed border-2 border-burgundy-200 hover:border-burgundy-300 transition-colors bg-gradient-to-br from-burgundy-50/50 to-white">
                   <CardContent className="flex flex-col items-center justify-center py-8">
-                    <Users className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="font-medium mb-2">Quick User Creation</h3>
-                    <p className="text-sm text-muted-foreground text-center mb-4">
+                    <div className="p-3 bg-burgundy-100 rounded-full mb-4">
+                      <Users className="h-8 w-8 text-burgundy-600" />
+                    </div>
+                    <h3 className="font-semibold mb-2 text-burgundy-900">Quick User Creation</h3>
+                    <p className="text-sm text-burgundy-700 text-center mb-4">
                       Create new users with appropriate roles and center assignments
                     </p>
                     <UserCreationDialog onUserCreated={loadDashboardData} />
                   </CardContent>
                 </Card>
                 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-red-500" />
-                      Super Admins
-                    </CardTitle>
+                <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50/50">
+                  <CardHeader className="border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-red-50 rounded-lg">
+                        <Crown className="h-5 w-5 text-red-600" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">Super Admins</CardTitle>
+                      </div>
+                    </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-6">
                     <div className="text-center py-4">
-                      <div className="text-2xl font-bold text-red-500">{stats.totalUsers}</div>
-                      <p className="text-sm text-muted-foreground">System administrators</p>
+                      <div className="text-3xl font-bold text-red-600 mb-2">{stats.totalUsers}</div>
+                      <p className="text-sm text-gray-600">System administrators</p>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <GraduationCap className="h-5 w-5 text-green-500" />
-                      Coaches
-                    </CardTitle>
+                <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50/50">
+                  <CardHeader className="border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-50 rounded-lg">
+                        <GraduationCap className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">Coaches</CardTitle>
+                      </div>
+                    </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-6">
                     <div className="text-center py-4">
-                      <div className="text-2xl font-bold text-green-500">{stats.totalCoaches}</div>
-                      <p className="text-sm text-muted-foreground">Training coaches</p>
+                      <div className="text-3xl font-bold text-green-600 mb-2">{stats.totalCoaches}</div>
+                      <p className="text-sm text-gray-600">Training coaches</p>
                     </div>
                   </CardContent>
                 </Card>
               </div>
               
               <div className="mt-6">
-                <Button variant="outline" className="w-full" asChild>
+                <Button variant="outline" className="w-full h-12 group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
                   <a href="/user-management">
-                    <Users className="mr-2 h-4 w-4" />
-                    Access Full Coach Management System
+                    <Users className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
+                    <div className="text-left">
+                      <div className="font-semibold">Access Full Coach Management System</div>
+                      <div className="text-xs text-gray-500">Complete user management interface</div>
+                    </div>
                   </a>
                 </Button>
               </div>
@@ -662,15 +749,29 @@ export function SuperAdminDashboard() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">System Analytics</CardTitle>
-              <CardDescription>Comprehensive analytics and reporting</CardDescription>
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+            <CardHeader className="border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-burgundy-50 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-burgundy-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">System Analytics</CardTitle>
+                  <CardDescription>Comprehensive analytics and reporting</CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Advanced analytics dashboard coming soon...</p>
+            <CardContent className="p-6">
+              <div className="text-center py-12">
+                <div className="p-4 bg-burgundy-50 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <TrendingUp className="h-10 w-10 text-burgundy-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Advanced Analytics Dashboard</h3>
+                <p className="text-gray-600 mb-6">Comprehensive reporting and analytics features coming soon...</p>
+                <Button className="bg-burgundy-600 hover:bg-burgundy-700">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Coming Soon
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -678,50 +779,73 @@ export function SuperAdminDashboard() {
 
         <TabsContent value="system" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg text-green-600">System Status</CardTitle>
-                <CardDescription>Current system health and performance</CardDescription>
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+              <CardHeader className="border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-50 rounded-lg">
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl text-green-700">System Status</CardTitle>
+                    <CardDescription>Current system health and performance</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-100 rounded-md">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-start gap-4 p-4 bg-green-50 border border-green-100 rounded-xl">
                   <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-green-800">Database Connection</p>
+                    <p className="text-sm font-semibold text-green-800">Database Connection</p>
                     <p className="text-xs text-green-600 mt-1">All database connections are healthy</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-100 rounded-md">
+                <div className="flex items-start gap-4 p-4 bg-green-50 border border-green-100 rounded-xl">
                   <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-green-800">API Services</p>
+                    <p className="text-sm font-semibold text-green-800">API Services</p>
                     <p className="text-xs text-green-600 mt-1">All API endpoints are responding normally</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 bg-green-50 border border-green-100 rounded-xl">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-green-800">Authentication</p>
+                    <p className="text-xs text-green-600 mt-1">User authentication system is operational</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg text-blue-600">System Information</CardTitle>
-                <CardDescription>System configuration and details</CardDescription>
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
+              <CardHeader className="border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <Database className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl text-blue-700">System Information</CardTitle>
+                    <CardDescription>System configuration and details</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Total Users</span>
-                  <span className="font-medium">{stats.totalUsers}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Active Centers</span>
-                  <span className="font-medium">{stats.totalCenters}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Database Size</span>
-                  <span className="font-medium">~2.5 MB</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Last Backup</span>
-                  <span className="font-medium">Today</span>
+              <CardContent className="p-6 space-y-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-600">Total Users</span>
+                    <span className="font-semibold text-gray-900">{stats.totalUsers}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-600">Active Centers</span>
+                    <span className="font-semibold text-gray-900">{stats.totalCenters}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-600">Database Size</span>
+                    <span className="font-semibold text-gray-900">~2.5 MB</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-600">Last Backup</span>
+                    <span className="font-semibold text-gray-900">Today</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
