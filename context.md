@@ -30,7 +30,7 @@ Can manage users, roles, centers, attendance, and fee records.
 
 Access to view and manage attendance and financials across all centers.
 
-Cannot delete centers or users.
+Cannot delete users.
 
 3. Head Coach
 
@@ -51,6 +51,8 @@ Access limited to their own center.
 Can track student attendance and update/manage fee statuses.
 
 Assists in operational coordination at the center level.
+Assign coaches to specific batches.
+
 
 📋 Core Functionalities
 
