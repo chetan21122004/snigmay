@@ -177,21 +177,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Demo credentials */}
-            <div className="mt-6 p-3 md:p-4 bg-gray-50 rounded-lg">
-              <h4 className="text-xs md:text-sm font-medium text-gray-700 mb-2">Demo Credentials (password: password123):</h4>
-              <div className="text-xs text-gray-600 space-y-1 max-h-32 md:max-h-none overflow-y-auto md:overflow-visible">
-                <div><strong>Super Admin:</strong> admin@snigmaypune.com</div>
-                <div><strong>Club Manager:</strong> clubman@snigmaypune.com</div>
-                <div><strong>Head Coach:</strong> headcoach@snigmaypune.com</div>
-                <div><strong>Coach (Kharadi):</strong> coach@kharadi.com</div>
-                <div><strong>Coach (Hadapsar):</strong> coach@hadapsar.com</div>
-                <div><strong>Coach (Viman Nagar):</strong> coach@vimannagar.com</div>
-                <div><strong>Center Manager (Kharadi):</strong> centerman@kharadi.com</div>
-                <div><strong>Center Manager (Hadapsar):</strong> centerman@hadapsar.com</div>
-                <div><strong>Center Manager (Viman Nagar):</strong> centerman@vimannagar.com</div>
-              </div>
-            </div>
+         
           </CardContent>
         </Card>
       </div>

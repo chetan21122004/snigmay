@@ -6,44 +6,27 @@ import { ClubManagerDashboard } from "@/components/club-manager-dashboard"
 import { HeadCoachDashboard } from "@/components/head-coach-dashboard"
 import { CoachDashboard } from "@/components/coach-dashboard"
 import CenterManagerDashboard from "@/components/center-manager-dashboard"
-import { useEffect, useState } from "react"
-import { getCurrentUser } from "@/lib/auth"
-
-interface User {
-  id: string
-  email: string
-  full_name: string
-  role: string
-  center_id: string | null
-}
+import { useCenterContext } from "@/context/center-context"
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<User | null>(null)
-
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const currentUser = await getCurrentUser()
-        setUser(currentUser)
-      } catch (error) {
-        console.error('Error loading user:', error)
-      }
-    }
-    loadUser()
-  }, [])
+  // Get user from center context instead of fetching separately
+  const { user, loading } = useCenterContext()
 
   const renderRoleDashboard = () => {
-    if (!user) {
+    if (loading || !user) {
       return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="flex items-center justify-center h-96 bg-gray-50">
           <div className="flex flex-col items-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-600"></div>
             <p className="text-sm text-gray-600">Loading dashboard...</p>
           </div>
         </div>
       )
     }
 
+    // Debug: Log user role to console
+    console.log('Dashboard user role:', user.role, 'User:', user)
+    
     switch (user.role) {
       case 'super_admin':
         return <SuperAdminDashboard />
@@ -61,6 +44,7 @@ export default function DashboardPage() {
             <div className="text-center">
               <h2 className="text-2xl font-semibold text-gray-900">Access Denied</h2>
               <p className="mt-2 text-gray-600">Your role does not have dashboard access.</p>
+              <p className="mt-1 text-sm text-gray-500">Current role: {user.role}</p>
             </div>
           </div>
         )

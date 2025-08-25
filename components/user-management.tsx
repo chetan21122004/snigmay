@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Edit, Trash2, Users, Shield, AlertCircle, Eye, EyeOff } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
-import { UserRole } from "@/lib/auth"
+type UserRole = 'super_admin' | 'club_manager' | 'head_coach' | 'coach' | 'center_manager'
 import { 
   GraduationCap, 
   UserCog, 
@@ -30,7 +30,7 @@ import {
   UserPlus
 } from "lucide-react"
 
-interface Coach {
+interface User {
   id: string
   full_name: string
   email: string
@@ -85,14 +85,14 @@ const roleConfig = {
 }
 
 export default function UserManagement() {
-  const [coaches, setCoaches] = useState<Coach[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [centers, setCenters] = useState<Center[]>([])
-  const [filteredCoaches, setFilteredCoaches] = useState<Coach[]>([])
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
-  const [showEdit, setShowEdit] = useState<{ open: boolean; coach?: Coach }>({ open: false })
-  const [showReset, setShowReset] = useState<{ open: boolean; coach?: Coach }>({ open: false })
-  const [showDelete, setShowDelete] = useState<{ open: boolean; coach?: Coach }>({ open: false })
+  const [showEdit, setShowEdit] = useState<{ open: boolean; user?: User }>({ open: false })
+  const [showReset, setShowReset] = useState<{ open: boolean; user?: User }>({ open: false })
+  const [showDelete, setShowDelete] = useState<{ open: boolean; user?: User }>({ open: false })
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
   const [centerFilter, setCenterFilter] = useState<string>("")
@@ -116,8 +116,8 @@ export default function UserManagement() {
   }, [router])
 
   useEffect(() => {
-    filterCoaches()
-  }, [coaches, searchTerm, roleFilter, centerFilter])
+    filterUsers()
+  }, [users, searchTerm, roleFilter, centerFilter])
 
   const checkAuthAndLoad = async () => {
     try {
@@ -126,7 +126,7 @@ export default function UserManagement() {
         router.push("/unauthorized")
         return
       }
-      await Promise.all([loadCoaches(), loadCenters()])
+      await Promise.all([loadUsers(), loadCenters()])
     } catch (error) {
       console.error("Error loading data:", error)
       toast({ title: "Error loading data", variant: "destructive" })
@@ -135,12 +135,17 @@ export default function UserManagement() {
     }
   }
 
-  const loadCoaches = async () => {
+  const loadUsers = async () => {
     try {
       let query = supabase
         .from("users")
-        .select("*")
-        .eq("role", "coach")
+        .select(`
+          *,
+          centers!left(
+            name,
+            location
+          )
+        `)
         .order("created_at", { ascending: false })
 
       // Apply center filter if specified
@@ -151,10 +156,17 @@ export default function UserManagement() {
       const { data, error } = await query
 
       if (error) throw error
-      setCoaches(data as Coach[])
+      
+      // Transform data to include center_name from the joined centers table
+      const transformedData = data.map(user => ({
+        ...user,
+        center_name: user.centers?.name || "No Center Assigned"
+      }))
+      
+      setUsers(transformedData)
     } catch (error) {
-      console.error("Error loading coaches:", error)
-      toast({ title: "Error loading coaches", variant: "destructive" })
+      console.error("Error loading users:", error)
+      toast({ title: "Error loading users", variant: "destructive" })
     }
   }
 
@@ -173,28 +185,28 @@ export default function UserManagement() {
     }
   }
 
-  const filterCoaches = () => {
-    let filtered = coaches
+  const filterUsers = () => {
+    let filtered = users
 
     // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(coach =>
-        coach.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        coach.email.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(user =>
+        user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
     // Filter by role
     if (roleFilter !== "all") {
-      filtered = filtered.filter(coach => coach.role === roleFilter)
+      filtered = filtered.filter(user => user.role === roleFilter)
     }
 
     // Filter by center
     if (centerFilter && centerFilter !== "") {
-      filtered = filtered.filter(coach => coach.center_id === centerFilter)
+      filtered = filtered.filter(user => user.center_id === centerFilter)
     }
 
-    setFilteredCoaches(filtered)
+    setFilteredUsers(filtered)
   }
 
   const handleCreate = async () => {
@@ -227,14 +239,14 @@ export default function UserManagement() {
       toast({ title: "Coach created successfully" })
       setShowCreate(false)
       resetForm()
-      await loadCoaches()
+      await loadUsers()
     } catch (error: any) {
       toast({ title: error.message, variant: "destructive" })
     }
   }
 
   const handleUpdate = async () => {
-    if (!showEdit.coach || !form.email || !form.fullName || !form.role) {
+    if (!showEdit.user || !form.email || !form.fullName || !form.role) {
       toast({ title: "All fields are required", variant: "destructive" })
       return
     }
@@ -260,7 +272,7 @@ export default function UserManagement() {
       const { data, error } = await supabase
         .from("users")
         .update(updateData)
-        .eq("id", showEdit.coach.id)
+        .eq("id", showEdit.user.id)
         .select()
         .single()
 
@@ -269,26 +281,26 @@ export default function UserManagement() {
       toast({ title: "Coach updated successfully" })
       setShowEdit({ open: false })
       resetForm()
-      await loadCoaches()
+      await loadUsers()
     } catch (error: any) {
       toast({ title: error.message, variant: "destructive" })
     }
   }
 
   const handleDelete = async () => {
-    if (!showDelete.coach) return
+    if (!showDelete.user) return
 
     try {
       const { error } = await supabase
         .from("users")
         .delete()
-        .eq("id", showDelete.coach.id)
+        .eq("id", showDelete.user.id)
 
       if (error) throw error
 
       toast({ title: "Coach deleted successfully" })
       setShowDelete({ open: false })
-      await loadCoaches()
+      await loadUsers()
     } catch (error: any) {
       toast({ title: error.message, variant: "destructive" })
     }
@@ -305,16 +317,18 @@ export default function UserManagement() {
 
     try {
       // For now, we'll store the password directly
+      if (!showReset.user) return
+
       // In production, this should be handled by a server-side function
       const { error } = await supabase
         .from("users")
         .update({ password_hash: resetPassword }) // This should be hashed server-side
-        .eq("id", showReset.coach.id)
+        .eq("id", showReset.user.id)
 
       if (error) throw error
 
       toast({ title: "Password reset successfully" })
-      setShowReset({ open: false, coach: null })
+      setShowReset({ open: false, user: undefined })
       setResetPassword("")
     } catch (error: any) {
       console.error("Error resetting password:", error)
@@ -331,15 +345,15 @@ export default function UserManagement() {
     setShowPassword(false)
   }
 
-  const openEditDialog = (coach: Coach) => {
+  const openEditDialog = (user: User) => {
     setForm({
-      email: coach.email,
-      fullName: coach.full_name,
+      email: user.email,
+      fullName: user.full_name,
       password: "",
-      role: coach.role,
-      centerId: coach.center_id || ""
+      role: user.role,
+      centerId: user.center_id || ""
     })
-    setShowEdit({ open: true, coach })
+    setShowEdit({ open: true, user })
   }
 
   const getRoleIcon = (role: UserRole) => {
@@ -359,14 +373,14 @@ export default function UserManagement() {
   }
 
   const getStats = () => {
-    const totalCoaches = coaches.length
+    const totalUsers = users.length
     const roleStats = Object.keys(roleConfig).map(role => ({
       role: role as UserRole,
-      count: coaches.filter(c => c.role === role).length,
+      count: users.filter(u => u.role === role).length,
       label: roleConfig[role as UserRole].label
     })).filter(stat => stat.count > 0)
 
-    return { totalCoaches, roleStats }
+    return { totalUsers, roleStats }
   }
 
   if (loading) {
@@ -400,8 +414,8 @@ export default function UserManagement() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Coaches</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalCoaches}</p>
+                  <p className="text-sm font-medium text-gray-600">Total Users</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
                 </div>
                 <Users className="h-8 w-8 text-blue-500" />
               </div>
@@ -468,14 +482,14 @@ export default function UserManagement() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Coaches ({filteredCoaches.length})
+              Users ({filteredUsers.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {filteredCoaches.length === 0 ? (
+            {filteredUsers.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 text-lg">No coaches found</p>
+                <p className="text-gray-600 text-lg">No users found</p>
                 <p className="text-gray-500 text-sm">Try adjusting your search or filters</p>
               </div>
             ) : (
@@ -493,24 +507,24 @@ export default function UserManagement() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredCoaches.map((coach) => (
-                          <TableRow key={coach.id} className="border-b hover:bg-gray-50">
+                        {filteredUsers.map((user) => (
+                          <TableRow key={user.id} className="border-b hover:bg-gray-50">
                             <TableCell className="p-3">
                               <div>
-                                <p className="font-medium text-gray-900">{coach.full_name}</p>
+                                <p className="font-medium text-gray-900">{user.full_name}</p>
                                 <p className="text-sm text-gray-500 flex items-center gap-1">
                                   <Mail className="h-3 w-3" />
-                                  {coach.email}
+                                  {user.email}
                                 </p>
                               </div>
                             </TableCell>
                             <TableCell className="p-3">
-                              {getRoleBadge(coach.role)}
+                              {getRoleBadge(user.role)}
                             </TableCell>
                             <TableCell className="p-3">
                               <div className="flex items-center gap-1 text-sm text-gray-600">
                                 <MapPin className="h-3 w-3" />
-                                {coach.center_name}
+                                {user.center_name}
                               </div>
                             </TableCell>
                             <TableCell className="p-3">
@@ -518,21 +532,21 @@ export default function UserManagement() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => openEditDialog(coach)}
+                                  onClick={() => openEditDialog(user)}
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => setShowReset({ open: true, coach })}
+                                  onClick={() => setShowReset({ open: true, user })}
                                 >
                                   <Key className="h-4 w-4" />
                                 </Button>
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => setShowDelete({ open: true, coach })}
+                                  onClick={() => setShowDelete({ open: true, user })}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -547,30 +561,30 @@ export default function UserManagement() {
 
                 {/* Mobile Card View */}
                 <div className="lg:hidden space-y-4">
-                  {filteredCoaches.map((coach) => (
-                    <Card key={coach.id} className="border-l-4 border-l-blue-500">
+                  {filteredUsers.map((user) => (
+                    <Card key={user.id} className="border-l-4 border-l-blue-500">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between mb-3">
                           <div>
-                            <h3 className="font-medium text-gray-900">{coach.full_name}</h3>
+                            <h3 className="font-medium text-gray-900">{user.full_name}</h3>
                             <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                               <Mail className="h-3 w-3" />
-                              {coach.email}
+                              {user.email}
                             </p>
                           </div>
-                          {getRoleBadge(coach.role)}
+                          {getRoleBadge(user.role)}
                         </div>
                         
                         <div className="flex items-center gap-1 text-sm text-gray-600 mb-4">
                           <MapPin className="h-3 w-3" />
-                          {coach.center_name}
+                          {user.center_name}
                         </div>
 
                         <div className="flex items-center gap-2">
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => openEditDialog(coach)}
+                            onClick={() => openEditDialog(user)}
                             className="flex-1"
                           >
                             <Edit className="h-4 w-4 mr-2" />
@@ -579,14 +593,14 @@ export default function UserManagement() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setShowReset({ open: true, coach })}
+                            onClick={() => setShowReset({ open: true, user })}
                           >
                             <Key className="h-4 w-4" />
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setShowDelete({ open: true, coach })}
+                            onClick={() => setShowDelete({ open: true, user })}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -826,8 +840,8 @@ export default function UserManagement() {
             <div>
               <Label htmlFor="coach-info">Coach</Label>
               <div className="p-3 bg-gray-50 rounded-md">
-                <p className="font-medium">{showReset.coach?.full_name}</p>
-                <p className="text-sm text-gray-600">{showReset.coach?.email}</p>
+                <p className="font-medium">{showReset.user?.full_name}</p>
+                <p className="text-sm text-gray-600">{showReset.user?.email}</p>
               </div>
             </div>
             <div>
@@ -880,9 +894,9 @@ export default function UserManagement() {
             <div>
               <Label>Coach Details</Label>
               <div className="p-3 bg-gray-50 rounded-md">
-                <p className="font-medium">{showDelete.coach?.full_name}</p>
-                <p className="text-sm text-gray-600">{showDelete.coach?.email}</p>
-                <p className="text-sm text-gray-600">{showDelete.coach?.center_name}</p>
+                <p className="font-medium">{showDelete.user?.full_name}</p>
+                <p className="text-sm text-gray-600">{showDelete.user?.email}</p>
+                <p className="text-sm text-gray-600">{showDelete.user?.center_name}</p>
               </div>
             </div>
           </div>
