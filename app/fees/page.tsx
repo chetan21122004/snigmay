@@ -10,7 +10,7 @@ export default function FeesPage() {
   return (
     <CenterProviderWrapper>
       <DashboardLayout>
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           <div className="max-w-7xl mx-auto">
             <Tabs defaultValue="fees" className="space-y-6">
               <TabsList>

@@ -72,27 +72,27 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-burgundy-50 to-gold-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Card className="shadow-lg border-0">
-          <CardHeader className="text-center pb-8">
-            <div className="flex justify-center mb-6">
+        <Card className="shadow-lg border-0 mx-auto">
+          <CardHeader className="text-center pb-6 md:pb-8 px-4 md:px-6">
+            <div className="flex justify-center mb-4 md:mb-6">
               <Image
                 src="/snigmay_logo.png"
                 alt="Snigmay Pune FC"
                 width={80}
                 height={80}
-                className="h-20 w-auto"
+                className="h-16 md:h-20 w-auto"
                 priority
               />
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">
+            <CardTitle className="text-xl md:text-2xl font-bold text-gray-900">
               Welcome Back
             </CardTitle>
-            <CardDescription className="text-gray-600">
+            <CardDescription className="text-sm md:text-base text-gray-600">
               Sign in to your Snigmay Pune FC account
             </CardDescription>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="px-4 md:px-6 pb-4 md:pb-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert variant="destructive">
@@ -151,7 +151,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-burgundy-600 hover:bg-burgundy-700 text-white"
+                className="w-full bg-burgundy-600 hover:bg-burgundy-700 text-white h-11 md:h-12 text-sm md:text-base"
                 disabled={loading}
               >
                 {loading ? (
@@ -178,9 +178,9 @@ export default function LoginPage() {
             </div>
 
             {/* Demo credentials */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Demo Credentials (password: password123):</h4>
-              <div className="text-xs text-gray-600 space-y-1">
+            <div className="mt-6 p-3 md:p-4 bg-gray-50 rounded-lg">
+              <h4 className="text-xs md:text-sm font-medium text-gray-700 mb-2">Demo Credentials (password: password123):</h4>
+              <div className="text-xs text-gray-600 space-y-1 max-h-32 md:max-h-none overflow-y-auto md:overflow-visible">
                 <div><strong>Super Admin:</strong> admin@snigmaypune.com</div>
                 <div><strong>Club Manager:</strong> clubman@snigmaypune.com</div>
                 <div><strong>Head Coach:</strong> headcoach@snigmaypune.com</div>

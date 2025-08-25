@@ -380,6 +380,19 @@ export function CenterProvider({ children, user }: CenterProviderProps) {
     }
   }, [user, fetchData])
 
+  // Additional effect to restore center selection if it gets lost
+  useEffect(() => {
+    if (user && !selectedCenter && centers.length > 0 && !loading) {
+      const savedCenterId = localStorage.getItem('selectedCenterId')
+      if (savedCenterId) {
+        const savedCenter = centers.find(c => c.id === savedCenterId)
+        if (savedCenter) {
+          setSelectedCenter(savedCenter)
+        }
+      }
+    }
+  }, [user, selectedCenter, centers, loading])
+
   // Refresh functions
   const refreshData = useCallback(async () => {
     await fetchData()
@@ -410,10 +423,15 @@ export function CenterProvider({ children, user }: CenterProviderProps) {
       if (center) {
         localStorage.setItem('selectedCenterId', center.id)
         lastSelectedCenterId.current = center.id
+        console.log('Center selection saved to localStorage:', center.name, center.id)
       } else {
         localStorage.removeItem('selectedCenterId')
         lastSelectedCenterId.current = null
+        console.log('Center selection cleared from localStorage')
       }
+    } else if (user) {
+      // For restricted roles, still update the ref
+      lastSelectedCenterId.current = center?.id || null
     }
   }, [user])
 

@@ -6,7 +6,8 @@ import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useCenterContext } from "@/context/center-context"
-import { getCurrentUser, signOut } from "@/lib/auth"
+import { signOut } from "@/lib/auth"
+import { useIsMobile } from "@/components/ui/use-mobile"
 import {
   LayoutDashboard,
   Users,
@@ -21,7 +22,9 @@ import {
   Database,
   Layers,
   Wallet,
-  CalendarCheck
+  CalendarCheck,
+  Menu,
+  X
 } from "lucide-react"
 import {
   Select,
@@ -133,7 +136,7 @@ const CenterSelector = ({ user }: { user: User | null }) => {
 
   if (loading) {
     return (
-      <div className="p-4 border-b border-gray-100">
+      <div className="p-3 md:p-4 border-b border-gray-100">
         <Skeleton className="h-10 w-full" />
       </div>
     )
@@ -146,7 +149,7 @@ const CenterSelector = ({ user }: { user: User | null }) => {
   // For users with access to multiple centers (super admin, club manager, head coach)
   if (['super_admin', 'club_manager', 'head_coach'].includes(user.role)) {
   return (
-      <div className="p-4 border-b border-gray-100">
+      <div className="p-3 md:p-4 border-b border-gray-100">
         <div className="space-y-2">
           <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">
             Training Center
@@ -186,7 +189,7 @@ const CenterSelector = ({ user }: { user: User | null }) => {
   // For restricted users (coach, center manager) - show their assigned center
   if (availableCenters.length === 1 && selectedCenter) {
     return (
-      <div className="p-4 border-b border-gray-100">
+      <div className="p-3 md:p-4 border-b border-gray-100">
         <div className="space-y-2">
           <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">
             Your Center
@@ -272,9 +275,43 @@ const UserDropdown = ({ user }: { user: User | null }) => {
   )
 }
 
+// Mobile Header Component
+const MobileHeader = ({ user, onMenuToggle }: { user: User | null; onMenuToggle: () => void }) => {
+  return (
+    <header className="lg:hidden bg-white border-b border-gray-200 px-3 py-2 flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-14">
+      <div className="flex items-center gap-2">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={onMenuToggle}
+          className="p-1.5 h-8 w-8"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+        <div className="flex items-center gap-2">
+          <Image
+            src="/snigmay_logo.png"
+            alt="Snigmay Pune FC"
+            width={20}
+            height={20}
+            className="h-5 w-auto"
+          />
+          <span className="font-semibold text-base text-burgundy-900">
+            Snigmay FC
+          </span>
+        </div>
+      </div>
+      <div className="scale-90">
+        <UserDropdown user={user} />
+      </div>
+    </header>
+  )
+}
+
 // Optimized Sidebar Component
-const Sidebar = ({ user }: { user: User | null }) => {
+const Sidebar = ({ user, isOpen, onClose }: { user: User | null; isOpen: boolean; onClose: () => void }) => {
   const pathname = usePathname()
+  const isMobile = useIsMobile()
   
   const isActive = useCallback((path: string) => pathname === path, [pathname])
   
@@ -283,20 +320,56 @@ const Sidebar = ({ user }: { user: User | null }) => {
     [user]
   )
 
+  // Close sidebar when route changes on mobile (but don't reset center)
+  useEffect(() => {
+    if (isMobile && isOpen) {
+      // Small delay to ensure navigation completes before closing
+      const timer = setTimeout(() => {
+        onClose()
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [pathname, isMobile, isOpen, onClose])
+
   return (
-    <aside className="hidden lg:flex h-screen w-72 flex-col fixed left-0 top-0 bottom-0 bg-white border-r border-gray-200 z-50">
-      {/* Logo Section */}
-      <div className="h-16 flex items-center gap-2 px-6 border-b border-gray-100">
-        <Image
-          src="/snigmay_logo.png"
-          alt="Snigmay Pune FC"
-          width={32}
-          height={32}
-          className="h-8 w-auto"
+    <>
+      {/* Mobile Overlay */}
+      {isMobile && isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={onClose}
         />
-        <span className="font-semibold text-lg text-burgundy-900">
-          Snigmay Pune FC
-        </span>
+      )}
+      
+      <aside className={cn(
+        "h-screen w-72 flex-col fixed left-0 top-0 bottom-0 bg-white border-r border-gray-200 z-50 transition-transform duration-300",
+        isMobile ? (isOpen ? "translate-x-0" : "-translate-x-full") : "lg:flex",
+        isMobile ? "flex" : "hidden lg:flex"
+      )}>
+      {/* Logo Section */}
+      <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <Image
+            src="/snigmay_logo.png"
+            alt="Snigmay Pune FC"
+            width={32}
+            height={32}
+            className="h-8 w-auto"
+          />
+          <span className="font-semibold text-lg text-burgundy-900">
+            Snigmay Pune FC
+          </span>
+        </div>
+        {isMobile && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onClose}
+            className="p-2"
+          >
+            <X className="h-6 w-6" />
+          </Button>
+        )}
       </div>
 
       {/* Center Selection */}
@@ -361,59 +434,65 @@ const Sidebar = ({ user }: { user: User | null }) => {
         <UserDropdown user={user} />
       </div>
     </aside>
+    </>
   )
 }
 
 // Main Dashboard Layout Component
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const router = useRouter()
+  const isMobile = useIsMobile()
+  
+  // Get user from center context instead of fetching separately
+  const { user, loading } = useCenterContext()
 
+  // Handle authentication redirect
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const currentUser = await getCurrentUser()
-        if (!currentUser) {
-          router.push('/login')
-          return
-        }
-        setUser(currentUser)
-      } catch (error) {
-        console.error('Auth initialization error:', error)
-        router.push('/login')
-      } finally {
-        setLoading(false)
-      }
+    if (!loading && !user) {
+      router.push('/login')
     }
+  }, [user, loading, router])
 
-    initializeAuth()
-  }, [router])
+  const toggleMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(prev => !prev)
+  }, [])
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-600"></div>
-          <p className="text-sm text-gray-600">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null
-  }
+  const closeMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(false)
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Mobile Header */}
+      <MobileHeader user={user} onMenuToggle={toggleMobileMenu} />
+      
       {/* Sidebar */}
-      <Sidebar user={user} />
+      <Sidebar user={user} isOpen={isMobileMenuOpen} onClose={closeMobileMenu} />
       
       {/* Main Content */}
-      <main className="lg:pl-72">
+      <main className={cn(
+        "min-h-screen transition-all duration-300",
+        isMobile ? "pt-14" : "lg:pl-72"
+      )}>
         <div className="min-h-screen">
-          {children}
+          {loading ? (
+            <div className="flex items-center justify-center h-96 bg-gray-50">
+              <div className="flex flex-col items-center space-y-3">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-burgundy-600"></div>
+                <p className="text-xs text-gray-500">Loading content...</p>
+              </div>
+            </div>
+          ) : !user ? (
+            <div className="flex items-center justify-center h-96 bg-gray-50">
+              <div className="flex flex-col items-center space-y-3">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-burgundy-600"></div>
+                <p className="text-xs text-gray-500">Redirecting...</p>
+              </div>
+            </div>
+          ) : (
+            children
+          )}
         </div>
       </main>
     </div>

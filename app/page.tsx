@@ -27,10 +27,10 @@ export default function HomePage() {
 
   // Show loading while redirecting
   return (
-    <div className="min-h-screen bg-gradient-to-br from-burgundy-50 to-gold-50 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-burgundy-50 to-gold-50 flex items-center justify-center p-4">
       <div className="text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading...</p>
+        <p className="text-gray-600 text-sm md:text-base">Loading...</p>
       </div>
     </div>
   )

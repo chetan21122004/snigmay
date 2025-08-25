@@ -187,7 +187,7 @@ export function CoachDashboard() {
 
   if (contextLoading || loading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
         <Skeleton className="h-8 w-64" />
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
