@@ -1,56 +1,54 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useCenterContext } from "@/context/center-context"
 import DashboardLayout from "@/components/dashboard-layout"
 import CenterProviderWrapper from "@/components/center-provider-wrapper"
+import CenterManagerDashboard from "@/components/center-manager-dashboard"
 
-export default function CenterManagerPage() {
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+function CenterManagerContent() {
+  const { user, loading } = useCenterContext()
   const router = useRouter()
 
   useEffect(() => {
-    loadUser()
-  }, [])
-
-  const loadUser = async () => {
-    try {
-      const currentUser = await getCurrentUser()
-      if (!currentUser) {
+    if (!loading) {
+      if (!user) {
         router.push("/login")
         return
       }
       
-      if (currentUser.role !== 'center_manager') {
+      if (user.role !== 'center_manager') {
         router.push("/unauthorized")
         return
       }
-      
-      setUser(currentUser)
-    } catch (error) {
-      console.error('Error loading user:', error)
-      router.push("/login")
-    } finally {
-      setLoading(false)
     }
-  }
+  }, [user, loading, router])
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="text-sm text-muted-foreground">Loading center manager dashboard...</p>
-          </div>
+      <div className="flex items-center justify-center h-96">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-600"></div>
+          <p className="text-sm text-gray-600">Loading center manager dashboard...</p>
         </div>
-      </DashboardLayout>
+      </div>
     )
   }
 
+  if (!user || user.role !== 'center_manager') {
+    return null // Router will handle redirect
+  }
+
+  return <CenterManagerDashboard />
+}
+
+export default function CenterManagerPage() {
   return (
-    <DashboardLayout>
-      <CenterManagerDashboard />
-    </DashboardLayout>
+    <CenterProviderWrapper>
+      <DashboardLayout>
+        <CenterManagerContent />
+      </DashboardLayout>
+    </CenterProviderWrapper>
   )
 } 

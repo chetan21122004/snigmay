@@ -1,59 +1,54 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useCenterContext } from "@/context/center-context"
 import DashboardLayout from "@/components/dashboard-layout"
 import CenterProviderWrapper from "@/components/center-provider-wrapper"
-import { useRouter } from "next/navigation"
-import { getCurrentUser } from "@/lib/auth"
 import { ClubManagerDashboard } from "@/components/club-manager-dashboard"
 
-export default function ClubManagerPage() {
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+function ClubManagerContent() {
+  const { user, loading } = useCenterContext()
   const router = useRouter()
 
   useEffect(() => {
-    loadUser()
-  }, [])
-
-  const loadUser = async () => {
-    try {
-      const currentUser = await getCurrentUser()
-      if (!currentUser) {
+    if (!loading) {
+      if (!user) {
         router.push("/login")
         return
       }
       
-      if (currentUser.role !== 'club_manager') {
+      if (user.role !== 'club_manager') {
         router.push("/unauthorized")
         return
       }
-      
-      setUser(currentUser)
-    } catch (error) {
-      console.error('Error loading user:', error)
-      router.push("/login")
-    } finally {
-      setLoading(false)
     }
-  }
+  }, [user, loading, router])
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="text-sm text-muted-foreground">Loading club manager dashboard...</p>
-          </div>
+      <div className="flex items-center justify-center h-96">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-600"></div>
+          <p className="text-sm text-gray-600">Loading club manager dashboard...</p>
         </div>
-      </DashboardLayout>
+      </div>
     )
   }
 
+  if (!user || user.role !== 'club_manager') {
+    return null // Router will handle redirect
+  }
+
+  return <ClubManagerDashboard />
+}
+
+export default function ClubManagerPage() {
   return (
-    <DashboardLayout>
-      <ClubManagerDashboard />
-    </DashboardLayout>
+    <CenterProviderWrapper>
+      <DashboardLayout>
+        <ClubManagerContent />
+      </DashboardLayout>
+    </CenterProviderWrapper>
   )
 } 

@@ -27,7 +27,10 @@ export default function LoginPage() {
     const checkAuth = async () => {
       const user = await getCurrentUser()
       if (user) {
-        router.push('/dashboard')
+        // Force clean navigation if already logged in
+        if (typeof window !== 'undefined') {
+          window.location.href = '/dashboard'
+        }
       }
     }
     checkAuth()
@@ -60,8 +63,14 @@ export default function LoginPage() {
 
       const { user } = await signIn(formData)
       
-      // Redirect based on role
-      router.push('/dashboard')
+      // Clear any stored navigation history or cached routes
+      if (typeof window !== 'undefined') {
+        // Clear any potential cached route data
+        sessionStorage.clear()
+        
+        // Force a clean navigation to dashboard
+        window.location.href = '/dashboard'
+      }
     } catch (err: any) {
       setError(err.message || 'Login failed. Please try again.')
     } finally {

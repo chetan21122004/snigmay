@@ -81,7 +81,17 @@ interface RecentActivity {
 }
 
 export function HeadCoachDashboard() {
-  const { selectedCenter } = useCenterContext()
+  const { 
+    selectedCenter,
+    getStudentsByCenter,
+    getBatchesByCenter,
+    getAttendanceByCenter,
+    getFeesByCenter,
+    centers,
+    user,
+    loading: contextLoading
+  } = useCenterContext()
+  
   const [stats, setStats] = useState<DashboardStats>({
     totalStudents: 0,
     totalBatches: 0,
@@ -120,51 +130,95 @@ export function HeadCoachDashboard() {
 
   const loadOverallStats = async () => {
     try {
-      // Get overall statistics across all centers
-      const [
-        { data: students },
-        { data: batches },
-        { data: coaches },
-        { data: centers },
-        { data: attendanceToday },
-        { data: feePayments }
-      ] = await Promise.all([
-        supabase.from('students').select('id'),
-        supabase.from('batches').select('id'),
-        supabase.from('users').select('id').eq('role', 'coach'),
-        supabase.from('centers').select('id'),
-        supabase.from('attendance').select('status').eq('date', new Date().toISOString().split('T')[0]),
-        supabase.from('fee_payments').select('amount, status, payment_date')
-      ])
+      if (!selectedCenter) {
+        // If no center selected, show overall stats across all centers
+        const [
+          { data: students },
+          { data: batches },
+          { data: coaches },
+          { data: attendanceToday },
+          { data: feePayments }
+        ] = await Promise.all([
+          supabase.from('students').select('id'),
+          supabase.from('batches').select('id'),
+          supabase.from('users').select('id').eq('role', 'coach'),
+          supabase.from('attendance').select('status').eq('date', new Date().toISOString().split('T')[0]),
+          supabase.from('fee_payments').select('amount, status, payment_date')
+        ])
 
-      const presentToday = attendanceToday?.filter(a => a.status === 'present').length || 0
-      const totalStudents = students?.length || 0
-      const attendanceRate = totalStudents > 0 ? Math.round((presentToday / totalStudents) * 100) : 0
+        const presentToday = attendanceToday?.filter(a => a.status === 'present').length || 0
+        const totalStudents = students?.length || 0
+        const attendanceRate = totalStudents > 0 ? Math.round((presentToday / totalStudents) * 100) : 0
 
-      const paidFees = feePayments?.filter(f => f.status === 'paid') || []
-      const pendingFees = feePayments?.filter(f => f.status === 'due' || f.status === 'overdue') || []
-      
-      const totalRevenue = paidFees.reduce((sum, f) => sum + Number(f.amount), 0)
-      const totalPendingFees = pendingFees.reduce((sum, f) => sum + Number(f.amount), 0)
+        const paidFees = feePayments?.filter(f => f.status === 'paid') || []
+        const pendingFees = feePayments?.filter(f => f.status === 'due' || f.status === 'overdue') || []
+        
+        const totalRevenue = paidFees.reduce((sum, f) => sum + Number(f.amount), 0)
+        const totalPendingFees = pendingFees.reduce((sum, f) => sum + Number(f.amount), 0)
 
-      // Recent payments (last 7 days)
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      const recentPayments = paidFees
-        .filter(f => f.payment_date >= sevenDaysAgo)
-        .reduce((sum, f) => sum + Number(f.amount), 0)
+        // Recent payments (last 7 days)
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        const recentPayments = paidFees
+          .filter(f => f.payment_date >= sevenDaysAgo)
+          .reduce((sum, f) => sum + Number(f.amount), 0)
 
-      setStats(prev => ({
-        ...prev,
-        totalStudents,
-        totalBatches: batches?.length || 0,
-        totalCoaches: coaches?.length || 0,
-        totalCenters: centers?.length || 0,
-        attendanceToday: presentToday,
-        attendanceRate,
-        pendingFees: totalPendingFees,
-        totalRevenue,
-        recentPayments
-      }))
+        setStats(prev => ({
+          ...prev,
+          totalStudents,
+          totalBatches: batches?.length || 0,
+          totalCoaches: coaches?.length || 0,
+          totalCenters: centers.length,
+          attendanceToday: presentToday,
+          attendanceRate,
+          pendingFees: totalPendingFees,
+          totalRevenue,
+          recentPayments
+        }))
+      } else {
+        // If center is selected, show stats for that center only
+        const centerStudents = getStudentsByCenter(selectedCenter.id)
+        const centerBatches = getBatchesByCenter(selectedCenter.id)
+        const centerAttendance = getAttendanceByCenter(selectedCenter.id)
+        const centerFees = getFeesByCenter(selectedCenter.id)
+
+        // Get coaches for this center
+        const { data: coaches } = await supabase
+          .from('users')
+          .select('id')
+          .eq('role', 'coach')
+          .eq('center_id', selectedCenter.id)
+
+        // Calculate today's attendance
+        const today = new Date().toISOString().split('T')[0]
+        const todayAttendance = centerAttendance.filter(a => a.date === today)
+        const presentToday = todayAttendance.filter(a => a.status === 'present').length
+
+        // Calculate fee stats
+        const paidFees = centerFees.filter(f => f.status === 'paid')
+        const pendingFeesArr = centerFees.filter(f => f.status === 'due' || f.status === 'overdue')
+        const totalRevenue = paidFees.reduce((sum, f) => sum + f.amount, 0)
+        const totalPendingFees = pendingFeesArr.reduce((sum, f) => sum + f.amount, 0)
+
+        // Recent payments (last 7 days)
+        const sevenDaysAgo = new Date()
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+        const recentPayments = paidFees
+          .filter(f => new Date(f.payment_date) >= sevenDaysAgo)
+          .reduce((sum, f) => sum + f.amount, 0)
+
+        setStats(prev => ({
+          ...prev,
+          totalStudents: centerStudents.length,
+          totalBatches: centerBatches.length,
+          totalCoaches: coaches?.length || 0,
+          totalCenters: 1, // Single center selected
+          attendanceToday: presentToday,
+          attendanceRate: todayAttendance.length ? Math.round((presentToday / todayAttendance.length) * 100) : 0,
+          pendingFees: totalPendingFees,
+          totalRevenue: totalRevenue,
+          recentPayments
+        }))
+      }
     } catch (error) {
       console.error('Error loading overall stats:', error)
     }
@@ -172,48 +226,39 @@ export function HeadCoachDashboard() {
 
   const loadCenterStats = async () => {
     try {
-      const { data: centers } = await supabase
-        .from('centers')
-        .select('id, name, location')
+      // Use centers from context instead of fetching them again
+      const centerStats = centers.map((center) => {
+        const centerStudents = getStudentsByCenter(center.id)
+        const centerBatches = getBatchesByCenter(center.id)
+        const centerAttendance = getAttendanceByCenter(center.id)
+        const centerFees = getFeesByCenter(center.id)
 
-      if (!centers) return
+        // Calculate today's attendance for this center
+        const today = new Date().toISOString().split('T')[0]
+        const todayAttendance = centerAttendance.filter(a => a.date === today)
+        const presentToday = todayAttendance.filter(a => a.status === 'present').length
+        const centerAttendanceRate = todayAttendance.length > 0 ? Math.round((presentToday / todayAttendance.length) * 100) : 0
 
-      const centerStats = await Promise.all(
-        centers.map(async (center) => {
-          const [
-            { data: students },
-            { data: batches },
-            { data: coaches },
-            { data: attendance },
-            { data: feePayments }
-          ] = await Promise.all([
-            supabase.from('students').select('id').eq('center_id', center.id),
-            supabase.from('batches').select('id').eq('center_id', center.id),
-            supabase.from('users').select('id').eq('role', 'coach').eq('center_id', center.id),
-            supabase.from('attendance').select('status, students!inner(center_id)').eq('students.center_id', center.id).eq('date', new Date().toISOString().split('T')[0]),
-            supabase.from('fee_payments').select('amount, status, students!inner(center_id)').eq('students.center_id', center.id)
-          ])
+        // Calculate fee stats for this center
+        const paidFees = centerFees.filter(f => f.status === 'paid')
+        const pendingFees = centerFees.filter(f => f.status === 'due' || f.status === 'overdue')
+        const centerRevenue = paidFees.reduce((sum, f) => sum + f.amount, 0)
+        const centerPendingFees = pendingFees.reduce((sum, f) => sum + f.amount, 0)
 
-          const centerStudents = students?.length || 0
-          const centerAttendance = attendance?.filter(a => a.status === 'present').length || 0
-          const centerAttendanceRate = centerStudents > 0 ? Math.round((centerAttendance / centerStudents) * 100) : 0
-
-          const centerRevenue = feePayments?.filter(f => f.status === 'paid').reduce((sum, f) => sum + Number(f.amount), 0) || 0
-          const centerPendingFees = feePayments?.filter(f => f.status === 'due' || f.status === 'overdue').reduce((sum, f) => sum + Number(f.amount), 0) || 0
-
-          return {
-            centerId: center.id,
-            centerName: center.name,
-            location: center.location,
-            students: centerStudents,
-            batches: batches?.length || 0,
-            coaches: coaches?.length || 0,
-            attendanceRate: centerAttendanceRate,
-            revenue: centerRevenue,
-            pendingFees: centerPendingFees
-          }
-        })
-      )
+        return {
+          centerId: center.id,
+          centerName: center.name,
+          location: center.location,
+          students: centerStudents.length,
+          batches: centerBatches.length,
+          coaches: centerBatches.filter((batch, index, self) => 
+            batch.coach_id && self.findIndex(b => b.coach_id === batch.coach_id) === index
+          ).length, // Unique coaches count
+          attendanceRate: centerAttendanceRate,
+          revenue: centerRevenue,
+          pendingFees: centerPendingFees
+        }
+      })
 
       setStats(prev => ({
         ...prev,
