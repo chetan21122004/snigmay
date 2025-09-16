@@ -14,7 +14,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Edit, Trash2, User, Phone, Mail, MapPin, AlertCircle, Users } from "lucide-react"
+import { Plus, Edit, Trash2, User, Phone, Mail, MapPin, AlertCircle, Users, Camera } from "lucide-react"
+import PhotoUpload from "@/components/photo-upload"
 
 interface Student {
   id: string
@@ -29,6 +30,7 @@ interface Student {
   address: string | null
   emergency_contact: string | null
   medical_conditions: string | null
+  photo: string | null
 }
 
 interface Batch {
@@ -63,6 +65,7 @@ export default function StudentManagement() {
     address: "",
     emergency_contact: "",
     medical_conditions: "",
+    photo: null as string | null,
   })
   const [error, setError] = useState("")
 
@@ -105,6 +108,7 @@ export default function StudentManagement() {
         address: "",
         emergency_contact: "",
         medical_conditions: "",
+        photo: null,
       })
       setEditingStudent(null)
       setError("")
@@ -191,6 +195,7 @@ export default function StudentManagement() {
         address: "",
         emergency_contact: "",
         medical_conditions: "",
+        photo: null,
       })
     } catch (error: any) {
       console.error('Error saving student:', error)
@@ -211,6 +216,7 @@ export default function StudentManagement() {
       address: student.address || "",
       emergency_contact: student.emergency_contact || "",
       medical_conditions: student.medical_conditions || "",
+      photo: student.photo || null,
     })
     setDialogOpen(true)
   }

@@ -62,12 +62,12 @@ export default function LoginPage() {
       }
 
       const { user } = await signIn(formData)
-      
+
       // Clear any stored navigation history or cached routes
       if (typeof window !== 'undefined') {
         // Clear any potential cached route data
         sessionStorage.clear()
-        
+
         // Force a clean navigation to dashboard
         window.location.href = '/dashboard'
       }
@@ -177,8 +177,8 @@ export default function LoginPage() {
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
                 Don't have an account?{' '}
-                <Link 
-                  href="/signup" 
+                <Link
+                  href="/signup"
                   className="font-medium text-burgundy-600 hover:text-burgundy-700"
                 >
                   Sign up here
@@ -186,7 +186,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-         
+
           </CardContent>
         </Card>
       </div>

@@ -30,7 +30,8 @@ import {
   Activity,
   TrendingUp,
   Zap,
-  Medal
+  Medal,
+  FileText
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -420,6 +421,12 @@ export function CoachDashboard() {
                   <a href="/batches">
                     <Layers className="mr-2 h-4 w-4" />
                     Manage Batches
+                  </a>
+                </Button>
+                <Button variant="outline" className="w-full justify-start" asChild>
+                  <a href="/coach/player-reports">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Player Reports
                   </a>
                 </Button>
               </CardContent>

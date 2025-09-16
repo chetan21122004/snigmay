@@ -136,7 +136,7 @@ export default function CenterManagerDashboard() {
               <div>
                 <h1 className="text-3xl font-bold tracking-tight">{selectedCenter.name}</h1>
                 <p className="text-burgundy-100 text-lg">{selectedCenter.location}</p>
-              </div>
+                </div>
             </div>
           </div>
           <div className="text-right space-y-2">
@@ -151,7 +151,7 @@ export default function CenterManagerDashboard() {
             <p className="text-burgundy-100 text-sm">All systems operational</p>
           </div>
         </div>
-      </div>
+            </div>
 
       {/* Enhanced Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -200,8 +200,8 @@ export default function CenterManagerDashboard() {
                 Training groups active
               </p>
             </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
         <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
           <CardContent className="pt-6">
@@ -224,8 +224,8 @@ export default function CenterManagerDashboard() {
                 Today's attendance
               </p>
             </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
         <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg">
           <CardContent className="pt-6">
@@ -248,9 +248,9 @@ export default function CenterManagerDashboard() {
                 This month's collection
               </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
 
       {/* Enhanced Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -275,7 +275,7 @@ export default function CenterManagerDashboard() {
           </CardHeader>
           <CardContent className="p-6">
             <ScrollArea className="h-[400px]">
-              <div className="space-y-4">
+                <div className="space-y-4">
                 {stats.recentPayments.map((payment, index) => (
                   <div key={index} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-white hover:shadow-md transition-all duration-200">
                     <Avatar className="h-10 w-10">
@@ -284,7 +284,7 @@ export default function CenterManagerDashboard() {
                         {payment.studentName.split(' ').map((n: string) => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-900">{payment.studentName}</p>
                       <p className="text-xs text-gray-500">{payment.batchName}</p>
                     </div>
@@ -295,9 +295,9 @@ export default function CenterManagerDashboard() {
                     <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                       {payment.status}
                     </Badge>
-                  </div>
-                ))}
-              </div>
+                    </div>
+                  ))}
+            </div>
             </ScrollArea>
           </CardContent>
         </Card>
@@ -310,13 +310,13 @@ export default function CenterManagerDashboard() {
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-50 rounded-lg">
                   <Calendar className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
+          </div>
+                  <div>
                   <CardTitle className="text-lg">Upcoming Batches</CardTitle>
                   <CardDescription>Today's schedule</CardDescription>
                 </div>
-              </div>
-            </CardHeader>
+                </div>
+              </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
                 {stats.upcomingBatches.map((batch, index) => (
@@ -333,9 +333,9 @@ export default function CenterManagerDashboard() {
                     </Badge>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              </CardContent>
+            </Card>
 
           {/* Quick Actions */}
           <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/30">
@@ -343,12 +343,12 @@ export default function CenterManagerDashboard() {
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-burgundy-50 rounded-lg">
                   <Zap className="h-5 w-5 text-burgundy-600" />
-                </div>
+                  </div>
                 <div>
                   <CardTitle className="text-lg">Quick Actions</CardTitle>
                   <CardDescription>Common management tasks</CardDescription>
                 </div>
-              </div>
+          </div>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
@@ -358,8 +358,8 @@ export default function CenterManagerDashboard() {
                     <div className="font-semibold">Mark Attendance</div>
                     <div className="text-xs text-gray-500">Record student attendance</div>
                   </div>
-                </a>
-              </Button>
+                    </a>
+                  </Button>
               <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
                 <a href="/students">
                   <Users className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
@@ -367,19 +367,19 @@ export default function CenterManagerDashboard() {
                     <div className="font-semibold">Manage Students</div>
                     <div className="text-xs text-gray-500">Add or edit students</div>
                   </div>
-                </a>
-              </Button>
+                    </a>
+                  </Button>
               <Button variant="outline" className="w-full justify-start h-12 text-left group hover:bg-burgundy-50 hover:border-burgundy-200" asChild>
                 <a href="/fees">
                   <Wallet className="mr-3 h-5 w-5 text-burgundy-600 group-hover:text-burgundy-700" />
                   <div>
                     <div className="font-semibold">Fee Management</div>
                     <div className="text-xs text-gray-500">Handle payments</div>
-                  </div>
+                </div>
                 </a>
               </Button>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
         </div>
       </div>
     </div>

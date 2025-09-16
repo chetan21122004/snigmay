@@ -24,7 +24,8 @@ import {
   Wallet,
   CalendarCheck,
   Menu,
-  X
+  X,
+  FileText
 } from "lucide-react"
 import {
   Select,
@@ -91,6 +92,13 @@ const getMenuItems = (userRole: string) => [
         icon: CalendarCheck,
         description: "Mark and track attendance",
         roles: ["super_admin", "club_manager", "head_coach", "coach", "center_manager"]
+      },
+      {
+        title: "Player Reports",
+        href: "/coach/player-reports",
+        icon: FileText,
+        description: "Create player performance reports",
+        roles: ["coach"]
       }
     ]
   },
