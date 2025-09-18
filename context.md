@@ -64,7 +64,7 @@ Role-based dashboard visibility and actions.
 
 Each user is assigned a role and optionally linked to a center.
 
-🏫 Center & Batch Management
+Center & Batch Management
 
 Ability to manage multiple centers.
 
@@ -72,7 +72,7 @@ Creation and organization of batches under each center.
 
 Assign coaches to specific batches.
 
-🧒 Student Management
+Student Management
 
 Add/edit/remove student records.
 

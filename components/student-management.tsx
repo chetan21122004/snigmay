@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus, Edit, Trash2, User, Phone, Mail, MapPin, AlertCircle, Users, Camera } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import PhotoUpload from "@/components/photo-upload"
 
 interface Student {
@@ -159,6 +160,7 @@ export default function StudentManagement() {
         address: formData.address || null,
         emergency_contact: formData.emergency_contact || null,
         medical_conditions: formData.medical_conditions || null,
+        photo: formData.photo || null,
       }
 
       if (editingStudent) {
@@ -278,6 +280,7 @@ export default function StudentManagement() {
                     address: "",
                     emergency_contact: "",
                     medical_conditions: "",
+                    photo: null,
                   })
                   setEditingStudent(null)
                   setError("")
@@ -290,128 +293,169 @@ export default function StudentManagement() {
                   Add Student
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
+              <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+                <DialogHeader className="flex-shrink-0">
                   <DialogTitle>{editingStudent ? "Edit Student" : "Add New Student"}</DialogTitle>
                   <DialogDescription>
                     {editingStudent ? "Update student information" : "Register a new student"}
                   </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="name">Student Name *</Label>
-                      <Input
-                        id="name"
-                        value={formData.full_name}
-                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                        required
+                
+                <div className="flex-1 overflow-y-auto pr-2">
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Photo Upload Section */}
+                    <div className="flex justify-center py-4">
+                      <PhotoUpload
+                        currentPhoto={formData.photo || undefined}
+                        onPhotoChange={(photo) => setFormData({ ...formData, photo })}
+                        fallbackText={formData.full_name || "Student"}
+                        size="lg"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="age">Age *</Label>
-                      <Input
-                        id="age"
-                        type="number"
-                        min="5"
-                        max="25"
-                        value={formData.age}
-                        onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                        required
-                      />
+                    
+                    {/* Basic Information */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Basic Information</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="name">Student Name *</Label>
+                          <Input
+                            id="name"
+                            value={formData.full_name}
+                            onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                            required
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="age">Age *</Label>
+                          <Input
+                            id="age"
+                            type="number"
+                            min="5"
+                            max="25"
+                            value={formData.age}
+                            onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                            required
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="contact_info">Contact Information</Label>
+                        <Input
+                          id="contact_info"
+                          value={formData.contact_info}
+                          onChange={(e) => setFormData({ ...formData, contact_info: e.target.value })}
+                          placeholder="Email, phone number, etc."
+                          className="mt-1"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="batch">Assign to Batch</Label>
+                        <Select value={formData.batch_id} onValueChange={(value) => setFormData({ ...formData, batch_id: value })}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select batch" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">No batch assigned</SelectItem>
+                            {batches.map((batch) => (
+                              <SelectItem key={batch.id} value={batch.id}>
+                                {batch.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="contact_info">Contact Information</Label>
-                    <Input
-                      id="contact_info"
-                      value={formData.contact_info}
-                      onChange={(e) => setFormData({ ...formData, contact_info: e.target.value })}
-                      placeholder="Email, phone number, etc."
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="batch">Assign to Batch</Label>
-                    <Select value={formData.batch_id} onValueChange={(value) => setFormData({ ...formData, batch_id: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select batch" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No batch assigned</SelectItem>
-                        {batches.map((batch) => (
-                          <SelectItem key={batch.id} value={batch.id}>
-                            {batch.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="parent_name">Parent Name</Label>
-                      <Input
-                        id="parent_name"
-                        value={formData.parent_name}
-                        onChange={(e) => setFormData({ ...formData, parent_name: e.target.value })}
-                      />
+                    {/* Parent/Guardian Information */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Parent/Guardian Information</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="parent_name">Parent Name</Label>
+                          <Input
+                            id="parent_name"
+                            value={formData.parent_name}
+                            onChange={(e) => setFormData({ ...formData, parent_name: e.target.value })}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="parent_phone">Parent Phone</Label>
+                          <Input
+                            id="parent_phone"
+                            value={formData.parent_phone}
+                            onChange={(e) => setFormData({ ...formData, parent_phone: e.target.value })}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="parent_email">Parent Email</Label>
+                        <Input
+                          id="parent_email"
+                          type="email"
+                          value={formData.parent_email}
+                          onChange={(e) => setFormData({ ...formData, parent_email: e.target.value })}
+                          className="mt-1"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="parent_phone">Parent Phone</Label>
-                      <Input
-                        id="parent_phone"
-                        value={formData.parent_phone}
-                        onChange={(e) => setFormData({ ...formData, parent_phone: e.target.value })}
-                      />
+
+                    {/* Additional Information */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Additional Information</h3>
+                      <div>
+                        <Label htmlFor="address">Address</Label>
+                        <Input
+                          id="address"
+                          value={formData.address}
+                          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                          className="mt-1"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="emergency_contact">Emergency Contact</Label>
+                        <Input
+                          id="emergency_contact"
+                          value={formData.emergency_contact}
+                          onChange={(e) => setFormData({ ...formData, emergency_contact: e.target.value })}
+                          placeholder="Emergency contact person and phone number"
+                          className="mt-1"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="medical_conditions">Medical Conditions</Label>
+                        <Input
+                          id="medical_conditions"
+                          value={formData.medical_conditions}
+                          onChange={(e) => setFormData({ ...formData, medical_conditions: e.target.value })}
+                          placeholder="Any medical conditions or allergies"
+                          className="mt-1"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div>
-                    <Label htmlFor="parent_email">Parent Email</Label>
-                    <Input
-                      id="parent_email"
-                      type="email"
-                      value={formData.parent_email}
-                      onChange={(e) => setFormData({ ...formData, parent_email: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="address">Address</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="emergency_contact">Emergency Contact</Label>
-                    <Input
-                      id="emergency_contact"
-                      value={formData.emergency_contact}
-                      onChange={(e) => setFormData({ ...formData, emergency_contact: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="medical_conditions">Medical Conditions</Label>
-                    <Input
-                      id="medical_conditions"
-                      value={formData.medical_conditions}
-                      onChange={(e) => setFormData({ ...formData, medical_conditions: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="flex justify-end space-x-2">
-                    <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit">{editingStudent ? "Update" : "Create"}</Button>
-                  </div>
-                </form>
+                    {/* Form Actions - Sticky Footer */}
+                    <div className="sticky bottom-0 bg-white pt-4 border-t mt-6">
+                      <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" className="bg-burgundy-600 hover:bg-burgundy-700">
+                          {editingStudent ? "Update Student" : "Create Student"}
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
               </DialogContent>
             </Dialog>
           </div>
@@ -420,6 +464,7 @@ export default function StudentManagement() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-16">Photo</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Age</TableHead>
                 <TableHead>Contact Info</TableHead>
@@ -431,18 +476,53 @@ export default function StudentManagement() {
             <TableBody>
               {students.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground">
                     No students found. Add your first student to get started.
                   </TableCell>
                 </TableRow>
               ) : (
                 students.map((student) => (
                   <TableRow key={student.id}>
-                    <TableCell className="font-medium">{student.full_name}</TableCell>
+                    <TableCell>
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={student.photo || ""} alt={student.full_name} />
+                        <AvatarFallback className="bg-burgundy-50 text-burgundy-600 text-sm font-medium">
+                          {student.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex flex-col">
+                        <span>{student.full_name}</span>
+                        {student.parent_name && (
+                          <span className="text-xs text-gray-500">Parent: {student.parent_name}</span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{student.age}</TableCell>
-                    <TableCell>{student.contact_info || "No contact info"}</TableCell>
-                    <TableCell>{getBatchName(student.batch_id)}</TableCell>
-                    <TableCell>{selectedCenter?.name || "Unknown Center"}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col space-y-1">
+                        {student.contact_info && (
+                          <span className="text-sm">{student.contact_info}</span>
+                        )}
+                        {student.parent_phone && (
+                          <span className="text-xs text-gray-500 flex items-center">
+                            <Phone className="h-3 w-3 mr-1" />
+                            {student.parent_phone}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        {getBatchName(student.batch_id)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        {selectedCenter?.name || "Unknown Center"}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button variant="outline" size="sm" onClick={() => handleEdit(student)}>

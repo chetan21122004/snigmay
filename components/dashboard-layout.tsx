@@ -25,7 +25,8 @@ import {
   CalendarCheck,
   Menu,
   X,
-  FileText
+  FileText,
+  MessageSquare
 } from "lucide-react"
 import {
   Select,
@@ -123,7 +124,14 @@ const getMenuItems = (userRole: string) => [
     icon: UserCog,
         description: "Manage staff accounts",
         roles: ["super_admin", "club_manager"]
-  }
+  },
+  {
+        title: "Feedback Management",
+        href: "/feedback",
+        icon: MessageSquare,
+        description: "Manage player and coach feedback",
+        roles: ["super_admin"]
+      }
     ]
   }
 ].map(section => ({

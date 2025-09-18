@@ -12,8 +12,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Edit, Trash2, Users, Shield, AlertCircle, Eye, EyeOff } from "lucide-react"
+import { Plus, Edit, Trash2, Users, Shield, AlertCircle, Eye, EyeOff, Camera } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import PhotoUpload from "@/components/photo-upload"
 import { useRouter } from "next/navigation"
 type UserRole = 'super_admin' | 'club_manager' | 'head_coach' | 'coach' | 'center_manager'
 import { 
@@ -38,6 +39,7 @@ interface User {
   center_id: string | null
   center_name: string
   created_at?: string
+  photo?: string | null
 }
 
 interface Center {
@@ -105,7 +107,8 @@ export default function UserManagement() {
     password: string
     role: UserRole
     centerId: string
-  }>({ email: "", fullName: "", password: "", role: "coach", centerId: "" })
+    photo: string | null
+  }>({ email: "", fullName: "", password: "", role: "coach", centerId: "", photo: null })
   
   const [resetPassword, setResetPassword] = useState("")
   const router = useRouter()

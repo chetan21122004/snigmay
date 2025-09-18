@@ -24,6 +24,7 @@ export interface Student {
   address: string | null
   emergency_contact: string | null
   medical_conditions: string | null
+  photo: string | null
 }
 
 export interface Batch {
