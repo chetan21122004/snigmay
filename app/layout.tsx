@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "Snigmay Foundation | Inspire | Integrate | Empower",
   description:
     "Snigmay Foundation is a Pune-based non-profit organization focused on nation-building through youth development, sports, and women empowerment.",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -30,14 +30,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body className={`${poppins.variable} font-sans antialiased`} suppressHydrationWarning>
-        <Preloader />
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-         <main className="w-screen overflow-hidden">
-          <Navbar />
-           
-          {children}
-          <Footer />
-         </main>
+          <main className="w-screen overflow-hidden">
+            <Navbar />
+
+            {children}
+            <Footer />
+          </main>
         </ThemeProvider>
         <Script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" strategy="beforeInteractive" />
         <Script
